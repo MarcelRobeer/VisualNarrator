@@ -26,3 +26,7 @@ Command | Required? | Description
 `-u`, `--print_us` | No | Print additional information per User Story
 `-o`, `--print_ont` | No | Print the output ontology in the terminal
 `--version` | No | Display the program's version number and exit
+
+## Conceptual Model
+The classes in the program are based on the following conceptual model:
+
