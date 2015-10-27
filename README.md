@@ -31,3 +31,5 @@ Command | Required? | Description
 The classes in the program are based on the following conceptual model:
 
 ![conceptual_model](https://cloud.githubusercontent.com/assets/1345476/10763997/7517488c-7ccc-11e5-8cbc-abab1bb2028a.png)
+
+The _Reader_ starts by reading the input file line by line and generates a list of sentences. These sentences are then enriched using Natural Language Processing, adding Part-of-Speech tags, dependencies, named entity recognition, etc. Subsequently, the _StoryMiner_ uses this enriched sentences to create User Story objects. The User Story objects contain all the information that could be mined from the sentence. The _Constructor_ then constructs patterns out of each user story, forming a model for an ontology, which is then used by the _Generator_ to generate a Manchester Ontology file (.omn).
