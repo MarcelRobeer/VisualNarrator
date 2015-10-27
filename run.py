@@ -45,9 +45,6 @@ def main(filename, systemname, print_us, print_ont):
 		print(errors)
 
 	parse_time = timeit.default_timer() - start_parse_time
-	
-	#miner.print_dependencies(us_instances[7])
-	#miner.print_dependencies(us_instances[1])
 
 	#Printer.print_head(str(success) + " CREATED USER STORY INSTANCES")	
 	#print(us_instances)
@@ -79,8 +76,8 @@ def parse(text, id, systemname, nlp, miner):
 
 def output(user_story, doc, miner):
 	user_story.data = doc
-	#miner.print_dependencies(user_story)
-	#miner.print_noun_phrases(user_story)
+	#Printer.print_dependencies(user_story)
+	#Printer.print_noun_phrases(user_story)
 	miner.mine(user_story)
 	return user_story
 

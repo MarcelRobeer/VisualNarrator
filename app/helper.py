@@ -51,3 +51,25 @@ class Printer:
 		Printer.print_head("RUN DETAILS")
 		print("User Stories:\n  # Total parsed:", total,"\n  # Succesfully parsed:", success, "\n  # Failed at parsing:", fail, "\n  Failure rate:", frate, "(", round(frate * 100, 2), "% )")
 		print("Time elapsed:\n  NLP instantiate:", nlp_time, "s\n  Mining User Stories:", parse_time, "s\n  Generating Manchester Ontology:", gen_time, "s\n")
+
+	def print_dependencies(story):
+		print("---------- U S", story.number, "----------")
+		for token in story.data:
+			print(token.i, "-> ", token.text, " [", token.pos_, " (", token.dep_ ,") at ", token.idx, "]")
+			if token.is_stop:
+				print("! PART OF STOP LIST")
+			print("Left edge: ", token.left_edge)
+			print("Right edge: ", token.right_edge)
+			print("Children: ", Helper.get_tokens(token.children))
+			print("Subtree: ", Helper.get_tokens(token.subtree))
+			print("Head: ", token.head)
+			if token is not story.data[0]:
+				print("Left neighbor: ", token.nbor(-1))
+			if token is not story.data[-1]:
+				print("Right neighbor: ", token.nbor(1))
+			print("Entity type: ", token.ent_type, "\n")
+
+	def print_noun_phrases(story):
+		print(story.number, "> Noun Phrases * In the form NP <-- HEAD")
+		for chunk in story.data.noun_chunks:
+			print(chunk.text, " <-- ", chunk.root.head.text)

@@ -19,27 +19,6 @@ class StoryMiner:
 			raise ValueError('Could not find a direct object', 4)	
 		story = self.get_free_form(story)
 
-	def print_dependencies(self, story):
-		for token in story.data:
-			print(token.i, "-> ", token.text, " [", token.pos_, " (", token.dep_ ,") at ", token.idx, "]")
-			if token.is_stop:
-				print("! PART OF STOP LIST")
-			print("Left edge: ", token.left_edge)
-			print("Right edge: ", token.right_edge)
-			print("Children: ", Helper.get_tokens(token.children))
-			print("Subtree: ", Helper.get_tokens(token.subtree))
-			print("Head: ", token.head)
-			if token is not story.data[0]:
-				print("Left neighbor: ", token.nbor(-1))
-			if token is not story.data[-1]:
-				print("Right neighbor: ", token.nbor(1))
-			print("Entity type: ", token.ent_type, "\n")
-
-	def print_noun_phrases(self, story):
-		print(story.number, "> Noun Phrases * In the form NP <-- HEAD")
-		for chunk in story.data.noun_chunks:
-			print(chunk.text, " <-- ", chunk.root.head.text)
-
 	def get_indicators(self, story):
 		returnlist = []
 		rm = MinerHelper.reasonable_max(story.data)
@@ -112,19 +91,28 @@ class StoryMiner:
 	def get_direct_object(self, story):
 		if not story.means.main_verb.phrase:
 			pointer = story.means.main_verb.main
-			story.means.direct_object.main = pointer.right_edge
 		else:
 			phrase = story.means.main_verb.phrase
 			pointer = phrase[-1]
-			if not pointer.right_edge == pointer:
-				story.means.direct_object.main = pointer.right_edge
-			else:
-				story.means.direct_object.main = story.system.main
+	
+		for chunk in story.data.noun_chunks:
+			if pointer == chunk.root.head:
+				story.means.direct_object.phrase = MinerHelper.get_span(story, chunk)
 
-		if not story.means.direct_object.main == story.system.main:		
-			for chunk in story.data.noun_chunks:
-				if pointer == chunk.root.head:
-					story.means.direct_object.phrase = MinerHelper.get_span(story, chunk)
+		if story.means.direct_object.phrase:
+			story.means.direct_object.main = story.means.direct_object.phrase[-1]
+			if story.means.direct_object.phrase[-1].i < story.data[-1].i:
+				potential_of = story.data[story.means.direct_object.phrase[-1].i + 1]
+				if MinerHelper.lower(potential_of.text) == 'of':
+					for chunk in story.data.noun_chunks:
+						if chunk.root.head == potential_of:	
+							story.means.direct_object.phrase.append(potential_of)	
+							story.means.direct_object.phrase.extend(MinerHelper.get_span(story, chunk))
+		elif pointer == story.data[pointer.i]:
+			story.means.direct_object.main = story.system.main
+		else:
+			story.means.direct_object.main = story.data[pointer.i + 1]
+	
 
 		return story
 

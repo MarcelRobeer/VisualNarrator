@@ -51,7 +51,7 @@ class PatternFactory:
 		pi.identify_patterns(us)
 
 		# WIP Prints all patterns that are found
-		print(pi.found_patterns)
+		#print("US", us.number, ">", pi.found_patterns)
 
 		self.constructor.onto.get_class_by_name('Person')
 		self.constructor.onto.get_class_by_name('FunctionalRole', 'Person')
