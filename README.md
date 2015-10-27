@@ -1,4 +1,4 @@
-# Bachelor Thesis
+# [WIP] User Story to Ontology (Bachelor Thesis)
 
 This program reads a text file (.txt, .csv, etc.) containing User Stories and outputs a Manchester Ontology file. As of yet, each line may only contain a single User Story.
 
