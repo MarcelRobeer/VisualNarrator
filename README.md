@@ -30,3 +30,4 @@ Command | Required? | Description
 ## Conceptual Model
 The classes in the program are based on the following conceptual model:
 
+![conceptual_model](https://cloud.githubusercontent.com/assets/1345476/10763997/7517488c-7ccc-11e5-8cbc-abab1bb2028a.png)
