@@ -58,34 +58,13 @@ class StoryMiner:
 	def get_main_verb(self, story):
 		last_idx = story.means.indicator[-1].i
 		main_verb = story.data[last_idx].nbor(1)
-		phrasal_verb = main_verb
+
 		story.means.main_verb.main = main_verb
+		
+		pv = MinerHelper.get_phrasal_verb(story, main_verb)
+		story.means.main_verb.phrase = MinerHelper.get_span(story, pv[0])
+		story.means.main_verb.type = pv[1]
 
-		# Check for Type I, II and III phrasal verbs
-		particles = TYPE_II_PARTICLES + TYPE_II_PARTICLES_MARGINAL
-		phrase = []
-
-		if MinerHelper.lower(phrasal_verb.right_edge.text) in particles:
-			phrasal_verb = phrasal_verb.right_edge
-			phrase.append(phrasal_verb)
-			story.means.main_verb.type = "II"
-		else:
-			for chunk in story.data.noun_chunks:
-				for c in phrasal_verb.children:
-					if c == chunk.root.head:
-						if not c in story.indicators:
-							if c.pos_ == 'PART':
-								phrase.append(c)
-								story.means.main_verb.type = "I"
-							if c.pos_ == 'ADP':
-								phrase.append(c)
-								story.means.main_verb.type = "III"
-								
-
-		if phrase:
-			phrase.insert(0, main_verb)
-
-		story.means.main_verb.phrase = MinerHelper.get_span(story, phrase)
 		return story
 
 	def get_direct_object(self, story):
@@ -95,24 +74,9 @@ class StoryMiner:
 			phrase = story.means.main_verb.phrase
 			pointer = phrase[-1]
 	
-		for chunk in story.data.noun_chunks:
-			if pointer == chunk.root.head:
-				story.means.direct_object.phrase = MinerHelper.get_span(story, chunk)
-
-		if story.means.direct_object.phrase:
-			story.means.direct_object.main = story.means.direct_object.phrase[-1]
-			if story.means.direct_object.phrase[-1].i < story.data[-1].i:
-				potential_of = story.data[story.means.direct_object.phrase[-1].i + 1]
-				if MinerHelper.lower(potential_of.text) == 'of':
-					for chunk in story.data.noun_chunks:
-						if chunk.root.head == potential_of:	
-							story.means.direct_object.phrase.append(potential_of)	
-							story.means.direct_object.phrase.extend(MinerHelper.get_span(story, chunk))
-		elif pointer == story.data[pointer.i]:
-			story.means.direct_object.main = story.system.main
-		else:
-			story.means.direct_object.main = story.data[pointer.i + 1]
-	
+		np = MinerHelper.get_noun_phrase(story, pointer)
+		story.means.direct_object.main = np[0]
+		story.means.direct_object.phrase = np[1]
 
 		return story
 
@@ -167,3 +131,56 @@ class MinerHelper:
 		for i in idxlist:
 			ret.append(story.data[i])
 		return ret
+
+	# Obtain noun phrases (including form 'x of y')
+	def get_noun_phrase(story, pointer):
+		phrase = []
+		main = []
+
+		for chunk in story.data.noun_chunks:
+			if pointer == chunk.root.head:
+				phrase = MinerHelper.get_span(story, chunk)
+
+		if phrase:
+			main = phrase[-1]
+			if phrase[-1].i < story.data[-1].i:
+				potential_of = story.data[phrase[-1].i + 1]
+				if MinerHelper.lower(potential_of.text) == 'of':
+					for chunk in story.data.noun_chunks:
+						if chunk.root.head == potential_of:	
+							phrase.append(potential_of)	
+							phrase.extend(MinerHelper.get_span(story, chunk))
+		elif pointer == story.data[pointer.i]:
+			main = story.system.main
+		else:
+			main = story.data[pointer.i + 1]
+
+		return main, phrase
+
+	# Obtain Type I, II and III phrasal verbs
+	def get_phrasal_verb(story, head):
+		particles = TYPE_II_PARTICLES + TYPE_II_PARTICLES_MARGINAL
+		phrasal_verb = head
+		phrase = []
+		vtype = ""
+
+		if MinerHelper.lower(phrasal_verb.right_edge.text) in particles:
+			phrasal_verb = phrasal_verb.right_edge
+			phrase.append(phrasal_verb)
+			vtype = "II"
+		else:
+			for chunk in story.data.noun_chunks:
+				for c in phrasal_verb.children:
+					if c == chunk.root.head:
+						if not c in story.indicators:
+							if c.pos_ == 'PART':
+								phrase.append(c)
+								vtype = "I"
+							if c.pos_ == 'ADP':
+								phrase.append(c)
+								vtype = "III"
+		
+		if phrase:
+			phrase.insert(0, head)
+
+		return phrase, vtype
