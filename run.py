@@ -14,7 +14,7 @@ from app.helper import Helper, Printer
 from app.pattern import Constructor
 
 
-def main(filename, systemname, print_us, print_ont):
+def main(filename, systemname, print_us, print_ont, statistics):
 	print("Initializing Natural Language Processor . . .")
 	start_nlp_time = timeit.default_timer()
 	nlp = English()
@@ -63,6 +63,10 @@ def main(filename, systemname, print_us, print_ont):
 	outputfile = make_file("GenOnt" + str(systemname), patterns.make(ontname))
 	gen_time = timeit.default_timer() - start_gen_time
 
+	if statistics:
+		Printer.print_head("USER STORY STATISTICS")
+		print("To be implemented...")
+
 	Printer.print_details(fail, success, nlp_time, parse_time, gen_time)
 	print("File succesfully created at: \"" + str(outputfile) + "\"")	
 
@@ -97,14 +101,15 @@ def program():
 	p.add_argument("-i", "--input", dest="filename", required=True,
                     help="input file with user stories", metavar="FILE",
                     type=lambda x: is_valid_file(p, x))
-	p.add_argument("-s", "--system_name", dest="system_name", help="your system name", required=False)
+	p.add_argument("-n", "--name", dest="system_name", help="your system name", required=False)
 	p.add_argument("-u", "--print_us", dest="print_us", help="print data per user story", action="store_true", default=False)
 	p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology", action="store_true", default=False)
+	p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics", action="store_true", default=False)
 	p.add_argument('--version', action='version', version='%(prog)s v0.1 by M.J. Robeer')
 	args = p.parse_args()
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-	main(args.filename, args.system_name, args.print_us, args.print_ont)
+	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics)
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
