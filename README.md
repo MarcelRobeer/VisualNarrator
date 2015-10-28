@@ -1,4 +1,6 @@
-# [WIP] User Story to Ontology (Bachelor Thesis)
+# [Working Title] User Story to Ontology
+
+> Bachelor Thesis
 
 This program reads a text file (.txt, .csv, etc.) containing User Stories and outputs a Manchester Ontology file. As of yet, each line may only contain a single User Story.
 
@@ -20,8 +22,8 @@ The most important command is `-i` (or `--input`) to specify the location of the
 
 Command | Required? | Description
 --------|-----------|------------
+`-i FILENAME`, `--input FILENAME` | __Yes__ | Specify the file name of the User Story input file
 `-h`, `--help` | No | Show a help message and exit
-`-i FILENAME`, `--input FILENAME` | Yes | Specify the file name of the User Story input file
 `-n SYSTEM_NAME`, `--name SYSTEM_NAME` | No | Specify a name for your system
 `-s`, `--statistics` | No | Show statistics for the User Story set
 `-u`, `--print_us` | No | Print additional information per User Story
