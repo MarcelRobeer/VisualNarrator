@@ -113,6 +113,57 @@ class StoryMiner:
 		
 		story.means.free_form = MinerHelper.get_span(story, means_free_form)
 		story.ends.free_form = MinerHelper.get_span(story, ends_free_form)
+		
+		if story.means.free_form or story.ends.free_form:
+			self.get_verbs(story)
+			self.get_nouns(story)
+			if story.means.free_form:
+				story.means.proper_nouns = self.get_proper_nouns(story, story.means.nouns)
+			if story.ends.free_form:
+				story.ends.proper_nouns = self.get_proper_nouns(story, story.ends.nouns)
+
+		return story
+
+	def get_nouns(self, story):
+		means_nouns = []
+		ends_nouns = []
+
+		for token in story.means.free_form:
+			if token.pos_ == "NOUN":
+				means_nouns.append(token)
+
+		for token in story.ends.free_form:
+			if token.pos_ == "NOUN":
+				ends_nouns.append(token)
+
+		story.means.nouns = MinerHelper.get_span(story, means_nouns)
+		story.ends.nouns = MinerHelper.get_span(story, ends_nouns)		
+
+		return story
+
+	def get_proper_nouns(self, story, nouns):
+		proper = []
+
+		for noun in nouns:
+			if noun.tag_ == "NNP" or noun.tag_ == "NNPS":
+				means_proper.append(noun)
+
+		return MinerHelper.get_span(story, proper)
+
+	def get_verbs(self, story):
+		means_verbs = []
+		ends_verbs = []
+
+		for token in story.means.free_form:
+			if token.pos_ == "VERB":
+				means_verbs.append(token)
+
+		for token in story.ends.free_form:
+			if token.pos_ == "VERB":
+				ends_verbs.append(token)
+
+		story.means.verbs = MinerHelper.get_span(story, means_verbs)
+		story.ends.verbs = MinerHelper.get_span(story, ends_verbs)
 
 		return story
 

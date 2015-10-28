@@ -12,26 +12,30 @@ class UserStory(object):
 
 class UserStoryPart(object):
 	def __init__(self):
-		self.text = ""
 		self.indicator = []
 
+
+class FreeFormUSPart(UserStoryPart):
+	def __init__(self):
+		self.free_form = []
+		self.verbs = []
+		self.nouns = []
+		self.proper_nouns = []
 
 class Role(UserStoryPart):
 	def __init__(self):
 		self.functional_role = WithAdjectives()
 
 
-class Means(UserStoryPart):
+class Means(FreeFormUSPart):
 	def __init__(self):
 		self.main_verb = WithPhrase()
 		self.direct_object = WithPhrase()
 		self.indirect_object = ""
-		self.free_form = []
 
 
-class Ends(UserStoryPart):
-	def __init__(self):
-		self.free_form = []
+class Ends(FreeFormUSPart):
+	pass
 
 
 class WithMain(object):
