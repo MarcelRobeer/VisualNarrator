@@ -8,7 +8,7 @@ This program reads a text file (.txt, .csv, etc.) containing User Stories and ou
 The main dependency for the program is its Natural Language Processor (NLP) _spaCy_. To run the program, you need:
 
 * Python >= 3.4
-* spaCy >= 0.93
+* spaCy >= 0.93 (currently under development using v0.97)
 
 ## Running the Project
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:
