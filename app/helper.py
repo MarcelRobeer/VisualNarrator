@@ -38,8 +38,11 @@ class Printer:
 		print(" >> INDICATORS\n  All:", Helper.get_tokens(story.indicators), "\n  Role:", Helper.get_tokens(story.role.indicator), "\n  Means:", Helper.get_tokens(story.means.indicator), "\n  Ends:", Helper.get_tokens(story.ends.indicator))
 		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ adjectives", Helper.get_tokens(story.role.functional_role.adjectives), ")")
 		print(" >> MEANS\n  Action verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", Helper.get_tokens(story.means.direct_object.phrase), ")")
+		if story.means.free_form:
+			print("  Free form:", Helper.get_tokens(story.means.free_form))
 		print(" >> ENDS")
-		print(" >> FREE FORM\n", Helper.get_tokens(story.free_form))
+		if story.ends.free_form:
+			print("  Free form:", Helper.get_tokens(story.ends.free_form))
 		print("<----------- END U S ----------->")
 
 	def print_details(fail, success, nlp_time, parse_time, gen_time):

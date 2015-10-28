@@ -12,6 +12,7 @@ from app.miner import StoryMiner
 from app.userstory import UserStory
 from app.helper import Helper, Printer
 from app.pattern import Constructor
+from app.statistics import Counter
 
 
 def main(filename, systemname, print_us, print_ont, statistics):

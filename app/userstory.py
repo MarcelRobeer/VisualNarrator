@@ -26,11 +26,12 @@ class Means(UserStoryPart):
 		self.main_verb = WithPhrase()
 		self.direct_object = WithPhrase()
 		self.indirect_object = ""
+		self.free_form = []
 
 
 class Ends(UserStoryPart):
 	def __init__(self):
-		self.x = "x"
+		self.free_form = []
 
 
 class WithMain(object):

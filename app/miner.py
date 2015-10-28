@@ -102,6 +102,18 @@ class StoryMiner:
 				list.append(token)
 		
 		story.free_form = MinerHelper.get_span(story, list)
+
+		means_free_form = []
+		ends_free_form = []
+		for token in story.free_form:
+			if story.ends.indicator and token.i > story.ends.indicator[-1].i:
+				ends_free_form.append(token)
+			else:
+				means_free_form.append(token)
+		
+		story.means.free_form = MinerHelper.get_span(story, means_free_form)
+		story.ends.free_form = MinerHelper.get_span(story, ends_free_form)
+
 		return story
 
 
