@@ -146,7 +146,7 @@ class StoryMiner:
 
 		for noun in nouns:
 			if noun.tag_ == "NNP" or noun.tag_ == "NNPS":
-				means_proper.append(noun)
+				proper.append(noun)
 
 		return MinerHelper.get_span(story, proper)
 
