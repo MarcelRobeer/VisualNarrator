@@ -50,11 +50,25 @@ class StoryMiner:
 		return []
 
 	def get_functional_role(self, story):
-		role = story.role.indicator[0].right_edge
-		story.role.functional_role.main = role
-
 		potential_role_part = story.data[story.role.indicator[-1].i + 1:story.means.indicator[0].i]
-		story.role.functional_role.compound = MinerHelper.get_nouns(story, potential_role_part)
+		potential_without_with = []
+
+		with_i = -1
+		for token in potential_role_part:
+			if MinerHelper.lower(token.text) == 'with' or MinerHelper.lower(token.text) == 'w/':
+				with_i = token.i
+		if with_i > 0:
+			potential_without_with = potential_role_part[0:with_i]
+		else:
+			potential_without_with = potential_role_part
+		
+		story.role.functional_role.compound = MinerHelper.get_compound_nouns(story, MinerHelper.get_nouns(story, potential_without_with))
+
+		if story.role.functional_role.compound:
+			story.role.functional_role.main = story.role.functional_role.compound[-1]
+		else:
+			story.role.functional_role.main = story.role.indicator[0].right_edge
+
 		return story
 
 	def get_main_verb(self, story):
@@ -236,6 +250,20 @@ class MinerHelper:
 				token.append(noun)
 
 		return MinerHelper.get_span(story, proper)
+
+	def get_compound_nouns(story, span):
+		compound = []
+		iscompound = False
+
+		for token in span:
+			for child in token.children:
+				if child.dep_ == "compound":
+					iscompound = True
+					compound.append(child)
+				if iscompound:
+					compound.append(token)
+
+		return MinerHelper.get_span(story, compound)
 
 	def get_verbs(story, span):
 		verbs = []
