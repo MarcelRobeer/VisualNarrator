@@ -1,0 +1,14 @@
+As a Visitor, I can create a new account.
+As a Visitor, I can log in.
+As a Visitor, I am able to log out.
+As a Visitor, I want to choose an event so that I can book a ticket for that event.
+As a Visitor, I want to filter on event type, so that I can only see events of the type I want.
+As a Visitor, I can rename my account.
+As a Visitor, I can change my account password.
+As a Visitor, I am able to search for an event.
+As a Visitor, I am able to purchase multiple tickets.
+As a Visitor, I want to see the ticket price.
+As a Visitor, I want to choose a type of ticket.
+As a Visitor, I want to provide my personal details to purchase a ticket.
+As a Visitor, I want to choose a payment method so that I can buy a ticket.
+As a Visitor, I want to receive a purchased ticket.
