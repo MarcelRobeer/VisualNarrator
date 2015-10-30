@@ -30,6 +30,12 @@ Command | Required? | Description
 `-o`, `--print_ont` | No | Print the output ontology in the terminal
 `--version` | No | Display the program's version number and exit
 
+### Example usage
+
+```
+python run.py -i example_stories.txt -n "TicketSystem" -u
+```
+
 ## Conceptual Model
 The classes in the program are based on the following conceptual model:
 

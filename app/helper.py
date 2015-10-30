@@ -39,21 +39,23 @@ class Printer:
 		print(" >> INDICATORS\n  All:", Helper.get_tokens(story.indicators), "\n  Role:", Helper.get_tokens(story.role.indicator), "\n  Means:", Helper.get_tokens(story.means.indicator), "\n  Ends:", Helper.get_tokens(story.ends.indicator))
 		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ adjectives", Helper.get_tokens(story.role.functional_role.adjectives), ")")
 		print(" >> MEANS\n  Action verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", Helper.get_tokens(story.means.direct_object.phrase), ")")
-		if story.means.verbs:
-			print("    Verbs:", Helper.get_tokens(story.means.verbs))
-		if story.means.nouns:
-			if story.means.proper_nouns:
-				pnounstext = " ( Proper: " + str(Helper.get_tokens(story.means.proper_nouns)) + ")"
-			print("    Nouns:", Helper.get_tokens(story.means.nouns), pnounstext)
+		if story.means.free_form:
+			print("  Free form:", Helper.get_tokens(story.means.free_form))
+			if story.means.verbs:
+				print("    Verbs:", Helper.get_tokens(story.means.verbs))
+			if story.means.nouns:
+				if story.means.proper_nouns:
+					pnounstext = " ( Proper: " + str(Helper.get_tokens(story.means.proper_nouns)) + ")"
+				print("    Nouns:", Helper.get_tokens(story.means.nouns), pnounstext)
 		print(" >> ENDS")
 		if story.ends.free_form:
 			print("  Free form:", Helper.get_tokens(story.ends.free_form))
-		if story.ends.verbs:
-			print("    Verbs:", Helper.get_tokens(story.ends.verbs))
-		if story.ends.nouns:
-			if story.ends.proper_nouns:
-				pnounstext = " ( Proper: " + str(Helper.get_tokens(story.ends.proper_nouns)) + ")"
-			print("    Nouns:", Helper.get_tokens(story.ends.nouns), pnounstext)
+			if story.ends.verbs:
+				print("    Verbs:", Helper.get_tokens(story.ends.verbs))
+			if story.ends.nouns:
+				if story.ends.proper_nouns:
+					pnounstext = " ( Proper: " + str(Helper.get_tokens(story.ends.proper_nouns)) + ")"
+				print("    Nouns:", Helper.get_tokens(story.ends.nouns), pnounstext)
 		print("<----------- END U S ----------->")
 
 	def print_details(fail, success, nlp_time, parse_time, gen_time):
