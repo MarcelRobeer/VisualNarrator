@@ -21,6 +21,11 @@ class Helper:
 	def get_idx(tree):
 		return [t.i for t in tree]
 
+	def remove_duplicates(self, arr):
+		li = list()
+		li_add = li.append
+		return [ x for x in arr if not (x in li or li_add(x))]
+
 
 class Printer:
 	def print_head(text):
@@ -37,8 +42,8 @@ class Printer:
 		print("\n\n<---------- BEGIN U S ---------->")
 		print("User Story", story.number, ":", story.text)
 		print(" >> INDICATORS\n  All:", Helper.get_tokens(story.indicators), "\n  Role:", Helper.get_tokens(story.role.indicator), "\n  Means:", Helper.get_tokens(story.means.indicator), "\n  Ends:", Helper.get_tokens(story.ends.indicator))
-		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ Compound", Helper.get_tokens(story.role.functional_role.compound), ")")
-		print(" >> MEANS\n  Action verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", Helper.get_tokens(story.means.direct_object.phrase), ")")
+		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", Helper.get_tokens(story.role.functional_role.compound), ")")
+		print(" >> MEANS\n  Action verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", Helper.get_tokens(story.means.direct_object.phrase), "w/ compound", Helper.get_tokens(story.means.direct_object.compound), ")")
 		if story.means.free_form:
 			print("  Free form:", Helper.get_tokens(story.means.free_form))
 			if story.means.verbs:

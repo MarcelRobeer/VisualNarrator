@@ -25,20 +25,24 @@ class Constructor:
 		if not us.means.main_verb.phrase:
 			av = string.capwords(us.means.main_verb.main.lemma_)
 		else:
-			av = ""
-			for p in us.means.main_verb.phrase:
-				av += string.capwords(p.lemma_)		
+			av = self.make_multiword_string(us.means.main_verb.phrase)	
+
 		return av
 
 	def get_direct_object(self, us):
-		return string.capwords(us.means.direct_object.main.lemma_)
-	
+		if not us.means.direct_object.compound:
+			do = string.capwords(us.means.direct_object.main.lemma_)
+		else:
+			do = self.make_multiword_string(us.means.direct_object.compound)
 
-	def remove_duplicates(self, arr):
-		li = list()
-		li_add = li.append
-		return [ x for x in arr if not (x in li or li_add(x))]
+		return do
 
+	def make_multiword_string(self, span):
+		ret = ""
+		for token in span:
+			ret += string.capwords(token.lemma_)
+
+		return ret
 	
 	def t(self, token):
 		return token.main.text

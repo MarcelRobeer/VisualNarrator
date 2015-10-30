@@ -62,7 +62,7 @@ class StoryMiner:
 		else:
 			potential_without_with = potential_role_part
 		
-		story.role.functional_role.compound = MinerHelper.get_compound_nouns(story, MinerHelper.get_nouns(story, potential_without_with))
+		story.role.functional_role.compound = MinerHelper.get_compound_nouns(story, potential_without_with)
 
 		if story.role.functional_role.compound:
 			story.role.functional_role.main = story.role.functional_role.compound[-1]
@@ -93,6 +93,8 @@ class StoryMiner:
 		np = MinerHelper.get_noun_phrase(story, pointer)
 		story.means.direct_object.main = np[0]
 		story.means.direct_object.phrase = np[1]
+		if story.means.direct_object.phrase:
+			story.means.direct_object.compound = MinerHelper.get_compound_nouns(story, story.means.direct_object.phrase)
 
 		return story
 
@@ -253,9 +255,10 @@ class MinerHelper:
 
 	def get_compound_nouns(story, span):
 		compound = []
+		nouns = MinerHelper.get_nouns(story, span)
 		iscompound = False
 
-		for token in span:
+		for token in nouns:
 			for child in token.children:
 				if child.dep_ == "compound":
 					iscompound = True
