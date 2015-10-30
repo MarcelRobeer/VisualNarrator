@@ -24,7 +24,7 @@ class FreeFormUSPart(UserStoryPart):
 
 class Role(UserStoryPart):
 	def __init__(self):
-		self.functional_role = WithAdjectives()
+		self.functional_role = WithCompound()
 
 
 class Means(FreeFormUSPart):
@@ -43,9 +43,9 @@ class WithMain(object):
 		self.main = []
 
 
-class WithAdjectives(WithMain):
+class WithCompound(WithMain):
 	def __init__(self):
-		self.adjectives = []
+		self.compound = []
 
 
 class WithPhrase(WithMain):

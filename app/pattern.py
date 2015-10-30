@@ -19,6 +19,8 @@ class Constructor:
 		g = Generator(self.onto.classes, self.onto.relationships)
 		return g.prt(self.onto)
 		
+	
+
 	def get_main_verb(self, us):
 		if not us.means.main_verb.phrase:
 			av = string.capwords(us.means.main_verb.main.lemma_)
@@ -74,12 +76,12 @@ class PatternFactory:
 	def make_subtype_functional_role(self, us):
 		func_role = string.capwords(us.role.functional_role.main.lemma_)
 		subtype = ""		
-		compound_adj = []
+		compound_noun = []
 
-		for token in us.role.functional_role.adjectives:
+		for token in us.role.functional_role.compound:
 			if token.dep_ == 'compound':
-				compound_adj.append(token)
-		for ca in compound_adj:
+				compound_noun.append(token)
+		for ca in compound_noun:
 			subtype += string.capwords(ca.lemma_)
 
 		self.constructor.onto.get_class_by_name(func_role, 'FunctionalRole')
@@ -121,8 +123,8 @@ class PatternIdentifier:
 			self.found_patterns.append(Pattern.basic)		
 
 	def identify_desc_func_adj(self, story):
-		if story.role.functional_role.adjectives:
-			for token in story.role.functional_role.adjectives:
+		if story.role.functional_role.compound:
+			for token in story.role.functional_role.compound:
 				if token.dep_ == 'compound':
 					return True
 		return False

@@ -7,7 +7,7 @@ import timeit
 from argparse import ArgumentParser
 from spacy.en import English
 
-from app.input import Reader
+from app.io import Reader, Writer
 from app.miner import StoryMiner
 from app.userstory import UserStory
 from app.helper import Helper, Printer
@@ -61,7 +61,7 @@ def main(filename, systemname, print_us, print_ont, statistics):
 	if print_ont:
 		Printer.print_head("MANCHESTER OWL")
 		print(patterns.make(ontname))
-	outputfile = make_file("GenOnt" + str(systemname), patterns.make(ontname))
+	outputfile = Writer.make_file("GenOnt" + str(systemname), patterns.make(ontname))
 	gen_time = timeit.default_timer() - start_gen_time
 
 	if statistics:
@@ -85,16 +85,6 @@ def output(user_story, doc, miner):
 	#Printer.print_noun_phrases(user_story)
 	miner.mine(user_story)
 	return user_story
-
-def make_file(filename, text):
-	if not os.path.exists("ontologies"):
-    		os.makedirs("ontologies")
-	
-	outputname = "ontologies/" + filename + ".omn"
-	f = open(outputname, 'w')
-	f.write(text)
-	f.close()
-	return outputname
 	
 
 def program():
