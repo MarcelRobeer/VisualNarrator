@@ -249,7 +249,7 @@ class MinerHelper:
 
 		for token in span:
 			if token.tag_ == "NNP" or token.tag_ == "NNPS":
-				token.append(noun)
+				proper.append(token)
 
 		return MinerHelper.get_span(story, proper)
 
