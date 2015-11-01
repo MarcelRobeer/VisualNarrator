@@ -91,6 +91,7 @@ class Printer:
 			print("Entity type: ", token.ent_type, "\n")
 
 	def print_noun_phrases(story):
-		print(story.number, "> Noun Phrases * In the form NP <-- HEAD")
+		print("NOUN PHRASES > US " + str(story.number) + ": " + str(story.text))
 		for chunk in story.data.noun_chunks:
-			print(chunk.text, " <-- ", chunk.root.head.text)
+			print(chunk.root.head.text, " <-- ", chunk.text)
+		print("")

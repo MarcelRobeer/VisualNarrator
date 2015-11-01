@@ -23,7 +23,7 @@ class Constructor:
 
 	def get_main_verb(self, us):
 		if not us.means.main_verb.phrase:
-			av = string.capwords(us.means.main_verb.main.lemma_)
+			av = self.case(us.means.main_verb.main)
 		else:
 			av = self.make_multiword_string(us.means.main_verb.phrase)	
 
@@ -31,7 +31,7 @@ class Constructor:
 
 	def get_direct_object(self, us):
 		if not us.means.direct_object.compound:
-			do = string.capwords(us.means.direct_object.main.lemma_)
+			do = self.case(us.means.direct_object.main)
 		else:
 			do = self.make_multiword_string(us.means.direct_object.compound)
 
@@ -39,10 +39,16 @@ class Constructor:
 
 	def make_multiword_string(self, span):
 		ret = ""
+		
 		for token in span:
-			ret += string.capwords(token.lemma_)
+			ret += self.case(token)
 
 		return ret
+
+	def case(self, token):
+		if 'd' in token.shape_ or 'x' not in token.shape_:			
+			return token.text
+		return string.capwords(token.lemma_)
 	
 	def t(self, token):
 		return token.main.text
@@ -85,8 +91,8 @@ class PatternFactory:
 		for token in us.role.functional_role.compound:
 			if token.dep_ == 'compound':
 				compound_noun.append(token)
-		for ca in compound_noun:
-			subtype += string.capwords(ca.lemma_)
+
+		self.constructor.make_multiword_string(compound_noun)
 
 		self.constructor.onto.get_class_by_name(func_role, 'FunctionalRole')
 		self.constructor.onto.get_class_by_name(subtype + func_role, func_role)
@@ -97,7 +103,7 @@ class PatternFactory:
 		return func_role
 
 	def make_functional_role(self, us):
-		func_role = string.capwords(us.role.functional_role.main.lemma_)
+		func_role = self.constructor.case(us.role.functional_role.main)
 		self.constructor.onto.get_class_by_name(func_role, 'FunctionalRole')
 		self.make_can_relationship(func_role, self.constructor.get_main_verb(us), self.constructor.get_direct_object(us))
 		return func_role
