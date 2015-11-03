@@ -42,14 +42,14 @@ class StoryMiner:
 		for p in pattern:
 			if Helper.is_sublist([MinerHelper.lower(pl) for pl in p], [MinerHelper.lower(sd) for sd in Helper.get_tokens(story_data[0:reasonable_max])]):
 				present_pattern.append(p)		
-		found = False
+
 		found_pattern = []
 		for p in present_pattern:
 			for s in story_data:
 				if MinerHelper.lower(p[0]) == MinerHelper.lower(s.text):
 					found_pattern.append(story_data[s.i:s.i++len(p)]) 
-					found = True					
-		if found:
+					
+		if found_pattern:
 			return max(found_pattern, key=len)
 		return []
 
@@ -158,6 +158,11 @@ class StoryMiner:
 		story.means.verbs = MinerHelper.get_verbs(story, story.means.free_form)
 		story.ends.verbs = MinerHelper.get_verbs(story, story.ends.free_form)
 
+		if story.means.verbs:
+			story.means.phrasal_verbs = MinerHelper.get_phrasal_verbs(story, story.means.verbs)
+		if story.ends.verbs:
+			story.ends.phrasal_verbs = MinerHelper.get_phrasal_verbs(story, story.ends.verbs)
+
 		return story
 
 
@@ -250,10 +255,10 @@ class MinerHelper:
 
 		return MinerHelper.get_span(story, nouns)
 
-	def get_proper_nouns(story, span):
+	def get_proper_nouns(story, nouns):
 		proper = []
 
-		for token in span:
+		for token in nouns:
 			if token.tag_ == "NNP" or token.tag_ == "NNPS":
 				proper.append(token)
 
@@ -292,3 +297,11 @@ class MinerHelper:
 				verbs.append(token)
 
 		return MinerHelper.get_span(story, verbs)
+
+	def get_phrasal_verbs(story, verbs):
+		phrasal_verbs = []
+
+		for token in verbs:
+			phrasal_verbs.append(MinerHelper.get_phrasal_verb(story, token)) 
+
+		return phrasal_verbs

@@ -19,6 +19,7 @@ class FreeFormUSPart(UserStoryPart):
 	def __init__(self):
 		self.free_form = []
 		self.verbs = []
+		self.phrasal_verbs = []
 		self.nouns = []
 		self.proper_nouns = []
 		self.noun_phrases = []

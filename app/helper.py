@@ -48,6 +48,8 @@ class Printer:
 			print("  Free form:", Helper.get_tokens(story.means.free_form))
 			if story.means.verbs:
 				print("    Verbs:", Helper.get_tokens(story.means.verbs))
+				if story.means.phrasal_verbs:
+					print("      Phrasal:", story.means.phrasal_verbs)
 			if story.means.noun_phrases:
 				print("    Noun phrases:", story.means.noun_phrases)
 			if story.means.nouns:
@@ -59,6 +61,8 @@ class Printer:
 			print("  Free form:", Helper.get_tokens(story.ends.free_form))
 			if story.ends.verbs:
 				print("    Verbs:", Helper.get_tokens(story.ends.verbs))
+				if story.ends.phrasal_verbs:
+					print("      Phrasal:", story.ends.phrasal_verbs)
 			if story.ends.noun_phrases:
 				print("    Noun phrases:", story.ends.noun_phrases)
 			if story.ends.nouns:
