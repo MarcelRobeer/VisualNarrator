@@ -6,7 +6,7 @@ https://github.com/gglucass/AQUSA
 
 
 ROLE_INDICATORS = ["As an", "As a", "As"]
-MEANS_INDICATORS = ["I 'm able to", "I am able to", "I want to", "I wish to", "I can"]
+MEANS_INDICATORS = ["I 'm able to", "I am able to", "I want to", "I want to be able to", "I wish to", "I can"]
 ENDS_INDICATORS = ["So that", "In order to", "So", "Because of"]
 
 CONJUNCTIONS = [' and ', '&', '+', ' or ']

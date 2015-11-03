@@ -23,13 +23,17 @@ class StoryMiner:
 		returnlist = []
 		rm = MinerHelper.reasonable_max(story.data)
 		indicators = [['Role', rm[0]], ['Means', rm[1]], ['Ends', rm[2]]]
+
 		for indicator in indicators:
 			found_ind = self.get_one_indicator(story.data, indicator[0], indicator[1])
 			returnlist.append(found_ind)
 			story.indicators.extend(found_ind)
+
 		story.role.indicator = returnlist[0]
 		story.means.indicator = returnlist[1]
 		story.ends.indicator = returnlist[2]
+
+
 		return story
 
 	def get_one_indicator(self, story_data, indicator_type, reasonable_max):
@@ -137,8 +141,10 @@ class StoryMiner:
 			self.get_ff_nouns(story)
 			if story.means.free_form:
 				story.means.proper_nouns = MinerHelper.get_proper_nouns(story, story.means.nouns)
+				story.means.noun_phrases = MinerHelper.get_noun_phrases(story, story.means.free_form)
 			if story.ends.free_form:
 				story.ends.proper_nouns = MinerHelper.get_proper_nouns(story, story.ends.nouns)
+				story.ends.noun_phrases = MinerHelper.get_noun_phrases(story, story.ends.free_form)
 
 		return story
 
@@ -167,8 +173,8 @@ class MinerHelper:
 			rm.append(2)	# Role
 		else:
 			rm.append(l)
-		if l - 1 > 12:		# Means
-			rm.append(12)
+		if l - 1 > 15:		# Means
+			rm.append(15)
 		else:
 			rm.append(l)
 		rm.append(l)		# Ends
@@ -267,6 +273,16 @@ class MinerHelper:
 					compound.append(token)
 
 		return MinerHelper.get_span(story, compound)
+
+	def get_noun_phrases(story, span):
+		phrases = []
+		
+		for chunk in story.data.noun_chunks:
+			chunk = MinerHelper.get_span(story, chunk)
+			if Helper.is_sublist(chunk, span):
+				phrases.append(MinerHelper.get_span(story, chunk))
+
+		return phrases
 
 	def get_verbs(story, span):
 		verbs = []
