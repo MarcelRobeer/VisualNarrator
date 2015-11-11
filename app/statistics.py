@@ -5,11 +5,11 @@ class Statistics:
 		stats = []
 
 		if stories:
-			header = ['US', 'Words', 'Verbs', 'Nouns', 'NPs', 'Ind_R', 'Ind_M', 'Ind_E', 'MV_Type']
+			header = ['US', 'Words', 'Verbs', 'Nouns', 'NPs', 'Ind_R', 'Ind_M', 'Ind_E', 'FR_Type', 'MV_Type', 'DO_Type']
 			stats.append(header)
 
 		for us in stories:
-			stats.append([us.number, us.stats.words, us.stats.verbs, us.stats.nouns, us.stats.noun_phrases, us.stats.indicators.role, us.stats.indicators.means, us.stats.indicators.ends, us.stats.mv_type])
+			stats.append([us.number, us.stats.words, us.stats.verbs, us.stats.nouns, us.stats.noun_phrases, us.stats.indicators.role, us.stats.indicators.means, us.stats.indicators.ends, us.stats.fr_type, us.stats.mv_type, us.stats.do_type])
 
 		return stats
 
@@ -18,7 +18,7 @@ class Counter:
 		story = self.count_basic(story)
 		story = self.count_nps(story)
 		story = self.count_indicators(story)
-		story = self.get_mvtype(story)
+		story = self.get_types(story)
 		return story
 
 	def count_basic(self, story):
@@ -47,9 +47,13 @@ class Counter:
 
 		return story
 
-	def get_mvtype(self, story):
+	def get_types(self, story):
+		if not story.role.functional_role.type == "":
+			story.stats.fr_type = story.role.functional_role.type
 		if not story.means.main_verb.type == "":
 			story.stats.mv_type = story.means.main_verb.type
+		if not story.means.direct_object.type == "":
+			story.stats.do_type = story.means.direct_object.type
 		return story
 
 
@@ -60,6 +64,8 @@ class UserStoryStatistics:
 		self.nouns = 0
 		self.noun_phrases = 0
 		self.mv_type = "-"
+		self.fr_type = "-"
+		self.do_type = "-"
 		self.indicators = IndicatorStats()
 
 

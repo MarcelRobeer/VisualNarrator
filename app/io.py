@@ -25,7 +25,6 @@ class Writer:
 				outputname = potential_outp + str(i) + filetype
 			i += 1
 
-		print(filetype)
 		if filetype == ".csv":			
 			Writer.writecsv(outputname, text)
 		else:

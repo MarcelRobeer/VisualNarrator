@@ -51,8 +51,4 @@ class WithPhrase(WithMain):
 	def __init__(self):
 		self.phrase = []
 		self.compound = []
-
-
-class WithType(WithPhrase):
-	def __init__(self):
 		self.type = ""

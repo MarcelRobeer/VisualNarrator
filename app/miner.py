@@ -33,7 +33,6 @@ class StoryMiner:
 		story.means.indicator = returnlist[1]
 		story.ends.indicator = returnlist[2]
 
-
 		return story
 
 	def get_one_indicator(self, story_data, indicator_type, reasonable_max):
@@ -66,7 +65,9 @@ class StoryMiner:
 		else:
 			potential_without_with = potential_role_part
 		
-		story.role.functional_role.compound = MinerHelper.get_compound_nouns(story, potential_without_with)
+		compound = MinerHelper.get_compound_nouns(story, potential_without_with)
+		story.role.functional_role.compound = compound[0]
+		story.role.functional_role.type = compound[1]
 
 		if story.role.functional_role.compound:
 			story.role.functional_role.main = story.role.functional_role.compound[-1]
@@ -98,7 +99,9 @@ class StoryMiner:
 		story.means.direct_object.main = np[0]
 		story.means.direct_object.phrase = np[1]
 		if story.means.direct_object.phrase:
-			story.means.direct_object.compound = MinerHelper.get_compound_nouns(story, story.means.direct_object.phrase)
+			compound = MinerHelper.get_compound_nouns(story, story.means.direct_object.phrase)
+			story.means.direct_object.compound = compound[0]
+			story.means.direct_object.type = compound[1]
 
 		return story
 
@@ -268,6 +271,7 @@ class MinerHelper:
 		compound = []
 		nouns = MinerHelper.get_nouns(story, span)
 		iscompound = False
+		ctype = ""
 
 		for token in nouns:
 			for child in token.children:
@@ -277,7 +281,7 @@ class MinerHelper:
 				if iscompound:
 					compound.append(token)
 
-		return MinerHelper.get_span(story, compound)
+		return MinerHelper.get_span(story, compound), ctype
 
 	def get_noun_phrases(story, span):
 		phrases = []
