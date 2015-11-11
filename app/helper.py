@@ -18,6 +18,9 @@ class Helper:
 	def get_tokens(tree):
 		return [t.text for t in tree]
 
+	def get_lower_tokens(tree):
+		return [str.lower(t.text) for t in tree]
+
 	def get_idx(tree):
 		return [t.i for t in tree]
 
@@ -25,6 +28,9 @@ class Helper:
 		li = list()
 		li_add = li.append
 		return [ x for x in arr if not (x in li or li_add(x))]
+
+	def text_lower_tokens(a_list):
+		return Helper.text(Helper.get_lower_tokens(a_list))
 
 
 class Printer:
@@ -47,7 +53,7 @@ class Printer:
 		print("User Story", story.number, ":", story.text)
 		print(" >> INDICATORS\n  All:", Helper.get_tokens(story.indicators), "\n    Role:", Helper.get_tokens(story.role.indicator), "\n    Means:", Helper.get_tokens(story.means.indicator), "\n    Ends:", Helper.get_tokens(story.ends.indicator))
 		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", Helper.get_tokens(story.role.functional_role.compound), ")")
-		print(" >> MEANS\n  Action verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", Helper.get_tokens(story.means.direct_object.phrase), "w/ compound", Helper.get_tokens(story.means.direct_object.compound), ")")
+		print(" >> MEANS\n  Main verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", Helper.get_tokens(story.means.direct_object.phrase), "w/ compound", Helper.get_tokens(story.means.direct_object.compound), ")")
 		if story.means.free_form:
 			print("  Free form:", Helper.get_tokens(story.means.free_form))
 			if story.means.verbs:
@@ -109,12 +115,18 @@ class Printer:
 		print("")
 
 	def print_stats(stories, detail):
+		stats = []
+
+		for us in stories:
+			indicators = [us.stats.indicators.role, us.stats.indicators.means, us.stats.indicators.ends]
+			stats.append([us.number, us.stats.words, us.stats.verbs, us.stats.nouns, us.stats.noun_phrases, indicators, us.stats.mv_type])
+
 		if detail:
 			print("\n")
 			Printer.print_subhead("DETAILS")
-			print("US#\tWords\tVerbs\tNouns\tNPs")
-			for us in stories:
-				print(str(us.number) + "\t" + str(us.stats.words) + "\t" + str(us.stats.verbs) + "\t" + str(us.stats.nouns) + "\t" + str(us.stats.noun_phrases))
+			print("US#\tWords\tVerbs\tNouns\tNPs\tInd (R,M,E)\tMV_Type")
+			for r in stats:
+				print(str(r[0]) + "\t" + str(r[1]) + "\t" + str(r[2]) + "\t" + str(r[3]) + "\t" + str(r[4]) + "\t" + str(r[5]) + "\t" + str(r[6]))
 
 		print("\n")		
 		Printer.print_subhead("SUMMARY")
