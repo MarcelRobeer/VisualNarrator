@@ -12,7 +12,7 @@ from app.miner import StoryMiner
 from app.userstory import UserStory
 from app.helper import Helper, Printer
 from app.pattern import Constructor
-#from app.statistics import Counter
+from app.statistics import Counter
 
 
 def main(filename, systemname, print_us, print_ont, statistics):
@@ -31,10 +31,13 @@ def main(filename, systemname, print_us, print_ont, statistics):
 	list_of_fails = []
 
 	errors = ""
+	c = Counter()
 	us_instances = []  # Keeps track of all succesfully created User Stories objects
+
 	for s in set:
 		try:
 			user_story = parse(s, us_id, systemname, nlp, miner)
+			user_story = c.count(user_story)
 			success = success + 1
 			us_instances.append(user_story)		
 		except ValueError as err:
@@ -44,7 +47,7 @@ def main(filename, systemname, print_us, print_ont, statistics):
 	if errors:
 		Printer.print_head("PARSING ERRORS")
 		print(errors)
-
+	
 	parse_time = timeit.default_timer() - start_parse_time
 
 	#Printer.print_head(str(success) + " CREATED USER STORY INSTANCES")	
@@ -61,12 +64,12 @@ def main(filename, systemname, print_us, print_ont, statistics):
 	if print_ont:
 		Printer.print_head("MANCHESTER OWL")
 		print(patterns.make(ontname))
-	outputfile = Writer.make_file("GenOnt" + str(systemname), patterns.make(ontname))
+	outputfile = Writer.make_file("ontologies", str(systemname), "omn", patterns.make(ontname))
 	gen_time = timeit.default_timer() - start_gen_time
 
 	if statistics:
 		Printer.print_head("USER STORY STATISTICS")
-		print("To be implemented...")
+		Printer.print_stats(us_instances, True)
 
 	Printer.print_details(fail, success, nlp_time, parse_time, gen_time)
 	print("File succesfully created at: \"" + str(outputfile) + "\"")	

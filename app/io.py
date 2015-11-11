@@ -10,12 +10,25 @@ class Reader:
 			return lines
 
 class Writer:
-	def make_file(filename, text):
-		if not os.path.exists("ontologies"):
-	    		os.makedirs("ontologies")
+	def make_file(dirname, filename, filetype, text):
+		if not os.path.exists(dirname):
+	    		os.makedirs(dirname)
 	
-		outputname = "ontologies/" + filename + ".omn"
+		outputname = ""
+		filetype = "." + str(filetype)
+		potential_outp = dirname + "/" + filename
+		i = 0
+		
+		while outputname == "":
+			if not os.path.exists(potential_outp + str(i) + filetype):
+				outputname = potential_outp + str(i) + filetype
+			i += 1
+
+		Writer.write(outputname, text)			
+
+		return outputname
+
+	def write(outputname, text):
 		f = open(outputname, 'w')
 		f.write(text)
 		f.close()
-		return outputname

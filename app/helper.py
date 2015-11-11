@@ -33,15 +33,19 @@ class Printer:
 		print("/////", '{:^36}'.format(text) ,"/////")
 		print("////////////////////////////////////////////////")
 
+	def print_subhead(text):
+		print("<----------", '{:^9}'.format(text) ,"---------->")
+
 	def print_us_data(story):
 		phrasetext = ""
 		pnounstext = ""
 		if story.means.main_verb.phrase:
 			phrasetext = "( w/ Type " + story.means.main_verb.type + " phrase " + str(Helper.get_tokens(story.means.main_verb.phrase)) + " )"
 
-		print("\n\n<---------- BEGIN U S ---------->")
+		print("\n\n")
+		Printer.print_subhead("BEGIN U S")
 		print("User Story", story.number, ":", story.text)
-		print(" >> INDICATORS\n  All:", Helper.get_tokens(story.indicators), "\n  Role:", Helper.get_tokens(story.role.indicator), "\n  Means:", Helper.get_tokens(story.means.indicator), "\n  Ends:", Helper.get_tokens(story.ends.indicator))
+		print(" >> INDICATORS\n  All:", Helper.get_tokens(story.indicators), "\n    Role:", Helper.get_tokens(story.role.indicator), "\n    Means:", Helper.get_tokens(story.means.indicator), "\n    Ends:", Helper.get_tokens(story.ends.indicator))
 		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", Helper.get_tokens(story.role.functional_role.compound), ")")
 		print(" >> MEANS\n  Action verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", Helper.get_tokens(story.means.direct_object.phrase), "w/ compound", Helper.get_tokens(story.means.direct_object.compound), ")")
 		if story.means.free_form:
@@ -69,7 +73,7 @@ class Printer:
 				if story.ends.proper_nouns:
 					pnounstext = " ( Proper: " + str(Helper.get_tokens(story.ends.proper_nouns)) + ")"
 				print("    Nouns:", Helper.get_tokens(story.ends.nouns), pnounstext)
-		print("<----------- END U S ----------->")
+		Printer.print_subhead("END U S")
 
 	def print_details(fail, success, nlp_time, parse_time, gen_time):
 		total = success + fail
@@ -103,3 +107,14 @@ class Printer:
 		for chunk in story.data.noun_chunks:
 			print(chunk.root.head.text, " <-- ", chunk.text)
 		print("")
+
+	def print_stats(stories, detail):
+		if detail:
+			print("\n")
+			Printer.print_subhead("DETAILS")
+			print("US#\tWords\tVerbs\tNouns\tNPs")
+			for us in stories:
+				print(str(us.number) + "\t" + str(us.stats.words) + "\t" + str(us.stats.verbs) + "\t" + str(us.stats.nouns) + "\t" + str(us.stats.noun_phrases))
+
+		print("\n")		
+		Printer.print_subhead("SUMMARY")

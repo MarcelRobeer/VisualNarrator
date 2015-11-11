@@ -1,3 +1,5 @@
+from app.statistics import UserStoryStatistics
+
 class UserStory(object):
 	def __init__(self, nr, text):
 		self.number = nr
@@ -8,6 +10,7 @@ class UserStory(object):
 		self.indicators = []
 		self.system = WithMain()
 		self.free_form = []
+		self.stats = UserStoryStatistics()
 
 
 class UserStoryPart(object):
