@@ -25,7 +25,7 @@ Command | Required? | Description
 `-i FILENAME`, `--input FILENAME` | __Yes__ | Specify the file name of the User Story input file
 `-h`, `--help` | No | Show a help message and exit
 `-n SYSTEM_NAME`, `--name SYSTEM_NAME` | No | Specify a name for your system
-`-s`, `--statistics` | No | Show statistics for the User Story set
+`-s`, `--statistics` | No | Show statistics for the User Story set and output these in a .csv file
 `-u`, `--print_us` | No | Print additional information per User Story
 `-o`, `--print_ont` | No | Print the output ontology in the terminal
 `--version` | No | Display the program's version number and exit

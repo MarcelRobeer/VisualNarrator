@@ -12,7 +12,7 @@ from app.miner import StoryMiner
 from app.userstory import UserStory
 from app.helper import Helper, Printer
 from app.pattern import Constructor
-from app.statistics import Counter
+from app.statistics import Statistics, Counter
 
 
 def main(filename, systemname, print_us, print_ont, statistics):
@@ -64,15 +64,24 @@ def main(filename, systemname, print_us, print_ont, statistics):
 	if print_ont:
 		Printer.print_head("MANCHESTER OWL")
 		print(patterns.make(ontname))
+
+	statsarr = Statistics.to_stats_array(us_instances)
+
 	outputfile = Writer.make_file("ontologies", str(systemname), "omn", patterns.make(ontname))
+	outputcsv = Writer.make_file("stats", str(systemname), "csv", statsarr)
+
 	gen_time = timeit.default_timer() - start_gen_time
 
 	if statistics:
 		Printer.print_head("USER STORY STATISTICS")
-		Printer.print_stats(us_instances, True)
+		Printer.print_stats(statsarr, True)
 
 	Printer.print_details(fail, success, nlp_time, parse_time, gen_time)
-	print("File succesfully created at: \"" + str(outputfile) + "\"")	
+	if outputfile:
+		print("Manchester Ontology file succesfully created at: \"" + str(outputfile) + "\"")
+	if outputcsv:
+		print("Statistics file succesfully created at: \"" + str(outputcsv) + "\"")
+		
 
 def parse(text, id, systemname, nlp, miner):
 	no_punct = Helper.remove_punct(text)
@@ -98,7 +107,7 @@ def program():
 	p.add_argument("-n", "--name", dest="system_name", help="your system name", required=False)
 	p.add_argument("-u", "--print_us", dest="print_us", help="print data per user story", action="store_true", default=False)
 	p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology", action="store_true", default=False)
-	p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics", action="store_true", default=False)
+	p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
 	p.add_argument('--version', action='version', version='%(prog)s v0.1 by M.J. Robeer')
 	args = p.parse_args()
 	if not args.system_name or args.system_name == '':

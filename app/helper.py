@@ -114,19 +114,15 @@ class Printer:
 			print(chunk.root.head.text, " <-- ", chunk.text)
 		print("")
 
-	def print_stats(stories, detail):
-		stats = []
-
-		for us in stories:
-			indicators = [us.stats.indicators.role, us.stats.indicators.means, us.stats.indicators.ends]
-			stats.append([us.number, us.stats.words, us.stats.verbs, us.stats.nouns, us.stats.noun_phrases, indicators, us.stats.mv_type])
-
+	def print_stats(stats, detail):
 		if detail:
 			print("\n")
 			Printer.print_subhead("DETAILS")
-			print("US#\tWords\tVerbs\tNouns\tNPs\tInd (R,M,E)\tMV_Type")
 			for r in stats:
-				print(str(r[0]) + "\t" + str(r[1]) + "\t" + str(r[2]) + "\t" + str(r[3]) + "\t" + str(r[4]) + "\t" + str(r[5]) + "\t" + str(r[6]))
+				outline = ""
+				for s in r:
+					outline += str(s) + "; "
+				print(outline)
 
 		print("\n")		
 		Printer.print_subhead("SUMMARY")

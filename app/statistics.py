@@ -1,5 +1,18 @@
 from app.helper import Helper
 
+class Statistics:
+	def to_stats_array(stories):
+		stats = []
+
+		if stories:
+			header = ['US', 'Words', 'Verbs', 'Nouns', 'NPs', 'Ind_R', 'Ind_M', 'Ind_E', 'MV_Type']
+			stats.append(header)
+
+		for us in stories:
+			stats.append([us.number, us.stats.words, us.stats.verbs, us.stats.nouns, us.stats.noun_phrases, us.stats.indicators.role, us.stats.indicators.means, us.stats.indicators.ends, us.stats.mv_type])
+
+		return stats
+
 class Counter:
 	def count(self, story):
 		story = self.count_basic(story)
@@ -35,7 +48,8 @@ class Counter:
 		return story
 
 	def get_mvtype(self, story):
-		story.stats.mv_type = story.means.main_verb.type
+		if not story.means.main_verb.type == "":
+			story.stats.mv_type = story.means.main_verb.type
 		return story
 
 
@@ -45,7 +59,7 @@ class UserStoryStatistics:
 		self.verbs = 0
 		self.nouns = 0
 		self.noun_phrases = 0
-		self.mv_type = ""
+		self.mv_type = "-"
 		self.indicators = IndicatorStats()
 
 
