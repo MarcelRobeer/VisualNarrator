@@ -68,19 +68,24 @@ def main(filename, systemname, print_us, print_ont, statistics):
 	statsarr = Statistics.to_stats_array(us_instances)
 
 	outputfile = Writer.make_file("ontologies", str(systemname), "omn", patterns.make(ontname))
-	outputcsv = Writer.make_file("stats", str(systemname), "csv", statsarr)
+	outputcsv = ""
+	sent_outputcsv = ""
 
 	gen_time = timeit.default_timer() - start_gen_time
 
 	if statistics:
 		Printer.print_head("USER STORY STATISTICS")
-		Printer.print_stats(statsarr, True)
+		Printer.print_stats(statsarr[0], True)
+		Printer.print_stats(statsarr[1], True)
+		outputcsv = Writer.make_file("stats", str(systemname), "csv", statsarr[0])
+		sent_outputcsv = Writer.make_file("stats", str(systemname) + "-sentences", "csv", statsarr[1])
 
 	Printer.print_details(fail, success, nlp_time, parse_time, gen_time)
 	if outputfile:
 		print("Manchester Ontology file succesfully created at: \"" + str(outputfile) + "\"")
 	if outputcsv:
-		print("Statistics file succesfully created at: \"" + str(outputcsv) + "\"")
+		print("General statistics file succesfully created at: \"" + str(outputcsv) + "\"")
+		print("Sentence structure statistics file succesfully created at: \"" + str(sent_outputcsv) + "\"")
 		
 
 def parse(text, id, systemname, nlp, miner):
