@@ -75,18 +75,58 @@ class Counter:
 				else:
 					means.append([token.pos_, token.tag_, token.i])
 
-		for t in role:
-			story.stats.role.general.append(t[0])
-			story.stats.role.detail.append(t[1])
-		for t in means:
-			story.stats.means.general.append(t[0])
-			story.stats.means.detail.append(t[1])
-		for t in ends:
-			story.stats.ends.general.append(t[0])
-			story.stats.ends.detail.append(t[1])
+		return self.replace_nounphrase(story, role, means, ends)
 
-		# TODO: Replace noun phrases with word 'NP'
+	def replace_nounphrase(self, story, role, means, ends):
+		idx = []
+		c = 0
 
+		for chunk in story.data.noun_chunks:
+			if len(chunk) > 1:
+				c += 1
+				for token in chunk:
+					idx.append([token.i, c])
+		
+		story = self.fill('role', story, role, idx)
+		story = self.fill('means', story, means, idx)
+		story = self.fill('ends', story, ends, idx)
+
+		return self.replace(story, idx)
+
+	def fill(self, part, story, list, idx):
+		for t in list:
+			if t[2] not in [i[0] for i in idx]:
+				eval('story.stats.' + part + '.nps.append(t[0])')
+			else:
+				for i in idx:
+					if t[2] == i[0]:
+						eval('story.stats.' + part + '.nps.append(i[1])')
+			eval('story.stats.' + part + '.general.append(t[0])')
+			eval('story.stats.' + part + '.detail.append(t[1])')
+
+		return story
+
+	def replace(self, story, idx):
+		cnt = [i[1] for i in idx]
+		vals = list(set(cnt))
+		
+		for v in vals:
+			if v in story.stats.role.nps:
+				story = self.set_np('role', story, v, cnt)
+			elif v in story.stats.means.nps:
+				story = self.set_np('means', story, v, cnt)
+			elif v in story.stats.ends.nps:
+				story = self.set_np('ends', story, v, cnt)
+
+		story.stats.role.nps = [x for x in story.stats.role.nps if not isinstance(x, int)]
+		story.stats.means.nps = [x for x in story.stats.means.nps if not isinstance(x, int)]
+		story.stats.ends.nps = [x for x in story.stats.ends.nps if not isinstance(x, int)]
+
+		return story
+
+	def set_np(self, part, story, v, cnt):
+		index = eval('story.stats.' + part + '.nps').index(v)
+		eval('story.stats.' + part + '.nps')[index] = 'NOUNPHRASE(' + str(cnt.count(v)) + ')'
 		return story
 
 
