@@ -17,10 +17,9 @@ class Constructor:
 			pf.make_patterns(us)
 
 		g = Generator(self.onto.classes, self.onto.relationships)
-		return g.prt(self.onto)
 		
-	
-
+		return g.prt(self.onto)
+			
 	def get_main_verb(self, us):
 		if not us.means.main_verb.phrase:
 			av = self.case(us.means.main_verb.main)
@@ -33,6 +32,7 @@ class Constructor:
 		if not us.means.direct_object.compound:
 			do = self.case(us.means.direct_object.main)
 		else:
+			print(us.means.direct_object.compound)
 			do = self.make_multiword_string(us.means.direct_object.compound)
 
 		return do
@@ -89,8 +89,7 @@ class PatternFactory:
 		compound_noun = []
 
 		for token in us.role.functional_role.compound:
-			if token.dep_ == 'compound':
-				compound_noun.append(token)
+			compound_noun.append(token)
 
 		self.constructor.make_multiword_string(compound_noun)
 

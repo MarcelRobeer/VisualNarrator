@@ -270,16 +270,14 @@ class MinerHelper:
 	def get_compound_nouns(story, span):
 		compound = []
 		nouns = MinerHelper.get_nouns(story, span)
-		iscompound = False
 		ctype = ""
 
 		for token in nouns:
 			for child in token.children:
-				if child.dep_ == "compound":
-					iscompound = True
+				if child.dep_ == "compound" and child not in compound:
 					compound.append(child)
-				if iscompound:
-					compound.append(token)
+					if token not in compound:
+						compound.append(token)
 
 		return MinerHelper.get_span(story, compound), ctype
 
