@@ -32,7 +32,6 @@ class Constructor:
 		if not us.means.direct_object.compound:
 			do = self.case(us.means.direct_object.main)
 		else:
-			print(us.means.direct_object.compound)
 			do = self.make_multiword_string(us.means.direct_object.compound)
 
 		return do
@@ -79,8 +78,11 @@ class PatternFactory:
 
 		if pattern == Pattern.desc_func_adj:
 			func_role = self.make_subtype_functional_role(us)
-		else:
+		elif pattern == Pattern.basic:
 			func_role = self.make_functional_role(us)
+
+		if pattern == Pattern.parent:
+			self.make_parent(us)
 
 
 	def make_subtype_functional_role(self, us):
@@ -91,7 +93,7 @@ class PatternFactory:
 		for token in us.role.functional_role.compound:
 			compound_noun.append(token)
 
-		self.constructor.make_multiword_string(compound_noun)
+		subtype = self.constructor.make_multiword_string(compound_noun)
 
 		self.constructor.onto.get_class_by_name(func_role, 'FunctionalRole')
 		self.constructor.onto.get_class_by_name(subtype + func_role, func_role)
@@ -100,6 +102,18 @@ class PatternFactory:
 		self.make_can_relationship(subtype + func_role, self.constructor.get_main_verb(us), self.constructor.get_direct_object(us))
 
 		return func_role
+
+	def make_parent(self, us):
+		head = ""
+		compound_noun = []
+
+		for token in us.means.direct_object.compound:
+			compound_noun.append(token)
+			if token.head not in us.means.direct_object.compound:
+				head = string.capwords(token.lemma_)
+
+		cn = self.constructor.make_multiword_string(compound_noun)	
+		self.constructor.onto.get_class_by_name(cn, head)
 
 	def make_functional_role(self, us):
 		func_role = self.constructor.case(us.role.functional_role.main)
@@ -121,6 +135,7 @@ class PatternFactory:
 	def make_relationship(self, pre, rel, post, connector):
 		self.constructor.onto.new_relationship(pre, connector + rel, post)	
 
+
 class PatternIdentifier:
 	def __init__(self):
 		self.found_patterns = []
@@ -129,7 +144,10 @@ class PatternIdentifier:
 		if self.identify_desc_func_adj(story):
 			self.found_patterns.append(Pattern.desc_func_adj)
 		else:
-			self.found_patterns.append(Pattern.basic)		
+			self.found_patterns.append(Pattern.basic)
+
+		if self.identify_parent(story):
+			self.found_patterns.append(Pattern.parent)		
 
 	def identify_desc_func_adj(self, story):
 		if story.role.functional_role.compound:
@@ -138,6 +156,13 @@ class PatternIdentifier:
 					return True
 		return False
 
+	def identify_parent(self, story):
+		if story.means.direct_object.compound:
+			return True
+		return False
+		
+
 class Pattern(Enum):
 	basic = 0
-	desc_func_adj = 1
+	parent = 1
+	desc_func_adj = 2

@@ -75,13 +75,21 @@ class Ontology:
 		new_property = OntProperty(self, "Object", name, domain, range)
 		return new_property
 
-	def get_class_by_name(self, name, parent=''):
+	def get_class_by_name(self, name, parent='', isp=False):
 		if self.classes:
 			for c in self.classes:
 				if name.lower() == c.name.lower() and parent.lower() == c.parent.lower():
 					return c
+				elif name.lower() == c.name.lower() and c.parent.lower() == '' and parent != '' and not isp:
+					self.classes.remove(c)
+
 		new_class = self.make_class(name, parent)
-		self.classes.append(new_class)
+		self.classes.append(new_class)		
+
+		if not isp:
+			parent_class = self.get_class_by_name(parent, '', True)
+			self.classes.append(parent_class)
+	
 		return new_class
 
 	def new_relationship(self, pre, rel, post):
