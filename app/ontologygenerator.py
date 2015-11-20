@@ -93,6 +93,11 @@ class Ontology:
 		return new_class
 
 	def new_relationship(self, pre, rel, post):
+		if self.relationships:
+			for r in self.relationships:
+				if r.domain == pre and r.name == rel and r.range == post:
+					return r
+
 		new_rel = self.make_relationship(rel, pre, post)
 		self.relationships.append(new_rel)
 		return new_rel

@@ -15,7 +15,7 @@ from app.pattern import Constructor
 from app.statistics import Statistics, Counter
 
 
-def main(filename, systemname, print_us, print_ont, statistics):
+def main(filename, systemname, print_us, print_ont, statistics, link):
 	print("Initializing Natural Language Processor . . .")
 	start_nlp_time = timeit.default_timer()
 	nlp = English()
@@ -63,11 +63,11 @@ def main(filename, systemname, print_us, print_ont, statistics):
 	ontname = "http://fakesite.org/" + str(systemname).lower() + ".owl#"
 	if print_ont:
 		Printer.print_head("MANCHESTER OWL")
-		print(patterns.make(ontname))
+		print(patterns.make(ontname, link))
 
 	statsarr = Statistics.to_stats_array(us_instances)
 
-	outputfile = Writer.make_file("ontologies", str(systemname), "omn", patterns.make(ontname))
+	outputfile = Writer.make_file("ontologies", str(systemname), "omn", patterns.make(ontname, link))
 	outputcsv = ""
 	sent_outputcsv = ""
 
@@ -113,11 +113,12 @@ def program():
 	p.add_argument("-u", "--print_us", dest="print_us", help="print data per user story", action="store_true", default=False)
 	p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology", action="store_true", default=False)
 	p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
+	p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
 	p.add_argument('--version', action='version', version='%(prog)s v0.1 by M.J. Robeer')
 	args = p.parse_args()
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics)
+	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link)
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):

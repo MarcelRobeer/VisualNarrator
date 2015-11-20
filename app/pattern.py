@@ -8,17 +8,20 @@ class Constructor:
 		self.nlp = nlp
 		self.user_stories = user_stories
 
-	def make(self, ontname):
+	def make(self, ontname, link):
 		pf = PatternFactory(self)
 
 		self.onto = Ontology(ontname)
 
 		for us in self.user_stories:
-			pf.make_patterns(us)
+			pf.make_patterns(us, link)
 
 		g = Generator(self.onto.classes, self.onto.relationships)
 		
 		return g.prt(self.onto)
+
+	def get_number(self, us):
+		return "US" + str(us.number)
 			
 	def get_main_verb(self, us):
 		if not us.means.main_verb.phrase:
@@ -57,15 +60,18 @@ class PatternFactory:
 	def __init__(self, constructor):
 		self.constructor = constructor
 
-	def make_patterns(self, us):
+	def make_patterns(self, us, link):
 		pi = PatternIdentifier()
-		pi.identify_patterns(us)
+		pi.identify_patterns(us, link)
 
 		# WIP Prints all patterns that are found
 		#print("US", us.number, ">", pi.found_patterns)
 
 		self.constructor.onto.get_class_by_name('Person')
 		self.constructor.onto.get_class_by_name('FunctionalRole', 'Person')
+
+		if link:
+			self.constructor.onto.get_class_by_name('UserStory')
 
 		for fp in pi.found_patterns:
 			self.construct_pattern(us, fp)
@@ -84,6 +90,15 @@ class PatternFactory:
 		if pattern == Pattern.parent:
 			self.make_parent(us)
 
+		if pattern == Pattern.link_to_US:
+			self.link(us)
+
+	def link(self, us):
+		nr = self.constructor.get_number(us)
+		self.constructor.onto.get_class_by_name(nr, 'UserStory')
+		
+		for cl in self.constructor.onto.classes:
+			self.make_relationship(cl.name, nr, nr, 'partOf')			
 
 	def make_subtype_functional_role(self, us):
 		func_role = string.capwords(us.role.functional_role.main.lemma_)
@@ -140,7 +155,9 @@ class PatternIdentifier:
 	def __init__(self):
 		self.found_patterns = []
 
-	def identify_patterns(self, story):
+	def identify_patterns(self, story, link_to_us):
+		if link_to_us:
+			self.found_patterns.append(Pattern.link_to_US)
 		if self.identify_desc_func_adj(story):
 			self.found_patterns.append(Pattern.desc_func_adj)
 		else:
@@ -163,6 +180,7 @@ class PatternIdentifier:
 		
 
 class Pattern(Enum):
-	basic = 0
-	parent = 1
-	desc_func_adj = 2
+	link_to_US = 0
+	basic = 1
+	parent = 2
+	desc_func_adj = 3

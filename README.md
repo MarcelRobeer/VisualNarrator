@@ -28,6 +28,7 @@ Command | Required? | Description
 `-s`, `--statistics` | No | Show statistics for the User Story set and output these in .csv files
 `-u`, `--print_us` | No | Print additional information per User Story
 `-o`, `--print_ont` | No | Print the output ontology in the terminal
+`-l`, `--link` | No | Link all ontology classes to their respective User Story for usage in the set analysis
 `--version` | No | Display the program's version number and exit
 
 ### Example usage
