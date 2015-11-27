@@ -2,14 +2,14 @@ import numpy as np
 from spacy import attrs
 
 class Matrix:
-	def __init__(self):
+	def __init__(self, threshold, base, weight):
 		self.matrix = []
-		self.threshold = 10
-		self.VAL_FUNC_ROLE = 10
-		self.VAL_DIRECT_OBJ = 10
-		self.VAL_MEANS_NOUN = 7
-		self.VAL_ENDS_NOUN = 5
-		self.VAL_COMPOUND = 0.66
+		self.threshold = threshold
+		self.VAL_FUNC_ROLE = base * weight[0]
+		self.VAL_DIRECT_OBJ = base * weight[1]
+		self.VAL_MEANS_NOUN = base * weight[2]
+		self.VAL_ENDS_NOUN = base * weight[3]
+		self.VAL_COMPOUND = weight[4]
 
 	def generate(self, stories, set, nlp):
 		set = ' '.join(set.split())
@@ -31,10 +31,18 @@ class Matrix:
 		classes = []
 		[classes.append(row[0]) for row in potential_classes if row[1] >= self.threshold]
 
+		print("Threshold:\t\t\t", self.threshold)
+		print("Functional role weight:\t\t", self.VAL_FUNC_ROLE)
+		print("Direct object weight:\t\t", self.VAL_DIRECT_OBJ)
+		print("Noun in free form means weight:\t", self.VAL_MEANS_NOUN)
+		print("Noun in free form ends weight:\t", self.VAL_ENDS_NOUN)
+		print("Compound weight:\t\t", self.VAL_COMPOUND, "\n\n")
+
+
 		print("Potential classes")
 		print(potential_classes)
 
-		print("List of classes ( threshold =", self.threshold, ")")
+		print("\nList of classes ( threshold =", self.threshold, ")")
 		print(classes)
 
 		

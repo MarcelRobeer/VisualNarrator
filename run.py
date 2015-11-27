@@ -16,7 +16,7 @@ from app.pattern import Constructor
 from app.statistics import Statistics, Counter
 
 
-def main(filename, systemname, print_us, print_ont, statistics, link):
+def main(filename, systemname, print_us, print_ont, statistics, link, threshold, base, weights):
 	print("Initializing Natural Language Processor . . .")
 	start_nlp_time = timeit.default_timer()
 	nlp = English()
@@ -34,7 +34,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link):
 	errors = ""
 	c = Counter()
 	us_instances = []  # Keeps track of all succesfully created User Stories objects
-	matrix = Matrix()
+	matrix = Matrix(threshold, base, weights)
 
 	for s in set:
 		try:
@@ -111,20 +111,49 @@ def output(user_story, doc, miner):
 	
 
 def program():
-	p = ArgumentParser(prog="Obtaining User Story Information", description='Generate Manchester Ontology from User Story set.')
-	p.add_argument("-i", "--input", dest="filename", required=True,
+	p = ArgumentParser(
+		description="{*} A file should be input using the '-i'/'--input' argument.",
+		usage='''run.py [<args>]
+
+		This program has multiple functionalities:
+			(1) Miner user story information
+			(2) Generate an ontology from a user story set
+			(3) Get statistics for a user story set''',
+		epilog='''{*} Created for a bachelor thesis in Information Science.
+			M.J. Robeer, 2015-2016''')
+
+	p.add_argument('--version', action='version', version='Bachelor Thesis v0.6 BETA by M.J. Robeer')
+
+	r_p = p.add_argument_group("required arguments")
+	r_p.add_argument("-i", "--input", dest="filename", required=True,
                     help="input file with user stories", metavar="FILE",
                     type=lambda x: is_valid_file(p, x))
-	p.add_argument("-n", "--name", dest="system_name", help="your system name", required=False)
-	p.add_argument("-u", "--print_us", dest="print_us", help="print data per user story", action="store_true", default=False)
-	p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology", action="store_true", default=False)
-	p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
-	p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
-	p.add_argument('--version', action='version', version='%(prog)s v0.1 by M.J. Robeer')
+
+	g_p = p.add_argument_group("general arguments (optional)")
+	g_p.add_argument("-n", "--name", dest="system_name", help="your system name", required=False)
+	g_p.add_argument("-u", "--print_us", dest="print_us", help="print data per user story", action="store_true", default=False)
+	g_p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology", action="store_true", default=False)
+	g_p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
+
+	s_p = p.add_argument_group("statistics arguments (optional)")
+	s_p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
+
+	w_p = p.add_argument_group("ontology generation tuning (optional)")
+	w_p.add_argument("-t", dest="threshold", help="set threshold for ontology generation (INT, default = 10)", type=int, default=10)
+	w_p.add_argument("-b", dest="base_weight", help="set the base weight (INT, default = 10)", type=int, default=10)	
+	w_p.add_argument("-wfr", dest="weight_func_role", help="weight of functional role (FLOAT, default = 1.0)", type=float, default=1)
+	w_p.add_argument("-wdo", dest="weight_direct_obj", help="weight of direct object (FLOAT, default = 1.0)", type=float, default=1)
+	w_p.add_argument("-wffm", dest="weight_ff_means", help="weight of noun in free form means (FLOAT, default = 0.7)", type=float, default=0.5)
+	w_p.add_argument("-wffe", dest="weight_ff_ends", help="weight of noun in free form ends (FLOAT, default = 0.5)", type=float, default=0.7)		
+	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)		
+	
 	args = p.parse_args()
+
+	weights = [args.weight_func_role, args.weight_direct_obj, args.weight_ff_means, args.weight_ff_ends, args.weight_compound]
+
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link)
+	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.base_weight, args.threshold, weights)
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
