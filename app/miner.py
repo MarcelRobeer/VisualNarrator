@@ -8,15 +8,19 @@ class StoryMiner:
 			raise ValueError('Could not find a role indicator', 0)
 		if not story.means.indicator:
 			raise ValueError('Could not find a means indicator', 1)
+
 		story = self.get_functional_role(story)
 		if not story.role.functional_role:
 			raise ValueError('Could not find a functional role', 2)
+
 		story = self.get_main_verb(story)
 		if not story.means.main_verb.main:
 			raise ValueError('Could not find a main verb', 3)
+
 		story = self.get_direct_object(story)
 		if not story.means.direct_object.main:
 			raise ValueError('Could not find a direct object', 4)	
+
 		story = self.get_free_form(story)
 
 	def get_indicators(self, story):

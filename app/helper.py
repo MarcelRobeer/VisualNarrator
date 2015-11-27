@@ -81,7 +81,7 @@ class Printer:
 				print("    Nouns:", Helper.get_tokens(story.ends.nouns), pnounstext)
 		Printer.print_subhead("END U S")
 
-	def print_details(fail, success, nlp_time, parse_time, gen_time):
+	def print_details(fail, success, nlp_time, parse_time, matr_time, gen_time):
 		total = success + fail
 		if success is not 0:
 			frate = fail/success
@@ -89,7 +89,7 @@ class Printer:
 			frate = 1
 		Printer.print_head("RUN DETAILS")
 		print("User Stories:\n  # Total parsed:", total,"\n  # Succesfully parsed:", success, "\n  # Failed at parsing:", fail, "\n  Failure rate:", frate, "(", round(frate * 100, 2), "% )")
-		print("Time elapsed:\n  NLP instantiate:", nlp_time, "s\n  Mining User Stories:", parse_time, "s\n  Generating Manchester Ontology:", gen_time, "s\n")
+		print("Time elapsed:\n  NLP instantiate:", nlp_time, "s\n  Mining User Stories:", parse_time, "s\n  Creating factor matrix:", matr_time, "s\n  Generating Manchester Ontology:", gen_time, "s\n")
 
 	def print_dependencies(story):
 		print("---------- U S", story.number, "----------")

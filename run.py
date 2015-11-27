@@ -9,6 +9,7 @@ from spacy.en import English
 
 from app.io import Reader, Writer
 from app.miner import StoryMiner
+from app.matrix import Matrix
 from app.userstory import UserStory
 from app.helper import Helper, Printer
 from app.pattern import Constructor
@@ -33,6 +34,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link):
 	errors = ""
 	c = Counter()
 	us_instances = []  # Keeps track of all succesfully created User Stories objects
+	matrix = Matrix()
 
 	for s in set:
 		try:
@@ -47,8 +49,12 @@ def main(filename, systemname, print_us, print_ont, statistics, link):
 	if errors:
 		Printer.print_head("PARSING ERRORS")
 		print(errors)
-	
+
 	parse_time = timeit.default_timer() - start_parse_time
+
+	start_matr_time = timeit.default_timer()
+	matrix.generate(us_instances, ''.join(set), nlp)
+	matr_time = timeit.default_timer() - start_matr_time
 
 	#Printer.print_head(str(success) + " CREATED USER STORY INSTANCES")	
 	#print(us_instances)
@@ -80,7 +86,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link):
 		outputcsv = Writer.make_file("stats", str(systemname), "csv", statsarr[0])
 		sent_outputcsv = Writer.make_file("stats", str(systemname) + "-sentences", "csv", statsarr[1])
 
-	Printer.print_details(fail, success, nlp_time, parse_time, gen_time)
+	Printer.print_details(fail, success, nlp_time, parse_time, matr_time, gen_time)
 	if outputfile:
 		print("Manchester Ontology file succesfully created at: \"" + str(outputfile) + "\"")
 	if outputcsv:
