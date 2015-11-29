@@ -88,8 +88,8 @@ class Printer:
 		else:
 			frate = 1
 		Printer.print_head("RUN DETAILS")
-		print("User Stories:\n  # Total parsed:", total,"\n  # Succesfully parsed:", success, "\n  # Failed at parsing:", fail, "\n  Failure rate:", frate, "(", round(frate * 100, 2), "% )")
-		print("Time elapsed:\n  NLP instantiate:", nlp_time, "s\n  Mining User Stories:", parse_time, "s\n  Creating factor matrix:", matr_time, "s\n  Generating Manchester Ontology:", gen_time, "s\n")
+		print("User Stories:\n  # Total parsed:\t\t ", total,"\n    [+] Success:\t\t ", success, "\n    [-] Failed:\t\t\t ", fail, "\n  Failure rate:\t\t\t ", frate, "(", round(frate * 100, 2), "% )")
+		print("Time elapsed:\n  NLP instantiate:\t\t ", round(nlp_time, 5), "s\n  Mining User Stories:\t\t ", round(parse_time, 5), "s\n  Creating factor matrix:\t ", round(matr_time, 5), "s\n  Generating Manchester Ontology:", round(gen_time, 5), "s\n")
 
 	def print_dependencies(story):
 		print("---------- U S", story.number, "----------")
@@ -126,3 +126,14 @@ class Printer:
 
 		print("\n")		
 		Printer.print_subhead("SUMMARY")
+
+	def print_gen_settings(matrix, base):
+		Printer.print_head("ONTOLOGY GENERATOR SETTINGS")
+		print("Threshold:\t\t\t", matrix.threshold)
+		print("Absolute Weights ( base =", base ,"):")
+		print("  Functional role:\t\t", matrix.VAL_FUNC_ROLE)
+		print("  Direct object:\t\t", matrix.VAL_DIRECT_OBJ)
+		print("  Noun in free form means:\t", matrix.VAL_MEANS_NOUN)
+		print("  Noun in free form ends:\t", matrix.VAL_ENDS_NOUN)
+		print("Relative Weights:")
+		print("  Compound (compared to parent):", matrix.VAL_COMPOUND)

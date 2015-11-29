@@ -31,20 +31,11 @@ class Matrix:
 		classes = []
 		[classes.append(row[0]) for row in potential_classes if row[1] >= self.threshold]
 
-		print("Threshold:\t\t\t", self.threshold)
-		print("Functional role weight:\t\t", self.VAL_FUNC_ROLE)
-		print("Direct object weight:\t\t", self.VAL_DIRECT_OBJ)
-		print("Noun in free form means weight:\t", self.VAL_MEANS_NOUN)
-		print("Noun in free form ends weight:\t", self.VAL_ENDS_NOUN)
-		print("Compound weight:\t\t", self.VAL_COMPOUND, "\n\n")
-
-
 		print("Potential classes")
 		print(potential_classes)
 
 		print("\nList of classes ( threshold =", self.threshold, ")")
 		print(classes)
-
 		
 	def unique(self, arr):
 		arr = np.ascontiguousarray(arr)

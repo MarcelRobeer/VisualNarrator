@@ -86,6 +86,8 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		outputcsv = Writer.make_file("stats", str(systemname), "csv", statsarr[0])
 		sent_outputcsv = Writer.make_file("stats", str(systemname) + "-sentences", "csv", statsarr[1])
 
+	Printer.print_gen_settings(matrix, base)
+
 	Printer.print_details(fail, success, nlp_time, parse_time, matr_time, gen_time)
 	if outputfile:
 		print("Manchester Ontology file succesfully created at: \"" + str(outputfile) + "\"")
