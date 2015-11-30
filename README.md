@@ -9,10 +9,10 @@ Optionally, statistics about the User Story set can be output.
 ## Dependencies
 The main dependency for the program is its Natural Language Processor (NLP) _spaCy_. To run the program, you need:
 
-* Python >= 3.4
-* spaCy >= 0.93 (currently under development using v0.99)
-* numPy >= 1.10.1
-* pandas >= 0.17.1
+* _Python_ >= 3.4
+* _spaCy_ >= 0.93 (currently under development using v0.99)
+* _NumPy_ >= 1.10.1
+* _Pandas_ >= 0.17.1
 
 ## Running the Project
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:
