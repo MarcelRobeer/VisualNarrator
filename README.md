@@ -11,6 +11,8 @@ The main dependency for the program is its Natural Language Processor (NLP) _spa
 
 * Python >= 3.4
 * spaCy >= 0.93 (currently under development using v0.97)
+* numPy >= 1.10.1
+* pandas >= 0.17.1
 
 ## Running the Project
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:
@@ -19,10 +21,10 @@ Running the program can only be done from the command line. With the program mai
 python run.py <commands>
 ```
 
-### Commands
+#### Commands
 The most important command is `-i` (or `--input`) to specify the location of the text input file. The table below provides an overview of the currently implemented commands.
 
-#### General commands
+##### General commands
 
 Command | Required? | Description
 --------|-----------|------------
@@ -34,7 +36,7 @@ Command | Required? | Description
 `-l`, `--link` | No | Link all ontology classes to their respective User Story for usage in the set analysis
 `--version` | No | Display the program's version number and exit
 
-#### Statistics arguments
+##### Statistics arguments
 Command | Required? | Description
 --------|-----------|------------
 `-s`, `--statistics` | No | Show statistics for the User Story set and output these in .csv files
