@@ -44,13 +44,13 @@ Command | Required? | Description
 ##### Ontology generation tuning (_optional_)
 Command | Description | Type | Default
 --------|-----------|------------|--------
-`-t THRESHOLD` | Set the threshold for the selected classes | FLOAT | 1.0
-`-b BASE_WEIGHT` | Set the base weight | INT | 1
-`-wfr WEIGHT_FUNC_ROLE` | Weight of functional role | FLOAT | 1.0
-`-wdo WEIGHT_DIRECT_OBJ` | Weight of direct object | FLOAT | 1.0
-`-wffm WEIGHT_FF_MEANS` | Weight of noun in free form means | FLOAT | 0.7
-`-wffe WEIGHT_FF_ENDS` | Weight of noun in free form ends | FLOAT | 0.5
-`-wcompound WEIGHT_COMPOUND` | Weight of nouns in compound compared to head | FLOAT | 0.66
+`-t THRESHOLD` | Set the threshold for the selected classes | _FLOAT_ | 1.0
+`-b BASE_WEIGHT` | Set the base weight | _INT_ | 1
+`-wfr WEIGHT_FUNC_ROLE` | Weight of functional role | _FLOAT_ | 1.0
+`-wdo WEIGHT_DIRECT_OBJ` | Weight of direct object | _FLOAT_ | 1.0
+`-wffm WEIGHT_FF_MEANS` | Weight of noun in free form means | _FLOAT_ | 0.7
+`-wffe WEIGHT_FF_ENDS` | Weight of noun in free form ends | _FLOAT_ | 0.5
+`-wcompound WEIGHT_COMPOUND` | Weight of nouns in compound compared to head | _FLOAT_ | 0.66
 
 ### Example usage
 
