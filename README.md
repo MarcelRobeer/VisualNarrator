@@ -10,7 +10,7 @@ Optionally, statistics about the User Story set can be output.
 The main dependency for the program is its Natural Language Processor (NLP) _spaCy_. To run the program, you need:
 
 * Python >= 3.4
-* spaCy >= 0.93 (currently under development using v0.97)
+* spaCy >= 0.93 (currently under development using v0.99)
 * numPy >= 1.10.1
 * pandas >= 0.17.1
 
@@ -21,10 +21,10 @@ Running the program can only be done from the command line. With the program mai
 python run.py <commands>
 ```
 
-#### Commands
-The most important command is `-i` (or `--input`) to specify the location of the text input file. The table below provides an overview of the currently implemented commands.
+#### Arguments
+The most important arguments is `-i` (or `--input`) to specify the location of the text input file. The table below provides an overview of the currently implemented arguments.
 
-##### General commands
+##### General arguments
 
 Command | Required? | Description
 --------|-----------|------------
@@ -41,7 +41,7 @@ Command | Required? | Description
 --------|-----------|------------
 `-s`, `--statistics` | No | Show statistics for the User Story set and output these in .csv files
 
-#### Ontology generation tuning (optional)
+##### Ontology generation tuning (_optional_)
 Command | Description | Type | Default
 --------|-----------|------------|--------
 `-t THRESHOLD` | Set the threshold for the selected classes | FLOAT | 1.0
