@@ -18,7 +18,7 @@ The main dependency for the program is its Natural Language Processor (NLP) _spa
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:
 
 ```
-python run.py <commands>
+python run.py <arguments>
 ```
 
 #### Arguments
