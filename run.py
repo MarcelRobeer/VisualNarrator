@@ -117,10 +117,10 @@ def program():
 		description="{*} A file should be input using the '-i'/'--input' argument.",
 		usage='''run.py [<args>]
 
-		This program has multiple functionalities:
-			(1) Miner user story information
-			(2) Generate an ontology from a user story set
-			(3) Get statistics for a user story set''',
+	This program has multiple functionalities:
+		(1) Mine user story information
+		(2) Generate an ontology from a user story set
+		(3) Get statistics for a user story set''',
 		epilog='''{*} Created for a bachelor thesis in Information Science.
 			M.J. Robeer, 2015-2016''')
 
@@ -141,8 +141,8 @@ def program():
 	s_p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
 
 	w_p = p.add_argument_group("ontology generation tuning (optional)")
-	w_p.add_argument("-t", dest="threshold", help="set threshold for ontology generation (INT, default = 10)", type=int, default=10)
-	w_p.add_argument("-b", dest="base_weight", help="set the base weight (INT, default = 10)", type=int, default=10)	
+	w_p.add_argument("-t", dest="threshold", help="set threshold for ontology generation (INT, default = 1.0)", type=float, default=1.0)
+	w_p.add_argument("-b", dest="base_weight", help="set the base weight (INT, default = 1)", type=int, default=1)	
 	w_p.add_argument("-wfr", dest="weight_func_role", help="weight of functional role (FLOAT, default = 1.0)", type=float, default=1)
 	w_p.add_argument("-wdo", dest="weight_direct_obj", help="weight of direct object (FLOAT, default = 1.0)", type=float, default=1)
 	w_p.add_argument("-wffm", dest="weight_ff_means", help="weight of noun in free form means (FLOAT, default = 0.7)", type=float, default=0.5)

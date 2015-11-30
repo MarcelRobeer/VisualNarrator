@@ -1,4 +1,5 @@
 import string
+import numpy as np
 from enum import Enum
 
 from app.ontologygenerator import Generator, Ontology
@@ -17,6 +18,8 @@ class Constructor:
 			pf.make_patterns(us, link)
 
 		g = Generator(self.onto.classes, self.onto.relationships)
+
+		print(np.zeros(10, dtype=[('pre', object),('rel', object),('post', object)]))
 		
 		return g.prt(self.onto)
 
