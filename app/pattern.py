@@ -1,16 +1,20 @@
 import string
 import numpy as np
+import pandas
 from enum import Enum
 
 from app.ontologygenerator import Generator, Ontology
+from app.helper import Helper
 
 class Constructor:
-	def __init__(self, nlp, user_stories):
+	def __init__(self, nlp, user_stories, matrix):
 		self.nlp = nlp
 		self.user_stories = user_stories
+		self.weights = matrix['sum'].reset_index().values.tolist()
 
 	def make(self, ontname, link):
 		pf = PatternFactory(self)
+		weight_objects = WeightMaker.make(self.user_stories, self.weights)
 
 		self.onto = Ontology(ontname)
 
@@ -19,16 +23,15 @@ class Constructor:
 
 		g = Generator(self.onto.classes, self.onto.relationships)
 
+		for wo in weight_objects:
+			print(wo.case, wo.weight, "\t\t", wo.token.i)
 		print(np.zeros(10, dtype=[('pre', object),('rel', object),('post', object)]))
 		
 		return g.prt(self.onto)
-
-	def get_number(self, us):
-		return "US" + str(us.number)
 			
 	def get_main_verb(self, us):
 		if not us.means.main_verb.phrase:
-			av = self.case(us.means.main_verb.main)
+			av = Helper.case(us.means.main_verb.main)
 		else:
 			av = self.make_multiword_string(us.means.main_verb.phrase)	
 
@@ -36,7 +39,7 @@ class Constructor:
 
 	def get_direct_object(self, us):
 		if not us.means.direct_object.compound:
-			do = self.case(us.means.direct_object.main)
+			do = Helper.case(us.means.direct_object.main)
 		else:
 			do = self.make_multiword_string(us.means.direct_object.compound)
 
@@ -46,17 +49,39 @@ class Constructor:
 		ret = ""
 		
 		for token in span:
-			ret += self.case(token)
+			ret += Helper.case(token)
 
 		return ret
-
-	def case(self, token):
-		if 'd' in token.shape_ or 'x' not in token.shape_:			
-			return token.text
-		return string.capwords(token.lemma_)
 	
 	def t(self, token):
 		return token.main.text
+
+class WeightedToken(object):
+	def __init__(self, token, weight):
+		self.token = token
+		self.case = Helper.case(token)
+		self.weight = weight
+
+class WeightMaker:
+	def make(stories, weights):
+		weighted_tokens = []
+		indices = [weight[0] for weight in weights]
+		w = 0.0
+		c = ""
+
+		for story in stories:
+			for token in story.data:
+				c = Helper.case(token)
+				if c in indices:
+					for weight in weights:
+						if weight[0] == c:
+							w = weight[1]
+							break
+				else:
+					w = 0.0
+			weighted_tokens.append(WeightedToken(token, w))
+
+		return weighted_tokens
 
 
 class PatternFactory:
@@ -97,7 +122,7 @@ class PatternFactory:
 			self.link(us)
 
 	def link(self, us):
-		nr = self.constructor.get_number(us)
+		nr = Helper.get_number(us)
 		self.constructor.onto.get_class_by_name(nr, 'UserStory')
 		
 		for cl in self.constructor.onto.classes:
@@ -134,7 +159,7 @@ class PatternFactory:
 		self.constructor.onto.get_class_by_name(cn, head)
 
 	def make_functional_role(self, us):
-		func_role = self.constructor.case(us.role.functional_role.main)
+		func_role = Helper.case(us.role.functional_role.main)
 		self.constructor.onto.get_class_by_name(func_role, 'FunctionalRole')
 		self.make_can_relationship(func_role, self.constructor.get_main_verb(us), self.constructor.get_direct_object(us))
 		return func_role

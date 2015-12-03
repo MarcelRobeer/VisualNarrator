@@ -53,7 +53,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 	parse_time = timeit.default_timer() - start_parse_time
 
 	start_matr_time = timeit.default_timer()
-	matrix.generate(us_instances, ''.join(set), nlp)
+	m = matrix.generate(us_instances, ''.join(set), nlp)
 	matr_time = timeit.default_timer() - start_matr_time
 
 	#Printer.print_head(str(success) + " CREATED USER STORY INSTANCES")	
@@ -65,7 +65,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 			Printer.print_us_data(us)
 
 	start_gen_time = timeit.default_timer()
-	patterns = Constructor(nlp, us_instances)
+	patterns = Constructor(nlp, us_instances, m)
 	ontname = "http://fakesite.org/" + str(systemname).lower() + ".owl#"
 	if print_ont:
 		Printer.print_head("MANCHESTER OWL")
@@ -73,9 +73,12 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 
 	statsarr = Statistics.to_stats_array(us_instances)
 
-	outputfile = Writer.make_file("ontologies", str(systemname), "omn", patterns.make(ontname, link))
+	w = Writer()
+
+	outputfile = w.make_file("ontologies", str(systemname), "omn", patterns.make(ontname, link))
 	outputcsv = ""
 	sent_outputcsv = ""
+	matrixcsv = ""
 
 	gen_time = timeit.default_timer() - start_gen_time
 
@@ -83,8 +86,12 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		Printer.print_head("USER STORY STATISTICS")
 		Printer.print_stats(statsarr[0], True)
 		Printer.print_stats(statsarr[1], True)
-		outputcsv = Writer.make_file("stats", str(systemname), "csv", statsarr[0])
-		sent_outputcsv = Writer.make_file("stats", str(systemname) + "-sentences", "csv", statsarr[1])
+		Printer.print_subhead("Term - by - User Story Matrix ( Terms w/ total weight 0 hidden )")
+		hide_zero = m[(m['sum'] > 0)]
+		print(hide_zero)
+		outputcsv = w.make_file("stats", str(systemname), "csv", statsarr[0])
+		matrixcsv = w.make_file("stats", str(systemname) + "-term_by_US_matrix", "csv", m)
+		sent_outputcsv = w.make_file("stats", str(systemname) + "-sentences", "csv", statsarr[1])
 
 	Printer.print_gen_settings(matrix, base)
 
@@ -93,6 +100,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		print("Manchester Ontology file succesfully created at: \"" + str(outputfile) + "\"")
 	if outputcsv:
 		print("General statistics file succesfully created at: \"" + str(outputcsv) + "\"")
+		print("Term-by-User Story Matrix succesfully created at: \"" + str(matrixcsv) + "\"")
 		print("Sentence structure statistics file succesfully created at: \"" + str(sent_outputcsv) + "\"")
 		
 

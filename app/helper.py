@@ -1,4 +1,5 @@
 import re
+import string
 
 class Helper:
 	def split_list(a_list, nr):
@@ -23,6 +24,11 @@ class Helper:
 
 	def get_idx(tree):
 		return [t.i for t in tree]
+
+	def case(token):
+		if 'd' in token.shape_ or 'x' not in token.shape_ or token.shape_[:2] == 'xX':			
+			return token.text
+		return string.capwords(token.lemma_)
 
 	def remove_duplicates(self, arr):
 		li = list()

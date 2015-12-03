@@ -10,7 +10,7 @@ Optionally, statistics about the User Story set can be output.
 The main dependency for the program is its Natural Language Processor (NLP) [spaCy](http://spacy.io/). To run the program, you need:
 
 * _Python_ >= 3.4
-* _spaCy_ >= 0.93 (currently under development using v0.99)
+* _spaCy_ >= 0.93 (currently under development using v0.98)
 * _NumPy_ >= 1.10.1
 * _Pandas_ >= 0.17.1
 

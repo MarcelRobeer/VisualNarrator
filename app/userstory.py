@@ -12,6 +12,9 @@ class UserStory(object):
 		self.free_form = []
 		self.stats = UserStoryStatistics()
 
+	def txtnr(self):
+		return "US" + str(self.number)
+
 
 class UserStoryPart(object):
 	def __init__(self):
