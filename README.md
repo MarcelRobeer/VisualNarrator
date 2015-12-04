@@ -30,7 +30,9 @@ Argument | Required? | Description
 `INPUT FILE` | __Yes__ | Specify the file name of the User Story input file
 
 
-##### General arguments
+##### _Optional_ arguments
+
+####### 1. General
 
 Argument | Required? | Description
 --------|-----------|------------
@@ -41,12 +43,12 @@ Argument | Required? | Description
 `-l`, `--link` | No | Link all ontology classes to their respective User Story for usage in the set analysis
 `--version` | No | Display the program's version number and exit
 
-##### Statistics arguments
+####### 2. Statistics
 Argument | Required? | Description
 --------|-----------|------------
 `-s`, `--statistics` | No | Show statistics for the User Story set and output these in .csv files
 
-##### Ontology generation tuning (_optional_)
+####### 3. Ontology generation tuning
 Argument | Description | Type | Default
 --------|-----------|------------|--------
 `-t THRESHOLD` | Set the threshold for the selected classes | _FLOAT_ | 1.0
