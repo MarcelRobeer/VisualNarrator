@@ -29,6 +29,7 @@ class FreeFormUSPart(UserStoryPart):
 		self.nouns = []
 		self.proper_nouns = []
 		self.noun_phrases = []
+		self.compounds = []
 
 class Role(UserStoryPart):
 	def __init__(self):

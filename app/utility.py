@@ -28,6 +28,16 @@ class NLPUtility:
 			return token.text
 		return string.capwords(token.lemma_)
 
+	def get_case(concept):
+		c = ""
+		if type(concept) is list:
+			c = ""
+			for wt in concept:
+				c += wt.case
+		else:
+			c = concept.case
+		return c
+
 	def get_tokens(tree):
 		return [t.text for t in tree]
 
@@ -62,42 +72,45 @@ class Printer:
 		print(" >> INDICATORS\n  All:", NLPUtility.get_tokens(story.indicators), "\n    Role:", NLPUtility.get_tokens(story.role.indicator), "\n    Means:", NLPUtility.get_tokens(story.means.indicator), "\n    Ends:", NLPUtility.get_tokens(story.ends.indicator))
 		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", NLPUtility.get_tokens(story.role.functional_role.compound), "(", story.role.functional_role.type, ") )")
 		print(" >> MEANS\n  Main verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", NLPUtility.get_tokens(story.means.direct_object.phrase), "w/ compound", NLPUtility.get_tokens(story.means.direct_object.compound), "(", story.means.direct_object.type, ") )")
-		if story.means.free_form:
-			print("  Free form:", NLPUtility.get_tokens(story.means.free_form))
-			if story.means.verbs:
-				print("    Verbs:", NLPUtility.get_tokens(story.means.verbs))
-				if story.means.phrasal_verbs:
-					print("      Phrasal:", story.means.phrasal_verbs)
-			if story.means.noun_phrases:
-				print("    Noun phrases:", story.means.noun_phrases)
-			if story.means.nouns:
-				if story.means.proper_nouns:
-					pnounstext = " ( Proper: " + str(NLPUtility.get_tokens(story.means.proper_nouns)) + ")"
-				print("    Nouns:", NLPUtility.get_tokens(story.means.nouns), pnounstext)
-		print(" >> ENDS")
-		if story.ends.free_form:
-			print("  Free form:", NLPUtility.get_tokens(story.ends.free_form))
-			if story.ends.verbs:
-				print("    Verbs:", NLPUtility.get_tokens(story.ends.verbs))
-				if story.ends.phrasal_verbs:
-					print("      Phrasal:", story.ends.phrasal_verbs)
-			if story.ends.noun_phrases:
-				print("    Noun phrases:", story.ends.noun_phrases)
-			if story.ends.nouns:
-				if story.ends.proper_nouns:
-					pnounstext = " ( Proper: " + str(NLPUtility.get_tokens(story.ends.proper_nouns)) + ")"
-				print("    Nouns:", NLPUtility.get_tokens(story.ends.nouns), pnounstext)
+		Printer.print_free_form(story, "means")
+		Printer.print_free_form(story, "ends")
+
 		Printer.print_subhead("END U S")
 
-	def print_details(fail, success, nlp_time, parse_time, matr_time, gen_time):
+	def print_free_form(story, part):
+		p = 'story.' + part + '.'
+		if eval(p + 'free_form'):
+			print("  Free form:", NLPUtility.get_tokens(eval(p + 'free_form')))
+			if eval(p + 'verbs'):
+				print("    Verbs:", NLPUtility.get_tokens(eval(p + 'verbs')))
+				if eval(p + 'phrasal_verbs'):
+					print("      Phrasal:", eval(p + 'phrasal_verbs'))
+			if eval(p + 'noun_phrases'):
+				print("    Noun phrases:", eval(p + 'noun_phrases'))
+			if eval(p + 'compounds'):
+				print("    Compound nouns:", eval(p + 'compounds'))
+			if eval(p + 'nouns'):
+				pnounstext = ""
+				if eval(p + 'proper_nouns'):
+					pnounstext = " ( Proper: " + str(NLPUtility.get_tokens(eval(p + 'proper_nouns'))) + ")"
+				print("    Nouns:", NLPUtility.get_tokens(eval(p + 'nouns')), pnounstext)
+
+	def print_details(fail, success, nlp_time, parse_time, matr_time, gen_time, stats_time):
 		total = success + fail
 		if success is not 0:
 			frate = fail/success
 		else:
 			frate = 1
+
 		Printer.print_head("RUN DETAILS")
 		print("User Stories:\n  # Total parsed:\t\t ", total,"\n    [+] Success:\t\t ", success, "\n    [-] Failed:\t\t\t ", fail, "\n  Failure rate:\t\t\t ", frate, "(", round(frate * 100, 2), "% )")
-		print("Time elapsed:\n  NLP instantiate:\t\t ", round(nlp_time, 5), "s\n  Mining User Stories:\t\t ", round(parse_time, 5), "s\n  Creating factor matrix:\t ", round(matr_time, 5), "s\n  Generating Manchester Ontology:", round(gen_time, 5), "s\n")
+		print("Time elapsed:")
+		print("  NLP instantiate:\t\t ", round(nlp_time, 5), "s")
+		print("  Mining User Stories:\t\t ", round(parse_time, 5), "s")
+		print("  Creating factor matrix:\t ", round(matr_time, 5), "s")
+		print("  Generating Manchester Ontology:", round(gen_time, 5), "s")
+		if stats_time > 0:
+			print("  Generating statistics:\t", round(stats_time, 5), "s")
 
 	def print_dependencies(story):
 		print("---------- U S", story.number, "----------")
@@ -145,3 +158,6 @@ class Printer:
 		print("  Noun in free form ends:\t", matrix.VAL_ENDS_NOUN)
 		print("Relative Weights:")
 		print("  Compound (compared to parent):", matrix.VAL_COMPOUND)
+
+	def print_rel(rel):
+		print(NLPUtility.get_case(rel[1]), "--", rel[2], "->", NLPUtility.get_case(rel[3]))

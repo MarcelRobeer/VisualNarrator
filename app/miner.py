@@ -70,8 +70,7 @@ class StoryMiner:
 			potential_without_with = potential_role_part
 		
 		compound = MinerUtility.get_compound_nouns(story, potential_without_with)
-		story.role.functional_role.compound = compound[0]
-		story.role.functional_role.type = compound[1]
+		story.role.functional_role.compound = compound
 
 		if story.role.functional_role.compound:
 			story.role.functional_role.main = story.role.functional_role.compound[-1]
@@ -104,8 +103,7 @@ class StoryMiner:
 		story.means.direct_object.phrase = np[1]
 		if story.means.direct_object.phrase:
 			compound = MinerUtility.get_compound_nouns(story, story.means.direct_object.phrase)
-			story.means.direct_object.compound = compound[0]
-			story.means.direct_object.type = compound[1]
+			story.means.direct_object.compound = compound
 
 		return story
 
@@ -149,9 +147,11 @@ class StoryMiner:
 			if story.means.free_form:
 				story.means.proper_nouns = MinerUtility.get_proper_nouns(story, story.means.nouns)
 				story.means.noun_phrases = MinerUtility.get_noun_phrases(story, story.means.free_form)
+				story.means.compounds = MinerUtility.get_compound_nouns(story, story.means.free_form)
 			if story.ends.free_form:
 				story.ends.proper_nouns = MinerUtility.get_proper_nouns(story, story.ends.nouns)
 				story.ends.noun_phrases = MinerUtility.get_noun_phrases(story, story.ends.free_form)
+				story.ends.compounds = MinerUtility.get_compound_nouns(story, story.ends.free_form)
 
 		return story
 
@@ -272,18 +272,21 @@ class MinerUtility:
 		return MinerUtility.get_span(story, proper)
 
 	def get_compound_nouns(story, span):
-		compound = []
+		compounds = []
 		nouns = MinerUtility.get_nouns(story, span)
-		ctype = ""
 
 		for token in nouns:
 			for child in token.children:
-				if child.dep_ == "compound" and child not in compound:
-					compound.append(child)
-					if token not in compound:
-						compound.append(token)
+				if child.dep_ == "compound":
+					compounds.append([child, token])
+		
+		for c in compounds:
+			c = MinerUtility.get_span(story, c)
 
-		return MinerUtility.get_span(story, compound), ctype
+		if compounds and type(compounds[0]) is not list:
+			compounds = compounds[0]
+
+		return compounds
 
 	def get_noun_phrases(story, span):
 		phrases = []
