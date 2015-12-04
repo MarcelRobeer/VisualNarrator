@@ -18,11 +18,11 @@ The main dependency for the program is its Natural Language Processor (NLP) [spa
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:
 
 ```
-python run.py <arguments>
+python run.py <INPUT FILE> [<arguments>]
 ```
 
 #### Arguments
-The most important arguments is `-i` (or `--input`) to specify the location of the text input file. The table below provides an overview of the currently implemented arguments.
+The most important arguments is `INPUT FILE` to specify the location of the text input file. The table below provides an overview of the currently implemented arguments.
 
 ##### Positional arguments
 Argument | Required? | Description
@@ -50,7 +50,7 @@ Argument | Description
 ###### Ontology generation tuning
 Argument | Description | Type | Default
 --------|-----------|------------|--------
-`-l`, `--link` | Link all ontology classes to their respective User Story for usage in the set analysis
+`-l`, `--link` | Link all ontology classes to their respective User Story for usage in the set analysis | N/A | 
 `-t THRESHOLD` | Set the threshold for the selected classes | _FLOAT_ | 1.0
 `-b BASE_WEIGHT` | Set the base weight | _INT_ | 1
 `-wfr WEIGHT_FUNC_ROLE` | Weight of functional role | _FLOAT_ | 1.0
@@ -71,3 +71,9 @@ The classes in the program are based on the following conceptual model:
 ![conceptual_model](https://cloud.githubusercontent.com/assets/1345476/10860279/65624da0-7f66-11e5-8156-f7d2dbf74792.png)
 
 The _Reader_ starts by reading the input file line by line and generates a list of sentences. These sentences are then enriched using Natural Language Processing, adding Part-of-Speech tags, dependencies, named entity recognition, etc. Subsequently, the _StoryMiner_ uses this enriched sentences to create User Story objects. The User Story objects contain all the information that could be mined from the sentence. The _Constructor_ then constructs patterns out of each user story, forming a model for an ontology, which is then used by the _Generator_ to generate a Manchester Ontology file (.omn). Finally, this file is printed to an actual file in the '/ontologies' folder by the _Writer_.
+
+<style>
+table {
+    width: 100%;
+}
+</style>
