@@ -32,25 +32,25 @@ Argument | Required? | Description
 
 ##### _Optional_ arguments
 
-####### 1. General
+###### General
 
-Argument | Required? | Description
---------|-----------|------------
-`-h`, `--help` | No | Show a help message and exit
-`-n SYSTEM_NAME`, `--name SYSTEM_NAME` | No | Specify a name for your system
-`-u`, `--print_us` | No | Print additional information per User Story
-`-o`, `--print_ont` | No | Print the output ontology in the terminal
-`-l`, `--link` | No | Link all ontology classes to their respective User Story for usage in the set analysis
-`--version` | No | Display the program's version number and exit
+Argument | Description
+--------|------------
+`-h`, `--help` | Show a help message and exit
+`-n SYSTEM_NAME`, `--name SYSTEM_NAME` | Specify a name for your system
+`-u`, `--print_us` | Print additional information per User Story
+`-o`, `--print_ont` | Print the output ontology in the terminal
+`--version` | Display the program's version number and exit
 
-####### 2. Statistics
-Argument | Required? | Description
---------|-----------|------------
-`-s`, `--statistics` | No | Show statistics for the User Story set and output these in .csv files
+###### Statistics
+Argument | Description
+--------|------------
+`-s`, `--statistics` | Show statistics for the User Story set and output these in .csv files
 
-####### 3. Ontology generation tuning
+###### Ontology generation tuning
 Argument | Description | Type | Default
 --------|-----------|------------|--------
+`-l`, `--link` | Link all ontology classes to their respective User Story for usage in the set analysis
 `-t THRESHOLD` | Set the threshold for the selected classes | _FLOAT_ | 1.0
 `-b BASE_WEIGHT` | Set the base weight | _INT_ | 1
 `-wfr WEIGHT_FUNC_ROLE` | Weight of functional role | _FLOAT_ | 1.0
