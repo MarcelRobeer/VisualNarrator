@@ -127,7 +127,7 @@ def output(user_story, doc, miner):
 def program():
 	p = ArgumentParser(
 		description="{*} A file should be input using the '-i'/'--input' argument.",
-		usage='''run.py [<args>]
+		usage='''run.py <INPUT FILE> [<args>]
 
 	This program has multiple functionalities:
 		(1) Mine user story information
@@ -136,12 +136,10 @@ def program():
 		epilog='''{*} Created for a bachelor thesis in Information Science.
 			M.J. Robeer, 2015-2016''')
 
-	p.add_argument('--version', action='version', version='Bachelor Thesis v0.6 BETA by M.J. Robeer')
-
-	r_p = p.add_argument_group("required arguments")
-	r_p.add_argument("-i", "--input", dest="filename", required=True,
-                    help="input file with user stories", metavar="FILE",
+	p.add_argument("filename",
+                    help="input file with user stories", metavar="INPUT FILE",
                     type=lambda x: is_valid_file(p, x))
+	p.add_argument('--version', action='version', version='Bachelor Thesis v0.7 BETA by M.J. Robeer')
 
 	g_p = p.add_argument_group("general arguments (optional)")
 	g_p.add_argument("-n", "--name", dest="system_name", help="your system name", required=False)

@@ -24,11 +24,16 @@ python run.py <arguments>
 #### Arguments
 The most important arguments is `-i` (or `--input`) to specify the location of the text input file. The table below provides an overview of the currently implemented arguments.
 
+##### Positional arguments
+Argument | Required? | Description
+--------|-----------|------------
+`INPUT FILE` | __Yes__ | Specify the file name of the User Story input file
+
+
 ##### General arguments
 
-Command | Required? | Description
+Argument | Required? | Description
 --------|-----------|------------
-`-i FILENAME`, `--input FILENAME` | __Yes__ | Specify the file name of the User Story input file
 `-h`, `--help` | No | Show a help message and exit
 `-n SYSTEM_NAME`, `--name SYSTEM_NAME` | No | Specify a name for your system
 `-u`, `--print_us` | No | Print additional information per User Story
@@ -37,12 +42,12 @@ Command | Required? | Description
 `--version` | No | Display the program's version number and exit
 
 ##### Statistics arguments
-Command | Required? | Description
+Argument | Required? | Description
 --------|-----------|------------
 `-s`, `--statistics` | No | Show statistics for the User Story set and output these in .csv files
 
 ##### Ontology generation tuning (_optional_)
-Command | Description | Type | Default
+Argument | Description | Type | Default
 --------|-----------|------------|--------
 `-t THRESHOLD` | Set the threshold for the selected classes | _FLOAT_ | 1.0
 `-b BASE_WEIGHT` | Set the base weight | _INT_ | 1
@@ -55,7 +60,7 @@ Command | Description | Type | Default
 ### Example usage
 
 ```
-python run.py -i example_stories.txt -n "TicketSystem" -u
+python run.py example_stories.txt -n "TicketSystem" -u
 ```
 
 ## Conceptual Model
