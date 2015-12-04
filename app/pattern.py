@@ -4,7 +4,7 @@ import pandas
 from enum import Enum
 
 from app.ontologygenerator import Generator, Ontology
-from app.helper import Helper
+from app.utility import NLPUtility
 
 class Constructor:
 	def __init__(self, nlp, user_stories, matrix):
@@ -12,7 +12,7 @@ class Constructor:
 		self.user_stories = user_stories
 		self.weights = matrix['sum'].reset_index().values.tolist()
 
-	def make(self, ontname, link):
+	def make(self, ontname, threshold, link):
 		pf = PatternFactory(self)
 		weight_objects = WeightMaker.make(self.user_stories, self.weights)
 
@@ -31,7 +31,7 @@ class Constructor:
 			
 	def get_main_verb(self, us):
 		if not us.means.main_verb.phrase:
-			av = Helper.case(us.means.main_verb.main)
+			av = NLPUtility.case(us.means.main_verb.main)
 		else:
 			av = self.make_multiword_string(us.means.main_verb.phrase)	
 
@@ -39,7 +39,7 @@ class Constructor:
 
 	def get_direct_object(self, us):
 		if not us.means.direct_object.compound:
-			do = Helper.case(us.means.direct_object.main)
+			do = NLPUtility.case(us.means.direct_object.main)
 		else:
 			do = self.make_multiword_string(us.means.direct_object.compound)
 
@@ -49,7 +49,7 @@ class Constructor:
 		ret = ""
 		
 		for token in span:
-			ret += Helper.case(token)
+			ret += NLPUtility.case(token)
 
 		return ret
 	
@@ -59,7 +59,7 @@ class Constructor:
 class WeightedToken(object):
 	def __init__(self, token, weight):
 		self.token = token
-		self.case = Helper.case(token)
+		self.case = NLPUtility.case(token)
 		self.weight = weight
 
 class WeightMaker:
@@ -71,7 +71,7 @@ class WeightMaker:
 
 		for story in stories:
 			for token in story.data:
-				c = Helper.case(token)
+				c = NLPUtility.case(token)
 				if c in indices:
 					for weight in weights:
 						if weight[0] == c:
@@ -122,7 +122,7 @@ class PatternFactory:
 			self.link(us)
 
 	def link(self, us):
-		nr = Helper.get_number(us)
+		nr = us.txtnr()
 		self.constructor.onto.get_class_by_name(nr, 'UserStory')
 		
 		for cl in self.constructor.onto.classes:
@@ -159,7 +159,7 @@ class PatternFactory:
 		self.constructor.onto.get_class_by_name(cn, head)
 
 	def make_functional_role(self, us):
-		func_role = Helper.case(us.role.functional_role.main)
+		func_role = NLPUtility.case(us.role.functional_role.main)
 		self.constructor.onto.get_class_by_name(func_role, 'FunctionalRole')
 		self.make_can_relationship(func_role, self.constructor.get_main_verb(us), self.constructor.get_direct_object(us))
 		return func_role

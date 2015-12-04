@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
 from spacy import attrs
-from app.helper import Helper
+from app.utility import NLPUtility
 
 
 class Matrix:
-	def __init__(self, threshold, base, weight):
-		self.threshold = threshold
+	def __init__(self, base, weight):
 		self.VAL_FUNC_ROLE = base * weight[0]
 		self.VAL_DIRECT_OBJ = base * weight[1]
 		self.VAL_MEANS_NOUN = base * weight[2]
@@ -54,7 +53,7 @@ class Matrix:
 		namedict = {}
 
 		for token in tokens:
-			namedict[token.lemma] = Helper.case(token)
+			namedict[token.lemma] = NLPUtility.case(token)
 
 		return namedict
 
@@ -71,8 +70,8 @@ class Matrix:
 	def get_factor(self, matrix, stories):
 		for story in stories:
 			for token in story.data:
-				if Helper.case(token) in matrix.index.values:
-					matrix.set_value(Helper.case(token), story.txtnr(), self.score(token, story))
+				if NLPUtility.case(token) in matrix.index.values:
+					matrix.set_value(NLPUtility.case(token), story.txtnr(), self.score(token, story))
 		return matrix
 
 	def score(self, token, story):
@@ -103,8 +102,8 @@ class Matrix:
 		indicators = []
 		for story in stories:
 			for i in story.indicators:
-				if Helper.case(i) not in indicators:
-					indicators.append(Helper.case(i))
+				if NLPUtility.case(i) not in indicators:
+					indicators.append(NLPUtility.case(i))
 
 		# Something is off here...
 		# Remove if it is in the list of indicators AND its sum is 0...		

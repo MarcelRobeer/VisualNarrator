@@ -1,4 +1,4 @@
-from app.helper import Helper
+from app.utility import Utility, NLPUtility
 
 class Statistics:
 	def to_stats_array(stories):
@@ -13,7 +13,7 @@ class Statistics:
 
 		for us in stories:
 			stats.append([us.number, us.text, us.stats.words, us.stats.verbs, us.stats.nouns, us.stats.noun_phrases, us.stats.indicators.role, us.stats.indicators.means, us.stats.indicators.ends, us.stats.fr_type, us.stats.mv_type, us.stats.do_type])
-			sent_stats.append([us.number, Helper.text(us.stats.role.nps), Helper.text(us.stats.role.general), Helper.text(us.stats.role.detail), Helper.text(us.stats.means.nps), Helper.text(us.stats.means.general), Helper.text(us.stats.means.detail), Helper.text(us.stats.means.nps), Helper.text(us.stats.means.general), Helper.text(us.stats.means.detail)])
+			sent_stats.append([us.number, Utility.text(us.stats.role.nps), Utility.text(us.stats.role.general), Utility.text(us.stats.role.detail), Utility.text(us.stats.means.nps), Utility.text(us.stats.means.general), Utility.text(us.stats.means.detail), Utility.text(us.stats.means.nps), Utility.text(us.stats.means.general), Utility.text(us.stats.means.detail)])
 
 		return stats, sent_stats
 
@@ -44,21 +44,21 @@ class Counter:
 
 	def count_indicators(self, story):
 		if story.role.indicator:
-			story.stats.indicators.role = Helper.text_lower_tokens(story.role.indicator)
+			story.stats.indicators.role = NLPUtility.text_lower_tokens(story.role.indicator)
 		if story.means.indicator:
-			story.stats.indicators.means = Helper.text_lower_tokens(story.means.indicator)
+			story.stats.indicators.means = NLPUtility.text_lower_tokens(story.means.indicator)
 		if story.ends.indicator:
-			story.stats.indicators.ends = Helper.text_lower_tokens(story.ends.indicator)
+			story.stats.indicators.ends = NLPUtility.text_lower_tokens(story.ends.indicator)
 
 		return story
 
 	def get_types(self, story):
-		if not story.role.functional_role.type == "":
-			story.stats.fr_type = story.role.functional_role.type
+		#if not story.role.functional_role.type == "":
+		#	story.stats.fr_type = story.role.functional_role.type
 		if not story.means.main_verb.type == "":
 			story.stats.mv_type = story.means.main_verb.type
-		if not story.means.direct_object.type == "":
-			story.stats.do_type = story.means.direct_object.type
+		#if not story.means.direct_object.type == "":
+		#	story.stats.do_type = story.means.direct_object.type
 		return story
 
 	def get_structure(self, story):

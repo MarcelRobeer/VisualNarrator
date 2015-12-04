@@ -11,7 +11,7 @@ from app.io import Reader, Writer
 from app.miner import StoryMiner
 from app.matrix import Matrix
 from app.userstory import UserStory
-from app.helper import Helper, Printer
+from app.utility import Utility, Printer
 from app.pattern import Constructor
 from app.statistics import Statistics, Counter
 
@@ -34,7 +34,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 	errors = ""
 	c = Counter()
 	us_instances = []  # Keeps track of all succesfully created User Stories objects
-	matrix = Matrix(threshold, base, weights)
+	matrix = Matrix(base, weights)
 
 	for s in set:
 		try:
@@ -67,15 +67,19 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 	start_gen_time = timeit.default_timer()
 	patterns = Constructor(nlp, us_instances, m)
 	ontname = "http://fakesite.org/" + str(systemname).lower() + ".owl#"
+
+	output_ontology = patterns.make(ontname, threshold, link)
+
 	if print_ont:
 		Printer.print_head("MANCHESTER OWL")
-		print(patterns.make(ontname, link))
+		print(output_ontology)
 
 	statsarr = Statistics.to_stats_array(us_instances)
 
 	w = Writer()
 
-	outputfile = w.make_file("ontologies", str(systemname), "omn", patterns.make(ontname, link))
+	outputfile = w.make_file("ontologies", str(systemname), "omn", output_ontology)
+
 	outputcsv = ""
 	sent_outputcsv = ""
 	matrixcsv = ""
@@ -93,7 +97,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		matrixcsv = w.make_file("stats", str(systemname) + "-term_by_US_matrix", "csv", m)
 		sent_outputcsv = w.make_file("stats", str(systemname) + "-sentences", "csv", statsarr[1])
 
-	Printer.print_gen_settings(matrix, base)
+	Printer.print_gen_settings(matrix, base, threshold)
 
 	Printer.print_details(fail, success, nlp_time, parse_time, matr_time, gen_time)
 	if outputfile:
@@ -105,7 +109,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		
 
 def parse(text, id, systemname, nlp, miner):
-	no_punct = Helper.remove_punct(text)
+	no_punct = Utility.remove_punct(text)
 	doc = nlp(no_punct)
 	user_story = UserStory(id, text)
 	user_story.system.main = nlp(systemname)[0]

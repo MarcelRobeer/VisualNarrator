@@ -1,4 +1,4 @@
-from app.helper import Helper
+from app.utility import Utility, NLPUtility
 from lang.en.indicators import *
 
 class StoryMiner:
@@ -25,7 +25,7 @@ class StoryMiner:
 
 	def get_indicators(self, story):
 		returnlist = []
-		rm = MinerHelper.reasonable_max(story.data)
+		rm = MinerUtility.reasonable_max(story.data)
 		indicators = [['Role', rm[0]], ['Means', rm[1]], ['Ends', rm[2]]]
 
 		for indicator in indicators:
@@ -43,13 +43,13 @@ class StoryMiner:
 		pattern = [x.split(' ') for x in eval(indicator_type.upper() + '_INDICATORS')]
 		present_pattern = []
 		for p in pattern:
-			if Helper.is_sublist([MinerHelper.lower(pl) for pl in p], [MinerHelper.lower(sd) for sd in Helper.get_tokens(story_data[0:reasonable_max])]):
+			if Utility.is_sublist([MinerUtility.lower(pl) for pl in p], [MinerUtility.lower(sd) for sd in NLPUtility.get_tokens(story_data[0:reasonable_max])]):
 				present_pattern.append(p)		
 
 		found_pattern = []
 		for p in present_pattern:
 			for s in story_data:
-				if MinerHelper.lower(p[0]) == MinerHelper.lower(s.text):
+				if MinerUtility.lower(p[0]) == MinerUtility.lower(s.text):
 					found_pattern.append(story_data[s.i:s.i++len(p)]) 
 					
 		if found_pattern:
@@ -62,14 +62,14 @@ class StoryMiner:
 
 		with_i = -1
 		for token in potential_role_part:
-			if MinerHelper.lower(token.text) == 'with' or MinerHelper.lower(token.text) == 'w/':
+			if MinerUtility.lower(token.text) == 'with' or MinerUtility.lower(token.text) == 'w/':
 				with_i = token.i
 		if with_i > 0:
 			potential_without_with = potential_role_part[0:with_i]
 		else:
 			potential_without_with = potential_role_part
 		
-		compound = MinerHelper.get_compound_nouns(story, potential_without_with)
+		compound = MinerUtility.get_compound_nouns(story, potential_without_with)
 		story.role.functional_role.compound = compound[0]
 		story.role.functional_role.type = compound[1]
 
@@ -86,8 +86,8 @@ class StoryMiner:
 
 		story.means.main_verb.main = main_verb
 		
-		pv = MinerHelper.get_phrasal_verb(story, main_verb)
-		story.means.main_verb.phrase = MinerHelper.get_span(story, pv[0])
+		pv = MinerUtility.get_phrasal_verb(story, main_verb)
+		story.means.main_verb.phrase = MinerUtility.get_span(story, pv[0])
 		story.means.main_verb.type = pv[1]
 
 		return story
@@ -99,11 +99,11 @@ class StoryMiner:
 			phrase = story.means.main_verb.phrase
 			pointer = phrase[-1]
 	
-		np = MinerHelper.get_noun_phrase(story, pointer)
+		np = MinerUtility.get_noun_phrase(story, pointer)
 		story.means.direct_object.main = np[0]
 		story.means.direct_object.phrase = np[1]
 		if story.means.direct_object.phrase:
-			compound = MinerHelper.get_compound_nouns(story, story.means.direct_object.phrase)
+			compound = MinerUtility.get_compound_nouns(story, story.means.direct_object.phrase)
 			story.means.direct_object.compound = compound[0]
 			story.means.direct_object.type = compound[1]
 
@@ -130,7 +130,7 @@ class StoryMiner:
 			if token not in not_free_form:
 				list.append(token)
 		
-		story.free_form = MinerHelper.get_span(story, list)
+		story.free_form = MinerUtility.get_span(story, list)
 
 		means_free_form = []
 		ends_free_form = []
@@ -140,40 +140,40 @@ class StoryMiner:
 			else:
 				means_free_form.append(token)
 		
-		story.means.free_form = MinerHelper.get_span(story, means_free_form)
-		story.ends.free_form = MinerHelper.get_span(story, ends_free_form)
+		story.means.free_form = MinerUtility.get_span(story, means_free_form)
+		story.ends.free_form = MinerUtility.get_span(story, ends_free_form)
 		
 		if story.means.free_form or story.ends.free_form:
 			self.get_ff_verbs(story)
 			self.get_ff_nouns(story)
 			if story.means.free_form:
-				story.means.proper_nouns = MinerHelper.get_proper_nouns(story, story.means.nouns)
-				story.means.noun_phrases = MinerHelper.get_noun_phrases(story, story.means.free_form)
+				story.means.proper_nouns = MinerUtility.get_proper_nouns(story, story.means.nouns)
+				story.means.noun_phrases = MinerUtility.get_noun_phrases(story, story.means.free_form)
 			if story.ends.free_form:
-				story.ends.proper_nouns = MinerHelper.get_proper_nouns(story, story.ends.nouns)
-				story.ends.noun_phrases = MinerHelper.get_noun_phrases(story, story.ends.free_form)
+				story.ends.proper_nouns = MinerUtility.get_proper_nouns(story, story.ends.nouns)
+				story.ends.noun_phrases = MinerUtility.get_noun_phrases(story, story.ends.free_form)
 
 		return story
 
 	def get_ff_nouns(self, story):
-		story.means.nouns = MinerHelper.get_nouns(story, story.means.free_form)
-		story.ends.nouns = MinerHelper.get_nouns(story, story.ends.free_form)	
+		story.means.nouns = MinerUtility.get_nouns(story, story.means.free_form)
+		story.ends.nouns = MinerUtility.get_nouns(story, story.ends.free_form)	
 
 		return story
 
 	def get_ff_verbs(self, story):
-		story.means.verbs = MinerHelper.get_verbs(story, story.means.free_form)
-		story.ends.verbs = MinerHelper.get_verbs(story, story.ends.free_form)
+		story.means.verbs = MinerUtility.get_verbs(story, story.means.free_form)
+		story.ends.verbs = MinerUtility.get_verbs(story, story.ends.free_form)
 
 		if story.means.verbs:
-			story.means.phrasal_verbs = MinerHelper.get_phrasal_verbs(story, story.means.verbs)
+			story.means.phrasal_verbs = MinerUtility.get_phrasal_verbs(story, story.means.verbs)
 		if story.ends.verbs:
-			story.ends.phrasal_verbs = MinerHelper.get_phrasal_verbs(story, story.ends.verbs)
+			story.ends.phrasal_verbs = MinerUtility.get_phrasal_verbs(story, story.ends.verbs)
 
 		return story
 
 
-class MinerHelper:
+class MinerUtility:
 	# Fixes that a real lower string is used, instead of a reference
 	def lower(str):
 		return str.lower()
@@ -195,7 +195,7 @@ class MinerHelper:
 	# Fixes that spaCy dependencies are not spans, but temporary objects that get deleted when loaded into memory
 	def get_span(story, li):
 		ret = []
-		idxlist = Helper.get_idx(li)
+		idxlist = NLPUtility.get_idx(li)
 		for i in idxlist:
 			ret.append(story.data[i])
 		return ret
@@ -207,17 +207,17 @@ class MinerHelper:
 
 		for chunk in story.data.noun_chunks:
 			if pointer == chunk.root.head:
-				phrase = MinerHelper.get_span(story, chunk)
+				phrase = MinerUtility.get_span(story, chunk)
 
 		if phrase:
 			main = phrase[-1]
 			if phrase[-1].i < story.data[-1].i:
 				potential_of = story.data[phrase[-1].i + 1]
-				if MinerHelper.lower(potential_of.text) == 'of':
+				if MinerUtility.lower(potential_of.text) == 'of':
 					for chunk in story.data.noun_chunks:
 						if chunk.root.head == potential_of:	
 							phrase.append(potential_of)	
-							phrase.extend(MinerHelper.get_span(story, chunk))
+							phrase.extend(MinerUtility.get_span(story, chunk))
 		elif pointer == story.data[pointer.i]:
 			main = story.system.main
 		else:
@@ -232,7 +232,7 @@ class MinerHelper:
 		phrase = []
 		vtype = ""
 
-		if MinerHelper.lower(phrasal_verb.right_edge.text) in particles:
+		if MinerUtility.lower(phrasal_verb.right_edge.text) in particles:
 			phrasal_verb = phrasal_verb.right_edge
 			phrase.append(phrasal_verb)
 			vtype = "II"
@@ -260,7 +260,7 @@ class MinerHelper:
 			if token.pos_ == "NOUN":
 				nouns.append(token)
 
-		return MinerHelper.get_span(story, nouns)
+		return MinerUtility.get_span(story, nouns)
 
 	def get_proper_nouns(story, nouns):
 		proper = []
@@ -269,11 +269,11 @@ class MinerHelper:
 			if token.tag_ == "NNP" or token.tag_ == "NNPS":
 				proper.append(token)
 
-		return MinerHelper.get_span(story, proper)
+		return MinerUtility.get_span(story, proper)
 
 	def get_compound_nouns(story, span):
 		compound = []
-		nouns = MinerHelper.get_nouns(story, span)
+		nouns = MinerUtility.get_nouns(story, span)
 		ctype = ""
 
 		for token in nouns:
@@ -283,15 +283,15 @@ class MinerHelper:
 					if token not in compound:
 						compound.append(token)
 
-		return MinerHelper.get_span(story, compound), ctype
+		return MinerUtility.get_span(story, compound), ctype
 
 	def get_noun_phrases(story, span):
 		phrases = []
 		
 		for chunk in story.data.noun_chunks:
-			chunk = MinerHelper.get_span(story, chunk)
-			if Helper.is_sublist(chunk, span):
-				phrases.append(MinerHelper.get_span(story, chunk))
+			chunk = MinerUtility.get_span(story, chunk)
+			if Utility.is_sublist(chunk, span):
+				phrases.append(MinerUtility.get_span(story, chunk))
 
 		return phrases
 
@@ -302,12 +302,12 @@ class MinerHelper:
 			if token.pos_ == "VERB":
 				verbs.append(token)
 
-		return MinerHelper.get_span(story, verbs)
+		return MinerUtility.get_span(story, verbs)
 
 	def get_phrasal_verbs(story, verbs):
 		phrasal_verbs = []
 
 		for token in verbs:
-			phrasal_verbs.append(MinerHelper.get_phrasal_verb(story, token)) 
+			phrasal_verbs.append(MinerUtility.get_phrasal_verb(story, token)) 
 
 		return phrasal_verbs
