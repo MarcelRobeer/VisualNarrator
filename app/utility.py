@@ -34,7 +34,9 @@ class NLPUtility:
 			c = ""
 			for wt in concept:
 				c += wt.case
-		else:
+		elif type(concept) is str:
+			return concept
+		else:			
 			c = concept.case
 		return c
 
@@ -70,8 +72,8 @@ class Printer:
 		Printer.print_subhead("BEGIN U S")
 		print("User Story", story.number, ":", story.text)
 		print(" >> INDICATORS\n  All:", NLPUtility.get_tokens(story.indicators), "\n    Role:", NLPUtility.get_tokens(story.role.indicator), "\n    Means:", NLPUtility.get_tokens(story.means.indicator), "\n    Ends:", NLPUtility.get_tokens(story.ends.indicator))
-		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", NLPUtility.get_tokens(story.role.functional_role.compound), "(", story.role.functional_role.type, ") )")
-		print(" >> MEANS\n  Main verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", NLPUtility.get_tokens(story.means.direct_object.phrase), "w/ compound", NLPUtility.get_tokens(story.means.direct_object.compound), "(", story.means.direct_object.type, ") )")
+		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", NLPUtility.get_tokens(story.role.functional_role.compound), ")")
+		print(" >> MEANS\n  Main verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", NLPUtility.get_tokens(story.means.direct_object.phrase), "w/ compound", NLPUtility.get_tokens(story.means.direct_object.compound), ")")
 		Printer.print_free_form(story, "means")
 		Printer.print_free_form(story, "ends")
 
@@ -111,6 +113,7 @@ class Printer:
 		print("  Generating Manchester Ontology:", round(gen_time, 5), "s")
 		if stats_time > 0:
 			print("  Generating statistics:\t", round(stats_time, 5), "s")
+		print("")
 
 	def print_dependencies(story):
 		print("---------- U S", story.number, "----------")

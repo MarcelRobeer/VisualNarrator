@@ -84,37 +84,17 @@ class PatternFactory:
 	def __init__(self, constructor, weighted_tokens):
 		self.constructor = constructor
 		self.weighted_tokens = weighted_tokens
-	
+
 	def make_patterns(self, user_stories, threshold, link):
 		pi = PatternIdentifier(self.weighted_tokens)
+
 		for us in user_stories:
 			pi.identify(us, link)
 		
 		th_rel = self.apply_threshold(pi.relationships, threshold)
 		unique_rel = self.unique_rel(th_rel)		
-	
-		print("UNIQUE")
-		[Printer.print_rel(r) for r in unique_rel]
-		print(len(th_rel), len(unique_rel))
 
-		used_in_relationships = []
-
-		for r in unique_rel:
-			pre = NLPUtility.get_case(r[1])
-			post = NLPUtility.get_case(r[3])
-			if r[2] == Pattern.parent:
-				self.constructor.onto.get_class_by_name(pre, post)
-			used_in_relationships.append(pre)
-			used_in_relationships.append(post)
-
-		for wo in self.weighted_tokens:
-			if wo.case not in used_in_relationships:
-				if wo.weight >= threshold:
-					self.constructor.onto.get_class_by_name(wo.case)
-				#print(wo.case, wo.weight, "\t\t", wo.token.i)
-		print([0, 'subject', 'relationship', 'object'])
-		print(['us.number', 'WeightedToken(s)', 'Pattern', 'WeightedToken(s)'])
-		###
+		self.create_spare_classes(unique_rel, threshold)
 
 		return self
 
@@ -148,11 +128,13 @@ class PatternFactory:
 
 	def get_lowest_threshold(self, relationship):
 		wt = self.get_weighted_tokens(relationship)
+		lt = 1000.0
 
-		lt = wt[0].weight		
-		for w in wt:
-			if w.weight < lt:
-				lt = w.weight
+		if wt:		
+			lt = wt[0].weight
+			for w in wt:
+				if w.weight < lt:
+					lt = w.weight
 
 		return lt
 
@@ -161,14 +143,30 @@ class PatternFactory:
 
 		if type(relationship[1]) is list:
 			wt.extend(relationship[1])
-		else:
+		elif type(relationship[1]) is WeightedToken:
 			wt.append(relationship[1])
 		if type(relationship[3]) is list:
 			wt.extend(relationship[3])
-		else:
+		elif type(relationship[3]) is WeightedToken:
 			wt.append(relationship[3])
 
 		return wt
+
+	def create_spare_classes(self, relationships, threshold):
+		used = []
+
+		for r in relationships:
+			pre = NLPUtility.get_case(r[1])
+			post = NLPUtility.get_case(r[3])
+			if r[2] == Pattern.parent:
+				self.constructor.onto.get_class_by_name(pre, post)
+			used.append(pre)
+			used.append(post)
+
+		for wo in self.weighted_tokens:
+			if wo.case not in used:
+				if wo.weight >= threshold:
+					self.constructor.onto.get_class_by_name(wo.case)
 
 	'''
 	def make_patterns(self, us, link):
@@ -229,8 +227,6 @@ class PatternFactory:
 		self.make_has_relationship(subtype, func_role, subtype + func_role)
 		self.make_can_relationship(subtype + func_role, self.constructor.get_main_verb(us), self.constructor.get_direct_object(us))
 
-		return func_role
-
 	def make_parent(self, us):
 		head = ""
 		compound_noun = []
@@ -269,26 +265,31 @@ class PatternIdentifier:
 	def __init__(self, weighted_tokens):
 		self.weighted_tokens = weighted_tokens
 		self.relationships = []
+		self.func_role = False
 
 	def identify(self, us, link_to_us):
 		self.identify_compound(us)
+		self.identify_func_role(us)
 
 		if link_to_us:
 			pass
 
+		if self.func_role:
+			self.relationships.append([-1, 'FunctionalRole', Pattern.parent, 'Person'])
+
 	def identify_compound(self, us):
 		compounds = []
 		if us.role.functional_role.compound:
-			compounds.append(us.role.functional_role.compound[0])
+			compounds.append(us.role.functional_role.compound)
 		if us.means.direct_object.compound:
-			compounds.append(us.means.direct_object.compound[0])
+			compounds.append(us.means.direct_object.compound)
 		if us.means.free_form:
-			if type(us.means.compounds) is list:
+			if type(us.means.compounds) is list and len(us.means.compounds) > 0 and type(us.means.compounds[0]) is list:
 				compounds.extend(us.means.compounds)
 			elif len(us.means.compounds) > 0:
 				compounds.append(us.means.compounds)
 		if us.ends.free_form:
-			if type(us.ends.compounds) is list:
+			if type(us.ends.compounds) is list and len(us.ends.compounds) > 0 and type(us.ends.compounds[0]) is list:
 				compounds.extend(us.ends.compounds)
 			elif len(us.ends.compounds) > 0:
 				compounds.append(us.ends.compounds)
@@ -296,6 +297,53 @@ class PatternIdentifier:
 		if compounds:
 			for c in compounds:
 				self.relationships.append([us.number, [self.getwt(c[0]), self.getwt(c[1])], Pattern.parent, self.getwt(c[1])])
+
+	def identify_func_role(self, us):
+		role = []
+		has_parent = False
+
+		if us.role.functional_role.compound:
+			for c in us.role.functional_role.compound:
+				role.append(self.getwt(c))
+		else:
+			role.append(self.getwt(us.role.functional_role.main))
+		
+		is_subj = self.is_subject(role)
+		
+		# Checks if the functional role already has a parent, and then makes this parent the child for 'FunctionalRole'
+		if is_subj[0]:
+			for i in is_subj[1]:
+				if i[1] == Pattern.parent:
+					role = i[2]
+
+		self.relationships.append([us.number, role, Pattern.parent, 'FunctionalRole'])
+		self.func_role = True			
+
+	def is_subject(self, weighted_tokens):
+		is_subj = False
+		subjects = []
+
+		for r in self.relationships:
+			if type(r[1]) is list and type(weighted_tokens) is list:
+				case = ""
+				case_w = ""
+				for i in r[1]:
+					case += i.case
+				for j in weighted_tokens:
+					case_w += j.case
+				if i == j:
+					subjects.append([r[1], r[2], r[3]])
+					is_subj = True														
+			if type(r[1]) is str and type(weighted_tokens) is str:
+				if r[1] == weighted_tokens:
+					subjects.append([r[1], r[2], r[3]])
+					is_subj = True					
+			if type(r[1]) is WeightedToken and type(weighted_tokens) is WeightedToken:
+				if r[1].case == weighted_tokens.case:
+					subjects.append([r[1], r[2], r[3]])
+					is_subj = True
+
+		return is_subj, subjects	
 
 	def getwt(self, token):
 		for wt in self.weighted_tokens:

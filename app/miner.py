@@ -283,7 +283,7 @@ class MinerUtility:
 		for c in compounds:
 			c = MinerUtility.get_span(story, c)
 
-		if compounds and type(compounds[0]) is not list:
+		if compounds and type(compounds[0]) is list:
 			compounds = compounds[0]
 
 		return compounds
