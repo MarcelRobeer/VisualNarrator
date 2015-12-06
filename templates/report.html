@@ -38,7 +38,7 @@
 				<h3 class="panel-title">Run details</h3>
 			</div>
 			<div class="panel-body">
-			<strong>Parsed User Stories</strong>
+			<h4>Parsed User Stories</h4>
 			<div class="progress">
 				{% if us_success > 0 %}
 				<div class="progress-bar progress-bar-success" style="width: {{ (us_success / (us_success + us_fail)) * 100 }}%">
@@ -53,17 +53,17 @@
 			</div>	
 			{% if failed_stories %}
 				{% for story in failed_stories %}
-					<p><span class="label label-danger">FAILED: {{ story[2][0] }}</span> User Story {{ story[0] }}: "{{ story[1] }}"</p>
+					<p><span class="label label-danger">FAILED: {{ story[2][0] }}</span> User Story {{ story[0] }}: <kbd>{{ story[1] }}</kbd></p>
 				{% endfor %}
 			<div class="alert alert-warning">These User Stories are not included in any further statistics or ontology generation</div>
 			{% endif %}
-			<strong>Time elapsed</strong>
+			<h4>Time elapsed</h4>
 		</div>
 		<table class="table">
-			<th>
+			<thead>
 
-				<tr><td>Part</td><td>Time (s)</td></tr>
-			</th>
+				<tr><th>Part</th><th>Time (s)</th></tr>
+			</thead>
 			<tbody>
 			{% for time in times %}
 				{% if time[1] > 0 %}
@@ -78,9 +78,9 @@
 			<h3 class="panel-title">Output files</h3>
 		</div>
 		<table class="table">
-			<th>
-				<tr><td>File</td><td>Location</td></tr>
-			</th>
+			<thead>
+				<tr><th>File</th><th>Location</th></tr>
+			</thead>
 			<tbody>
 			{% for file in outputfiles %}
 				<tr><td>{{ file[0] }}</td><td><a href="{{ dir }}{{ file[1] }}">{{ file[1] }}</a></td></tr>
@@ -101,48 +101,63 @@
 			</div>
 			<div class="panel-body">
 				<h4>Indicators</h4>
-				<dl class="dl-horizontal">
+				<dl>
 					<dt>Role</dt>
-					<dd>"{{ text(story.role.indicator) }}"</dd>
+					<dd><kbd>{{ text(story.role.indicator) }}</kbd></dd>
 					<dt>Means</dt> 
-					<dd>"{{ text(story.means.indicator) }}"</dd>
+					<dd><kbd>{{ text(story.means.indicator) }}</kbd></dd>
 					{% if story.ends.indicators %}
 					<dt>Ends</dt>
-					<dd>"{{ text(story.ends.indicator) }}"</dd>
+					<dd><kbd>{{ text(story.ends.indicator) }}</kbd></dd>
 					{% endif %}
 				</dl>
 				<h4>Role</h4>
-				<dl class="dl-horizontal">				<dt>Functional role<dt>
-					<dd>"
+				<dl>				
+					<dt>Functional role<dt>
+					<dd>
 					{% if text(story.role.functional_role.compound) == "" %}
-					{{ text(story.role.functional_role.main) }}"
+					<kbd>{{ text(story.role.functional_role.main) }}</kbd>
 					{% else %}
-					{{ text(story.role.functional_role.compound) }}" (compound)
+					<kbd>{{ text(story.role.functional_role.compound) }}</kbd> (compound)
 					{% endif %}
 					</dd>
 				</dl>
 				<h4>Means</h4>
-				<dl class="dl-horizontal">
+				<dl>
 					<dt>Main verb<dt>
-					<dd>"
+					<dd>
 					{% if text(story.means.main_verb.phrase) == "" %}
-					{{ text(story.means.main_verb.main) }}"
+					<kbd>{{ text(story.means.main_verb.main) }}</kbd>
 					{% else %}
-					{{ text(story.means.main_verb.phrase) }}" (type {{story.means.main_verb.type}} phrasal verb)
+					<kbd>{{ text(story.means.main_verb.phrase) }}</kbd> (type {{story.means.main_verb.type}} phrasal verb)
 					{% endif %}
 					</dd>
 					<dt>Direct object<dt> 
-					<dd>"
+					<dd>
 					{% if text(story.means.direct_object.compound) == "" %}
-					{{ text(story.means.direct_object.main) }}" (
+						{% if text(story.means.direct_object.main) != systemname %}
+						<kbd>{{ text(story.means.direct_object.main) }}</kbd>
+						{% else %}
+						There does not seem to be a direct object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
+						{% endif %}
 					{% else %}
-					{{ text(story.means.direct_object.compound) }}" (compound, 
+					<kbd>{{ text(story.means.direct_object.compound) }}</kbd> (compound)
 					{% endif %}
-					with phrase "{{ text(story.means.direct_object.phrase) }}")
+					{% if text(story.means.direct_object.phrase) != "" %}
+					with phrase <kbd>{{ text(story.means.direct_object.phrase) }}</kbd>
+					{% endif %}
 					</dd>
+					{% if story.means.free_form %}
+					<dt>Free form</dt>
+					<dd><kbd>{{ text(story.means.free_form) }}</kbd></dd>
+					{% endif %}
 				</dl>
 				{% if story.ends.free_form %}
 				<h4>Ends</h4>
+				<dl>
+					<dt>Free form</dt>
+					<dd><kbd>{{ text(story.ends.free_form) }}</kbd></dd>
+				</dl>
 				{% endif %}
 			</div>
 		</div>
@@ -172,8 +187,33 @@
 	</div>
 
 	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Obtained weights</h3>
+		</div>
 		<div class="panel-body">
-			The full file can be found at <a href="{{ dir }}{{ outputfiles[0][1] }}">{{ outputfiles[0][1] }}</a>
+			<p>Stop words with a weight of 0 and punctuation marks were removed from the list below.</p>
+			<p>Classes above the threshold ({{ threshold }}) are highlighted in <span class="bg-success">green</span>.</p>
+		</div>
+			<table class="table">
+				<thead>
+					<tr><th>Case</th><th>Weight</th></tr>
+				</thead>
+				<tbody>
+			{% for weight in weights %}
+				{% if weight[1] >= threshold %}
+				<tr class="success">
+				{% else %}
+				<tr>
+				{% endif %}
+				<td>{{weight[0]}}</td><td>{{weight[1]}}</td></tr>
+			{% endfor %}
+				</tbody>
+			</table>
+	</div>
+
+	<div class="panel panel-default">
+		<div class="panel-body">
+			The output can be found at <a href="{{ dir }}{{ outputfiles[0][1] }}">{{ outputfiles[0][1] }}</a>, which can be used to analyze and visualize the ontology.
 		</div>
 		<div class="panel-footer">
 			{% for line in ontology %}

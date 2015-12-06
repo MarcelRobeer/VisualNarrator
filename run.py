@@ -4,6 +4,7 @@ import sys
 import string
 import os.path
 import timeit
+import pkg_resources
 
 from argparse import ArgumentParser
 from spacy.en import English
@@ -135,15 +136,13 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 	# Print details of the generation
 	Printer.print_details(fail, success, nlp_time, parse_time, matr_time, gen_time, stats_time)
 
-	#[print(Utility.multiline(output_ontology))]
-
 	report_dict = {
 		"stories": us_instances,
 		"failed_stories": failed_stories,
 		"systemname": systemname,
 		"us_success": success,
 		"us_fail": fail,
-		"times": [["Initializing Natural Language Processor", nlp_time], ["Mining User Stories", parse_time], ["Creating Factor Matrix", matr_time], ["Generating Manchester Ontology", gen_time], ["Gathering statistics", stats_time]],
+		"times": [["Initializing Natural Language Processor (<em>spaCy</em> v" + pkg_resources.get_distribution("spacy").version + ")" , nlp_time], ["Mining User Stories", parse_time], ["Creating Factor Matrix", matr_time], ["Generating Manchester Ontology", gen_time], ["Gathering statistics", stats_time]],
 		"dir": os.path.dirname(os.path.realpath(__file__)),
 		"inputfile": filename,
 		"inputfile_lines": len(set),
@@ -151,6 +150,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		"threshold": threshold,
 		"base": base,
 		"matrix": matrix,
+		"weights": m['sum'].copy().reset_index().sort_values(['sum'], ascending=False).values.tolist(),
 		"ontology": Utility.multiline(output_ontology)
 	}
 
@@ -193,25 +193,29 @@ def generate_report(report_dict):
 
 def program():
 	p = ArgumentParser(
-		description="...",
 		usage='''run.py <INPUT FILE> [<args>]
 
-	This program has multiple functionalities:
-		(1) Mine user story information
-		(2) Generate an ontology from a user story set
-		(3) Get statistics for a user story set''',
-		epilog='''{*} Created for a bachelor thesis in Information Science.
+///////////////////////////////////////////
+//              PROGRAM_NAME             //
+///////////////////////////////////////////
+
+This program has multiple functionalities:
+    (1) Mine user story information
+    (2) Generate an ontology from a user story set
+    (3) Get statistics for a user story set
+''',
+		epilog='''{*} Created for a bachelor thesis in Information Science (Utrecht University).
 			M.J. Robeer, 2015-2016''')
 
 	p.add_argument("filename",
                     help="input file with user stories", metavar="INPUT FILE",
                     type=lambda x: is_valid_file(p, x))
-	p.add_argument('--version', action='version', version='Bachelor Thesis v0.7 BETA by M.J. Robeer')
+	p.add_argument('--version', action='version', version='PROGRAM_NAME v0.7 BETA by M.J. Robeer')
 
 	g_p = p.add_argument_group("general arguments (optional)")
-	g_p.add_argument("-n", "--name", dest="system_name", help="your system name", required=False)
-	g_p.add_argument("-u", "--print_us", dest="print_us", help="print data per user story", action="store_true", default=False)
-	g_p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology", action="store_true", default=False)
+	g_p.add_argument("-n", "--name", dest="system_name", help="your system name, as used in ontology and output file(s) generation", required=False)
+	g_p.add_argument("-u", "--print_us", dest="print_us", help="print data per user story in the console", action="store_true", default=False)
+	g_p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology in the console", action="store_true", default=False)
 	g_p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
 
 	s_p = p.add_argument_group("statistics arguments (optional)")
