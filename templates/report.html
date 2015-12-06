@@ -1,0 +1,202 @@
+{% extends "template.html" %}
+{% block title %}Report{% endblock %}
+{% block nav %}
+	<div class="container" style="visibility: hidden">
+		<ul class="nav navbar-nav">
+			<li><a href="#general">General</a></li>
+			<li><a href="#user-stories">User Stories</a></li>
+			<li><a href="#ontology">Ontology</a></li>
+		</ul>
+	</div>
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="#general">General</a></li>
+				<li><a href="#user-stories">User Stories</a></li>
+				<li><a href="#ontology">Ontology</a></li>
+			</ul>
+		</div>
+	</nav>
+{% endblock %}
+{% block content %}	
+	<h1 class="page-header">{{ self.title() }}: {{ systemname }}</h1>
+	<h2 id="general">General</h2>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Input file</h3>
+		</div>
+		<div class="panel-body">
+			<dl class="dl-horizontal">
+				<dt>Name</dt><dd>{{ inputfile.name }}</dd>
+				<dt>Encoding</dt><dd>{{ inputfile.encoding }}</dd>
+				<dt>Non-empty lines</dt><dd>{{ inputfile_lines }}</dd>
+			</dl>
+		</div>
+	</div>
+	<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Run details</h3>
+			</div>
+			<div class="panel-body">
+			<strong>Parsed User Stories</strong>
+			<div class="progress">
+				{% if us_success > 0 %}
+				<div class="progress-bar progress-bar-success" style="width: {{ (us_success / (us_success + us_fail)) * 100 }}%">
+					Success: {{ us_success }} User Stories ({{ (us_success / (us_success + us_fail)) * 100 }}%)
+				</div>
+				{% endif %}
+				{% if us_fail > 0 %}
+				<div class="progress-bar progress-bar-danger" style="width: {{ (us_fail / (us_success + us_fail)) * 100 }}%">
+					Failed: {{ us_fail }} User Stories ({{ (us_fail / (us_success + us_fail)) * 100 }}%)
+				</div>
+				{% endif %}
+			</div>	
+			{% if failed_stories %}
+				{% for story in failed_stories %}
+					<p><span class="label label-danger">FAILED: {{ story[2][0] }}</span> User Story {{ story[0] }}: "{{ story[1] }}"</p>
+				{% endfor %}
+			<div class="alert alert-warning">These User Stories are not included in any further statistics or ontology generation</div>
+			{% endif %}
+			<strong>Time elapsed</strong>
+		</div>
+		<table class="table">
+			<th>
+
+				<tr><td>Part</td><td>Time (s)</td></tr>
+			</th>
+			<tbody>
+			{% for time in times %}
+				{% if time[1] > 0 %}
+					<tr><td>{{ time[0] }}</td><td>{{ time[1] }}</td></tr>
+				{% endif %}
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Output files</h3>
+		</div>
+		<table class="table">
+			<th>
+				<tr><td>File</td><td>Location</td></tr>
+			</th>
+			<tbody>
+			{% for file in outputfiles %}
+				<tr><td>{{ file[0] }}</td><td><a href="{{ dir }}{{ file[1] }}">{{ file[1] }}</a></td></tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+	<h2 id="user-stories">User Stories</h2>
+	{% for story in stories %}
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+				<div class="row">
+					<span class="label label-success" style="display: inline-block; margin-left: 1em">User Story {{ story.number }}</span>
+					<div style="display: inline-block; margin: 0 1em">{{ story.text }}</div>
+				</h3>
+			</div>
+			<div class="panel-body">
+				<h4>Indicators</h4>
+				<dl class="dl-horizontal">
+					<dt>Role</dt>
+					<dd>"{{ text(story.role.indicator) }}"</dd>
+					<dt>Means</dt> 
+					<dd>"{{ text(story.means.indicator) }}"</dd>
+					{% if story.ends.indicators %}
+					<dt>Ends</dt>
+					<dd>"{{ text(story.ends.indicator) }}"</dd>
+					{% endif %}
+				</dl>
+				<h4>Role</h4>
+				<dl class="dl-horizontal">				<dt>Functional role<dt>
+					<dd>"
+					{% if text(story.role.functional_role.compound) == "" %}
+					{{ text(story.role.functional_role.main) }}"
+					{% else %}
+					{{ text(story.role.functional_role.compound) }}" (compound)
+					{% endif %}
+					</dd>
+				</dl>
+				<h4>Means</h4>
+				<dl class="dl-horizontal">
+					<dt>Main verb<dt>
+					<dd>"
+					{% if text(story.means.main_verb.phrase) == "" %}
+					{{ text(story.means.main_verb.main) }}"
+					{% else %}
+					{{ text(story.means.main_verb.phrase) }}" (type {{story.means.main_verb.type}} phrasal verb)
+					{% endif %}
+					</dd>
+					<dt>Direct object<dt> 
+					<dd>"
+					{% if text(story.means.direct_object.compound) == "" %}
+					{{ text(story.means.direct_object.main) }}" (
+					{% else %}
+					{{ text(story.means.direct_object.compound) }}" (compound, 
+					{% endif %}
+					with phrase "{{ text(story.means.direct_object.phrase) }}")
+					</dd>
+				</dl>
+				{% if story.ends.free_form %}
+				<h4>Ends</h4>
+				{% endif %}
+			</div>
+		</div>
+	{% endfor %}
+
+	<h2 id="ontology">Manchester Ontology</h2>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Generation settings</h3>
+		</div>
+		<div class="panel-body">
+			<h4>Threshold</h4>
+			{{ threshold }}
+			<div class="alert alert-warning">Every word below the threshold will not be used to make any ontology classes or relationships</div>
+			<h4>Absolute weights (base = {{ base }})</h4>	
+			<dl class="dl-horizontal">
+				<dt>Functional role</dt><dd>{{ matrix.VAL_FUNC_ROLE }}</dd>
+				<dt>Direct objets</dt><dd>{{ matrix.VAL_DIRECT_OBJ }}</dd>
+				<dt>Noun in free form means</dt><dd>{{ matrix.VAL_MEANS_NOUN }}</dd>
+				<dt>Noun in free form ends</dt><dd>{{ matrix.VAL_ENDS_NOUN }}</dd>
+			</dl>
+			<h4>Relative weights</h4>	
+			<dl class="dl-horizontal">
+				<dt>Compound (compared to parent)</dt><dd>{{ matrix.VAL_COMPOUND }}</dd>
+			</dl>
+		</div>
+	</div>
+
+	<div class="panel panel-default">
+		<div class="panel-body">
+			The full file can be found at <a href="{{ dir }}{{ outputfiles[0][1] }}">{{ outputfiles[0][1] }}</a>
+		</div>
+		<div class="panel-footer">
+			{% for line in ontology %}
+				{% if is_comment(line) %}
+				<span class="text-muted">
+				{% endif %}
+				{% for word in line %}
+					{% if apply_tab(word) %}
+					&nbsp;
+					{% endif %}
+					{% if word == "Class:" %}
+					<span class="text-success">{{ word + " " }}</span>
+					{% elif word == "ObjectProperty:" or word == "DataProperty" %}
+					<span class="text-primary">{{ word + " " }}</span>
+					{% else %}
+					{{ word + " " }}
+					{% endif %}
+				{% endfor %}
+				{% if is_comment(line) %}
+				</span>
+				{% endif %}
+				<br>
+			{% endfor %}
+		</div>
+	</div>		
+{% endblock %}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	{% block head %}
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- The report style uses Bootstrap (http://getbootstrap.com) -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<title>{% block title %}{% endblock %}</title>
+	{% endblock %}
+</head>
+<body>
+	{% block nav %}{% endblock %}
+	<div class="container">{% block content %}{% endblock %}</div>
+	<footer class="footer">
+		<div class="container">
+			{% block footer %}
+			<p class="text-muted">Generated with PROGRAM_NAME</p>
+			{% endblock %}
+		</div>
+	</footer>
+</body>
+</html>
