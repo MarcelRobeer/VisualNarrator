@@ -13,6 +13,7 @@ The main dependency for the program is its Natural Language Processor (NLP) [spa
 * _spaCy_ >= 0.93 (currently under development using v0.98)
 * _NumPy_ >= 1.10.1
 * _Pandas_ >= 0.17.1
+* _Jinja2_ >= 2.8
 
 ## Running the Project
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:
