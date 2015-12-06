@@ -13,11 +13,15 @@ class Constructor:
 		self.weights = matrix['sum'].reset_index().values.tolist()
 
 	def make(self, ontname, threshold, link):
-		weighted_tokens = WeightAttacher.make(self.user_stories, self.weights)
-		pf = PatternFactory(self, weighted_tokens)
+		weighted_tokens = WeightAttacher.make(self.user_stories, 
+self.weights)
 
 		self.onto = Ontology(ontname)
-		pf.make_patterns(self.user_stories, threshold, link)
+		pf = PatternFactory(self.onto, weighted_tokens)
+		self.onto = pf.make_patterns(self.user_stories, threshold, link)
+		
+		for c in self.onto.classes:		
+			print("\"" + c.name + "\"", "\"" + c.parent + "\"")
 
 		g = Generator(self.onto.classes, self.onto.relationships)
 		
@@ -81,8 +85,8 @@ class WeightAttacher:
 		return weighted_tokens
 
 class PatternFactory:
-	def __init__(self, constructor, weighted_tokens):
-		self.constructor = constructor
+	def __init__(self, onto, weighted_tokens):
+		self.onto = onto
 		self.weighted_tokens = weighted_tokens
 
 	def make_patterns(self, user_stories, threshold, link):
@@ -96,7 +100,7 @@ class PatternFactory:
 
 		self.create_spare_classes(unique_rel, threshold)
 
-		return self
+		return self.onto
 
 	def unique_rel(self, relationships):
 		rel = []
@@ -159,14 +163,14 @@ class PatternFactory:
 			pre = NLPUtility.get_case(r[1])
 			post = NLPUtility.get_case(r[3])
 			if r[2] == Pattern.parent:
-				self.constructor.onto.get_class_by_name(pre, post)
+				self.onto.get_class_by_name(pre, post)
 			used.append(pre)
 			used.append(post)
 
 		for wo in self.weighted_tokens:
 			if wo.case not in used:
 				if wo.weight >= threshold:
-					self.constructor.onto.get_class_by_name(wo.case)
+					self.onto.get_class_by_name(wo.case)
 
 	'''
 	def make_patterns(self, us, link):
@@ -205,9 +209,9 @@ class PatternFactory:
 
 	def link(self, us):
 		nr = us.txtnr()
-		self.constructor.onto.get_class_by_name(nr, 'UserStory')
+		self.onto.get_class_by_name(nr, 'UserStory')
 		
-		for cl in self.constructor.onto.classes:
+		for cl in self.onto.classes:
 			self.make_relationship(cl.name, nr, nr, 'partOf')			
 
 	'''
@@ -258,7 +262,7 @@ class PatternFactory:
 		self.make_relationship(pre, rel, post, 'has')
 
 	def make_relationship(self, pre, rel, post, connector):
-		self.constructor.onto.new_relationship(pre, connector + rel, post)	
+		self.onto.new_relationship(pre, connector + rel, post)	
 
 
 class PatternIdentifier:

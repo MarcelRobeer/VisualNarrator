@@ -16,10 +16,28 @@ class Utility:
 	def text(a_list):
 		return " ".join(str(x) for x in a_list)
 
+	def t(li):
+		if type(li) is list:
+			return Utility.text(NLPUtility.get_tokens(li))
+		return li.text
+
 	def remove_duplicates(self, arr): # Potentially obsolete
 		li = list()
 		li_add = li.append
 		return [ x for x in arr if not (x in li or li_add(x))]
+
+	def multiline(string):
+		return [l.split(" ") for l in string.splitlines()]
+
+	def tab(string):
+		if string.startswith("\t"):
+			return True
+		return False
+	
+	def is_comment(line):
+		if line[0] == "#":
+			return True
+		return False	
 
 
 class NLPUtility:
@@ -112,7 +130,7 @@ class Printer:
 		print("  Creating factor matrix:\t ", round(matr_time, 5), "s")
 		print("  Generating Manchester Ontology:", round(gen_time, 5), "s")
 		if stats_time > 0:
-			print("  Generating statistics:\t", round(stats_time, 5), "s")
+			print("  Generating statistics:\t ", round(stats_time, 5), "s")
 		print("")
 
 	def print_dependencies(story):

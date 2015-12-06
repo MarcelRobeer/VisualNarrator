@@ -4,8 +4,10 @@ import sys
 import string
 import os.path
 import timeit
+
 from argparse import ArgumentParser
 from spacy.en import English
+from jinja2 import FileSystemLoader, Environment, PackageLoader
 
 from app.io import Reader, Writer
 from app.miner import StoryMiner
@@ -39,6 +41,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 
 	# Keeps track of all succesfully created User Stories objects
 	us_instances = []  
+	failed_stories = []
 
 	# Parse every user story (remove punctuation and mine)
 	for s in set:
@@ -48,7 +51,8 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 			success = success + 1
 			us_instances.append(user_story)		
 		except ValueError as err:
-			errors += "\n[User Story " + str(us_id) + " ERROR] " + str(err.args[0]) + "!"
+			failed_stories.append([us_id, s, err.args])
+			errors += "\n[User Story " + str(us_id) + " ERROR] " + str(err.args[0]) + "! (\"" + " ".join(str.split(s)) + "\")"
 			fail = fail + 1
 		us_id = us_id + 1
 
@@ -106,16 +110,24 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 	# Write output files
 	w = Writer()
 
-	outputfile = w.make_file("ontologies", str(systemname), "omn", output_ontology)
+	folder = "output/" + str(systemname)
+	reports_folder = folder + "/reports"
+	stats_folder = reports_folder + "/stats"
+
+	outputfile = w.make_file(folder, str(systemname), "omn", output_ontology)
+	files = [["Manchester Ontology", outputfile]]
 
 	outputcsv = ""
 	sent_outputcsv = ""
 	matrixcsv = ""
 
 	if statistics:
-		outputcsv = w.make_file("stats", str(systemname), "csv", statsarr[0])
-		matrixcsv = w.make_file("stats", str(systemname) + "-term_by_US_matrix", "csv", m)
-		sent_outputcsv = w.make_file("stats", str(systemname) + "-sentences", "csv", statsarr[1])
+		outputcsv = w.make_file(stats_folder, str(systemname), "csv", statsarr[0])
+		matrixcsv = w.make_file(stats_folder, str(systemname) + "-term_by_US_matrix", "csv", m)
+		sent_outputcsv = w.make_file(stats_folder, str(systemname) + "-sentences", "csv", statsarr[1])
+		files.append(["General statistics", outputcsv])
+		files.append(["Term-by-User Story matrix", matrixcsv])
+		files.append(["Sentence statistics", sent_outputcsv])
 
 	# Print the used ontology generation settings
 	Printer.print_gen_settings(matrix, base, threshold)
@@ -123,15 +135,33 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 	# Print details of the generation
 	Printer.print_details(fail, success, nlp_time, parse_time, matr_time, gen_time, stats_time)
 
+	#[print(Utility.multiline(output_ontology))]
+
+	report_dict = {
+		"stories": us_instances,
+		"failed_stories": failed_stories,
+		"systemname": systemname,
+		"us_success": success,
+		"us_fail": fail,
+		"times": [["Initializing Natural Language Processor", nlp_time], ["Mining User Stories", parse_time], ["Creating Factor Matrix", matr_time], ["Generating Manchester Ontology", gen_time], ["Gathering statistics", stats_time]],
+		"dir": os.path.dirname(os.path.realpath(__file__)),
+		"inputfile": filename,
+		"inputfile_lines": len(set),
+		"outputfiles": files,
+		"threshold": threshold,
+		"base": base,
+		"matrix": matrix,
+		"ontology": Utility.multiline(output_ontology)
+	}
+
+	# Finally, generate a report
+	report = w.make_file(reports_folder, str(systemname) + "_REPORT", "html", generate_report(report_dict))
+	files.append(["Report", report])
+
 	# Print the location and name of all output files
-	if outputfile:
-		print("Manchester Ontology file succesfully created at: \"" + str(outputfile) + "\"")
-	if outputcsv:
-		print("General statistics file succesfully created at: \"" + str(outputcsv) + "\"")
-	if matrixcsv:
-		print("Term-by-User Story Matrix succesfully created at: \"" + str(matrixcsv) + "\"")
-	if sent_outputcsv:
-		print("Sentence structure statistics file succesfully created at: \"" + str(sent_outputcsv) + "\"")
+	for file in files:
+		if str(file[1]) != "":
+			print(str(file[0]) + " file succesfully created at: \"" + str(file[1]) + "\"")
 		
 
 def parse(text, id, systemname, nlp, miner):
@@ -149,6 +179,17 @@ def output(user_story, doc, miner):
 	miner.mine(user_story)
 	return user_story
 	
+def generate_report(report_dict):
+	CURR_DIR = os.path.dirname(os.path.abspath(__file__))
+
+	loader = FileSystemLoader( searchpath=str(CURR_DIR) + "/templates/" )
+	env = Environment( loader=loader, trim_blocks=True, lstrip_blocks=True )
+	env.globals['text'] = Utility.t
+	env.globals['apply_tab'] = Utility.tab
+	env.globals['is_comment'] = Utility.is_comment
+	template = env.get_template("report.html")
+
+	return template.render(report_dict)
 
 def program():
 	p = ArgumentParser(
