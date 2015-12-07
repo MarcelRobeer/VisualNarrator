@@ -20,6 +20,9 @@ from app.statistics import Statistics, Counter
 
 
 def main(filename, systemname, print_us, print_ont, statistics, link, threshold, base, weights):
+	"""General class to run the entire program
+	"""
+
 	# Initialize spaCy just once (this takes most of the time...)
 	print("Initializing Natural Language Processor . . .")
 	start_nlp_time = timeit.default_timer()
@@ -64,11 +67,14 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 
 	parse_time = timeit.default_timer() - start_parse_time
 
-	# Generate the term-by-user story matrix (m)
+	# Generate the term-by-user story matrix (m), and additional data in two other matrices
 	start_matr_time = timeit.default_timer()
 
 	matrix = Matrix(base, weights)
-	m = matrix.generate(us_instances, ''.join(set), nlp)
+	matrices = matrix.generate(us_instances, ''.join(set), nlp)
+	m = matrices[0]
+	count_matrix = matrices[1]
+	stories_list = matrices[2]
 
 	matr_time = timeit.default_timer() - start_matr_time
 
@@ -151,6 +157,9 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		"base": base,
 		"matrix": matrix,
 		"weights": m['sum'].copy().reset_index().sort_values(['sum'], ascending=False).values.tolist(),
+		"counts": count_matrix.reset_index().values.tolist(),
+		"occurences": stories_list,
+		"types": list(count_matrix.columns.values),
 		"ontology": Utility.multiline(output_ontology)
 	}
 
@@ -165,14 +174,20 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		
 
 def parse(text, id, systemname, nlp, miner):
+	"""Create a new user story object and mines it to map all data in the user story text to a predefined model
+	
+	:param text: The user story text
+	:param id: The user story ID, which can later be used to identify the user story
+	:param systemname: Name of the system this user story belongs to
+	:param nlp: Natural Language Processor (spaCy)
+	:param miner: instance of class Miner
+	:returns: A new user story object
+	"""
 	no_punct = Utility.remove_punct(text)
 	doc = nlp(no_punct)
 	user_story = UserStory(id, text)
 	user_story.system.main = nlp(systemname)[0]
 	output(user_story, doc, miner)
-	return user_story
-
-def output(user_story, doc, miner):
 	user_story.data = doc
 	#Printer.print_dependencies(user_story)
 	#Printer.print_noun_phrases(user_story)
@@ -180,6 +195,11 @@ def output(user_story, doc, miner):
 	return user_story
 	
 def generate_report(report_dict):
+	"""Generates a report using Jinja2
+	
+	:param report_dict: Dictionary containing all variables used in the report
+	:returns: HTML page
+	"""
 	CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 	loader = FileSystemLoader( searchpath=str(CURR_DIR) + "/templates/" )
