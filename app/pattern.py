@@ -20,8 +20,8 @@ self.weights)
 		pf = PatternFactory(self.onto, weighted_tokens)
 		self.onto = pf.make_patterns(self.user_stories, threshold, link)
 		
-		for c in self.onto.classes:		
-			print("\"" + c.name + "\"", "\"" + c.parent + "\"")
+		#for c in self.onto.classes:		
+		#	print("\"" + c.name + "\"", "\"" + c.parent + "\"")
 
 		g = Generator(self.onto.classes, self.onto.relationships)
 		

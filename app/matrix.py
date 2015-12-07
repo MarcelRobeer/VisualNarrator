@@ -28,9 +28,7 @@ class Matrix:
 
 		doc_array = self.replace_ids(doc_array, words)
 
-		empty_columns = np.zeros((doc_array.shape[0], len(stories)))
-
-		w_us = pd.DataFrame(empty_columns, index=words, columns=ids)
+		w_us = pd.DataFrame(0.0, index=words, columns=ids)
 		idx = np.unique(w_us.index, return_index=True)[1]
 		w_us = w_us.iloc[idx]
 		w_us = self.get_factor(w_us, stories)
@@ -38,7 +36,14 @@ class Matrix:
 		w_us = self.remove_stop_words(w_us, doc_array)
 		w_us = self.remove_indicators(w_us, stories)
 
-		return w_us
+		colnames = ['Functional Role', 'Functional Role Compound', 'Direct Object', 'Direct Object Compound', 'Means Free Form Noun', 'Ends Free Form Noun']
+		stories_list = [[l, []] for l in list(w_us.index.values)]
+		count_matrix = pd.DataFrame(0, index=w_us.index, columns=colnames)
+		co = self.count_occurence(count_matrix, stories_list, stories)
+		count_matrix = co[0]
+		stories_list = co[1]
+
+		return w_us, count_matrix, stories_list
 		
 	def unique(self, arr):
 		arr = np.ascontiguousarray(arr)
@@ -77,26 +82,71 @@ class Matrix:
 	def score(self, token, story):
 		weight = 0
 
-		if token == story.role.functional_role.main:
+		if self.is_phrasal('role.functional_role', token, story) == 1:
 			weight += self.VAL_FUNC_ROLE
-		elif token in story.role.functional_role.compound:
+		elif self.is_phrasal('role.functional_role', token, story) == 2:
 			weight += self.VAL_FUNC_ROLE * self.VAL_COMPOUND
-		
-		if token == story.means.direct_object.main:
+
+		if self.is_phrasal('means.direct_object', token, story) == 1:
 			weight += self.VAL_DIRECT_OBJ
-		elif token in story.means.direct_object.compound:
+		elif self.is_phrasal('means.direct_object', token, story) == 2:
 			weight += self.VAL_DIRECT_OBJ * self.VAL_COMPOUND
 
-		if story.means.free_form:									
-			if story.means.nouns:
-				if token in story.means.nouns:
-					weight += self.VAL_MEANS_NOUN
-		if story.ends.free_form:
-			if story.ends.nouns:
-				if token in story.ends.nouns:
-					weight += self.VAL_ENDS_NOUN
+		if self.is_freeform('means', token, story) == 1:
+			weight += self.VAL_MEANS_NOUN
+
+		if self.is_freeform('ends', token, story) == 1:
+			weight += self.VAL_ENDS_NOUN			
 
 		return weight
+
+	def count_occurence(self, cm, sl, stories):
+		for story in stories:
+			for token in story.data:
+				c = NLPUtility.case(token)
+				if c in cm.index.values:
+					for s in sl:
+						if s[0] == c:
+							s[1].append(story.number)					
+
+					if self.is_phrasal('role.functional_role', token, story) == 1:
+						cm = self.add(cm, c, 'Functional Role')
+					elif self.is_phrasal('role.functional_role', token, story) == 2:
+						cm = self.add(cm, c, 'Functional Role Compound')
+
+					if self.is_phrasal('means.direct_object', token, story) == 1:
+						cm = self.add(cm, c, 'Direct Object')
+					elif self.is_phrasal('means.direct_object', token, story) == 2:
+						cm = self.add(cm, c, 'Direct Object Compound')
+
+					if self.is_freeform('means', token, story) == 1:
+						cm = self.add(cm, c, 'Means Free Form Noun')
+
+					if self.is_freeform('ends', token, story) == 1:
+						cm = self.add(cm, c, 'Ends Free Form Noun')
+					
+		return cm, sl
+
+	def add(self, matrix, index, column, by=1):
+		return matrix.set_value(index, column, matrix.at[index,column]+by)
+
+	def is_phrasal(self, part, token, story):
+		spart = 'story.' + part
+		if token == eval(spart + '.main'):
+			return 1
+		elif token in eval(spart + '.compound'):
+			return 2
+		elif token in eval(spart + '.phrase'):
+			return 3
+		return -1
+
+	def is_freeform(self, part, token, story):
+		spart = 'story.' + part
+		if eval(spart + '.free_form'):
+			if eval(spart + '.nouns'):
+				if token in eval(spart + '.nouns'):
+					return 1
+		return -1
 
 	def remove_indicators(self, matrix, stories):
 		indicators = []
@@ -113,4 +163,7 @@ class Matrix:
 	def remove_stop_words(self, matrix, stopwords):
 		result = pd.merge(matrix, stopwords, left_index=True, right_index=True, how='inner')
 		result = result[(result['IS_STOP'] == 0)]
+
+		# Special case: 'I' -> replace by functional role?
+		# Should not remove stop words with a high weight
 		return result.drop('IS_STOP', axis=1)

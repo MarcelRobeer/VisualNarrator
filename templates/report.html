@@ -42,12 +42,12 @@
 			<div class="progress">
 				{% if us_success > 0 %}
 				<div class="progress-bar progress-bar-success" style="width: {{ (us_success / (us_success + us_fail)) * 100 }}%">
-					Success: {{ us_success }} User Stories ({{ (us_success / (us_success + us_fail)) * 100 }}%)
+					Success: {{ us_success }} User Stories ({{ ((us_success / (us_success + us_fail)) * 100)|round(2) }}%)
 				</div>
 				{% endif %}
 				{% if us_fail > 0 %}
 				<div class="progress-bar progress-bar-danger" style="width: {{ (us_fail / (us_success + us_fail)) * 100 }}%">
-					Failed: {{ us_fail }} User Stories ({{ (us_fail / (us_success + us_fail)) * 100 }}%)
+					Failed: {{ us_fail }} User Stories ({{ ((us_fail / (us_success + us_fail)) * 100)|round(2) }}%)
 				</div>
 				{% endif %}
 			</div>	
@@ -67,7 +67,7 @@
 			<tbody>
 			{% for time in times %}
 				{% if time[1] > 0 %}
-					<tr><td>{{ time[0] }}</td><td>{{ time[1] }}</td></tr>
+					<tr><td>{{ time[0] }}</td><td>{{ time[1]|round(5) }}</td></tr>
 				{% endif %}
 			{% endfor %}
 			</tbody>
@@ -196,7 +196,7 @@
 		</div>
 			<table class="table">
 				<thead>
-					<tr><th>Case</th><th>Weight</th></tr>
+					<tr><th>Case</th><th>Weight</th><th>Occurs in US</th><th>Occurs as</th></tr>
 				</thead>
 				<tbody>
 			{% for weight in weights %}
@@ -205,7 +205,26 @@
 				{% else %}
 				<tr>
 				{% endif %}
-				<td>{{weight[0]}}</td><td>{{weight[1]}}</td></tr>
+				<td>{{weight[0]}}</td><td>{{weight[1]}}</td>
+				<td>
+				{% for occurence in occurences %}
+					{% if weight[0] == occurence[0] %}
+						{{ occurence[1]|join(', ') }}
+					{% endif %}
+				{% endfor %}
+				</td>
+				<td> 
+				{% for count in counts %}
+					{% if weight[0] == count[0] %}
+						{% for rc in count[1:] %}
+							{% if rc > 0 %}
+								{{ rc }}x as {{ types[loop.index0] }}<br>
+							{% endif %}			
+						{% endfor %}
+					{% endif %}
+				{% endfor %}
+				</td>
+				</tr>
 			{% endfor %}
 				</tbody>
 			</table>
