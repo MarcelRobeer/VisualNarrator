@@ -10,6 +10,7 @@ class Constructor:
 	def __init__(self, nlp, user_stories, matrix):
 		self.nlp = nlp
 		self.user_stories = user_stories
+		self.matrix = matrix
 		self.weights = matrix['sum'].reset_index().values.tolist()
 
 	def make(self, ontname, threshold, link):
@@ -18,14 +19,28 @@ self.weights)
 
 		self.onto = Ontology(ontname)
 		pf = PatternFactory(self.onto, weighted_tokens)
-		self.onto = pf.make_patterns(self.user_stories, threshold, link)
+		self.onto = pf.make_patterns(self.user_stories, threshold)
 		
+		if link:
+			for cl in self.onto.classes:
+				self.link_to_US(cl)
+			
 		#for c in self.onto.classes:		
 		#	print("\"" + c.name + "\"", "\"" + c.parent + "\"")
 
 		g = Generator(self.onto.classes, self.onto.relationships)
 		
 		return g.prt(self.onto)
+
+	def link_to_US(self, cl):	
+		cases = self.matrix.index.values
+		m = self.matrix.copy().drop('sum', 1)
+
+		if cl.name in cases:
+			mloc = m.loc[cl.name]
+			for us in mloc[mloc > 0].index.tolist():
+				self.onto.get_class_by_name(us, 'UserStory')
+				self.onto.new_relationship(cl.name, 'occursIn', us)
 		
 	'''	
 	def get_main_verb(self, us):
@@ -89,11 +104,11 @@ class PatternFactory:
 		self.onto = onto
 		self.weighted_tokens = weighted_tokens
 
-	def make_patterns(self, user_stories, threshold, link):
+	def make_patterns(self, user_stories, threshold):
 		pi = PatternIdentifier(self.weighted_tokens)
 
 		for us in user_stories:
-			pi.identify(us, link)
+			pi.identify(us)
 		
 		th_rel = self.apply_threshold(pi.relationships, threshold)
 		unique_rel = self.unique_rel(th_rel)		
@@ -205,16 +220,7 @@ class PatternFactory:
 
 		if pattern == Pattern.link_to_US:
 			self.link(us)
-	'''
-
-	def link(self, us):
-		nr = us.txtnr()
-		self.onto.get_class_by_name(nr, 'UserStory')
-		
-		for cl in self.onto.classes:
-			self.make_relationship(cl.name, nr, nr, 'partOf')			
-
-	'''
+	
 	def make_subtype_functional_role(self, us):
 		func_role = string.capwords(us.role.functional_role.main.lemma_)
 		subtype = ""		
@@ -271,12 +277,9 @@ class PatternIdentifier:
 		self.relationships = []
 		self.func_role = False
 
-	def identify(self, us, link_to_us):
+	def identify(self, us):
 		self.identify_compound(us)
 		self.identify_func_role(us)
-
-		if link_to_us:
-			pass
 
 		if self.func_role:
 			self.relationships.append([-1, 'FunctionalRole', Pattern.parent, 'Person'])
