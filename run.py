@@ -187,7 +187,6 @@ def parse(text, id, systemname, nlp, miner):
 	doc = nlp(no_punct)
 	user_story = UserStory(id, text)
 	user_story.system.main = nlp(systemname)[0]
-	output(user_story, doc, miner)
 	user_story.data = doc
 	#Printer.print_dependencies(user_story)
 	#Printer.print_noun_phrases(user_story)
