@@ -100,14 +100,32 @@
 				</h3>
 			</div>
 			<div class="panel-body">
-				<h4>Indicators</h4>
+				<h4>Part-of-speech tags</h4>
+				<table class="table">
+					<tr><td></td>
+					{% for token in story.data %}
+						<td>{{ token.text }}</td>
+					{% endfor %}
+					</tr>
+					<tr><td><strong>Universal</strong></td>
+					{% for token in story.data %}
+						<td>{{ token.pos_ }}</td>
+					{% endfor %}
+					</tr>
+					<tr><td><strong>Penn Treebank</strong></td>
+					{% for token in story.data %}
+						<td>{{ token.tag_ }}</td>
+					{% endfor %}
+					</tr>
+				</table>
+				<h4>Format</h4>
 				<dl>
-					<dt>Role</dt>
+					<dt>Role indicator</dt>
 					<dd><kbd>{{ text(story.role.indicator) }}</kbd></dd>
-					<dt>Means</dt> 
+					<dt>Means indicator</dt> 
 					<dd><kbd>{{ text(story.means.indicator) }}</kbd></dd>
 					{% if story.ends.indicators %}
-					<dt>Ends</dt>
+					<dt>Ends indicator</dt>
 					<dd><kbd>{{ text(story.ends.indicator) }}</kbd></dd>
 					{% endif %}
 				</dl>
