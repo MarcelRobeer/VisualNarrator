@@ -7,10 +7,10 @@ from app.ontologygenerator import Generator, Ontology
 from app.utility import NLPUtility, Printer
 
 class Constructor:
-	def __init__(self, nlp, user_stories, matrix):
+	def __init__(self, nlp, user_stories, matrix, role_means_ends):
 		self.nlp = nlp
 		self.user_stories = user_stories
-		self.matrix = matrix
+		self.role_means_ends = role_means_ends
 		self.weights = matrix['sum'].reset_index().values.tolist()
 
 	def make(self, ontname, threshold, link):
@@ -33,43 +33,21 @@ self.weights)
 		return g.prt(self.onto)
 
 	def link_to_US(self, cl):	
-		cases = self.matrix.index.values
-		m = self.matrix.copy().drop('sum', 1)
+		m = self.role_means_ends
+		used_us = []
 
-		if cl.name in cases:
+		if cl.name in m.index.values:
 			mloc = m.loc[cl.name]
-			for us in mloc[mloc > 0].index.tolist():
-				self.onto.get_class_by_name(us, 'UserStory')
-				self.onto.new_relationship(cl.name, 'occursIn', us)
+			mlist = mloc[mloc > 0].index.tolist()
+			for us in mlist:
+				used_us.append(us[0])
+				part_name = str(us[0]) + str(us[1])
+				self.onto.get_class_by_name(part_name, us[0])
+				self.onto.new_relationship(cl.name, str(cl.name) + 'occursIn' + str(us[0]) + str(us[1]), part_name)
 		
-	'''	
-	def get_main_verb(self, us):
-		if not us.means.main_verb.phrase:
-			av = NLPUtility.case(us.means.main_verb.main)
-		else:
-			av = self.make_multiword_string(us.means.main_verb.phrase)	
+		for us in used_us:
+			self.onto.get_class_by_name(us, 'UserStory')
 
-		return av
-
-	def get_direct_object(self, us):
-		if not us.means.direct_object.compound:
-			do = NLPUtility.case(us.means.direct_object.main)
-		else:
-			do = self.make_multiword_string(us.means.direct_object.compound)
-
-		return do
-
-	def make_multiword_string(self, span):
-		ret = ""
-		
-		for token in span:
-			ret += NLPUtility.case(token)
-
-		return ret
-	
-	def t(self, token):
-		return token.main.text
-	'''
 
 class WeightedToken(object):
 	def __init__(self, token, weight):
@@ -177,8 +155,15 @@ class PatternFactory:
 		for r in relationships:
 			pre = NLPUtility.get_case(r[1])
 			post = NLPUtility.get_case(r[3])
+			if r[2] != Pattern.parent:
+				rel = NLPUtility.get_case(r[4])
+
 			if r[2] == Pattern.parent:
 				self.onto.get_class_by_name(pre, post)
+			elif r[2] == Pattern.subj_do:
+				self.onto.get_class_by_name(pre)
+				self.onto.get_class_by_name(post)
+				self.make_can_relationship(pre, rel, post)
 			used.append(pre)
 			used.append(post)
 
@@ -186,80 +171,6 @@ class PatternFactory:
 			if wo.case not in used:
 				if wo.weight >= threshold:
 					self.onto.get_class_by_name(wo.case)
-
-	'''
-	def make_patterns(self, us, link):
-		pi = PatternIdentifier()
-		pi.identify_patterns(us, link)
-
-		# WIP Prints all patterns that are found
-		#print("US", us.number, ">", pi.found_patterns)
-
-		self.constructor.onto.get_class_by_name('Person')
-		self.constructor.onto.get_class_by_name('FunctionalRole', 'Person')
-
-		if link:
-			self.constructor.onto.get_class_by_name('UserStory')
-
-		for fp in pi.found_patterns:
-			self.construct_pattern(us, fp)
-
-		return self
-
-	def construct_pattern(self, us, pattern):
-		action_v = self.constructor.get_main_verb(us)		
-		direct_obj = self.make_direct_object(us)
-
-		if pattern == Pattern.desc_func_adj:
-			func_role = self.make_subtype_functional_role(us)
-		elif pattern == Pattern.basic:
-			func_role = self.make_functional_role(us)
-
-		if pattern == Pattern.parent:
-			self.make_parent(us)
-
-		if pattern == Pattern.link_to_US:
-			self.link(us)
-	
-	def make_subtype_functional_role(self, us):
-		func_role = string.capwords(us.role.functional_role.main.lemma_)
-		subtype = ""		
-		compound_noun = []
-
-		for token in us.role.functional_role.compound:
-			compound_noun.append(token)
-
-		subtype = self.constructor.make_multiword_string(compound_noun)
-
-		self.constructor.onto.get_class_by_name(func_role, 'FunctionalRole')
-		self.constructor.onto.get_class_by_name(subtype + func_role, func_role)
-		self.constructor.onto.get_class_by_name(subtype)
-		self.make_has_relationship(subtype, func_role, subtype + func_role)
-		self.make_can_relationship(subtype + func_role, self.constructor.get_main_verb(us), self.constructor.get_direct_object(us))
-
-	def make_parent(self, us):
-		head = ""
-		compound_noun = []
-	
-		for token in us.means.direct_object.compound:
-			compound_noun.append(token)
-			if token.head not in us.means.direct_object.compound:
-				head = string.capwords(token.lemma_)
-
-		cn = self.constructor.make_multiword_string(compound_noun)	
-		self.constructor.onto.get_class_by_name(cn, head)
-
-	def make_functional_role(self, us):
-		func_role = NLPUtility.case(us.role.functional_role.main)
-		self.constructor.onto.get_class_by_name(func_role, 'FunctionalRole')
-		self.make_can_relationship(func_role, self.constructor.get_main_verb(us), self.constructor.get_direct_object(us))
-		return func_role
-
-	def make_direct_object(self, us):
-		direct_obj = self.constructor.get_direct_object(us)
-		self.constructor.onto.get_class_by_name(direct_obj)
-		return direct_obj
-	'''
 
 	def make_can_relationship(self, pre, rel, post):
 		self.make_relationship(pre, rel, post, 'can')
@@ -280,6 +191,7 @@ class PatternIdentifier:
 	def identify(self, us):
 		self.identify_compound(us)
 		self.identify_func_role(us)
+		self.identify_subj_do(us)
 
 		if self.func_role:
 			self.relationships.append([-1, 'FunctionalRole', Pattern.parent, 'Person'])
@@ -326,6 +238,44 @@ class PatternIdentifier:
 		self.relationships.append([us.number, role, Pattern.parent, 'FunctionalRole'])
 		self.func_role = True			
 
+	def identify_subj_do(self, us):
+		fr = ""
+		for token in us.data:
+			if token.dep_ == 'subj':
+				if token.text == 'FUNCROLE' and token.i in us.iloc:
+					fr = self.get_func_role(us)
+				else:
+					fr = [token]
+
+		if not fr:
+			fr = self.get_func_role(us)
+			
+		if us.means.main_verb.phrase:
+			mv = us.means.main_verb.phrase
+		else:
+			mv = [us.means.main_verb.main]
+
+		if us.means.direct_object.compound:
+			do = us.means.direct_object.compound
+		else:
+			do = [us.means.direct_object.main]
+		
+		w_fr = [self.getwt(x) for x in fr]
+		w_mv = [self.getwt(x) for x in mv]
+		w_do = [self.getwt(x) for x in do]
+
+		self.relationships.append([us.number, w_fr, Pattern.subj_do, w_do, w_mv])
+
+	def get_func_role(self, us):
+		if us.role.functional_role.phrase:
+			fr = us.role.functional_role.phrase
+		elif us.role.functional_role.compound:
+			fr = us.role.functional_role.compound
+		else:
+			fr = [us.role.functional_role.main]
+
+		return fr
+
 	def is_subject(self, weighted_tokens):
 		is_subj = False
 		subjects = []
@@ -364,4 +314,4 @@ class Pattern(Enum):
 	link_to_US = 0
 	basic = 1
 	parent = 2
-	desc_func_adj = 3
+	subj_do = 3

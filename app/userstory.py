@@ -1,15 +1,17 @@
 from app.statistics import UserStoryStatistics
 
 class UserStory(object):
-	def __init__(self, nr, text):
+	def __init__(self, nr, text, no_punct):
 		self.number = nr
 		self.text = text
+		self.sentence = no_punct
+		self.iloc = []
 		self.role = Role()
 		self.means = Means()
 		self.ends = Ends()
 		self.indicators = []
-		self.system = WithMain()
 		self.free_form = []
+		self.system = WithMain()
 		self.stats = UserStoryStatistics()
 
 	def txtnr(self):
@@ -18,6 +20,7 @@ class UserStory(object):
 
 class UserStoryPart(object):
 	def __init__(self):
+		self.text = []
 		self.indicator = []
 
 

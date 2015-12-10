@@ -103,17 +103,17 @@
 				<h4>Part-of-speech tags</h4>
 				<table class="table">
 					<tr><td></td>
-					{% for token in story.data %}
+					{% for token in story.old_data %}
 						<td>{{ token.text }}</td>
 					{% endfor %}
 					</tr>
 					<tr><td><strong>Universal</strong></td>
-					{% for token in story.data %}
+					{% for token in story.old_data %}
 						<td>{{ token.pos_ }}</td>
 					{% endfor %}
 					</tr>
 					<tr><td><strong>Penn Treebank</strong></td>
-					{% for token in story.data %}
+					{% for token in story.old_data %}
 						<td>{{ token.tag_ }}</td>
 					{% endfor %}
 					</tr>

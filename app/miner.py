@@ -2,24 +2,28 @@ from app.utility import Utility, NLPUtility
 from lang.en.indicators import *
 
 class StoryMiner:
-	def mine(self, story):
+	def structure(self, story):
 		story = self.get_indicators(story)
 		if not story.role.indicator:
 			raise ValueError('Could not find a role indicator', 0)
 		if not story.means.indicator:
 			raise ValueError('Could not find a means indicator', 1)
 
+		story = self.replace_I(story)
+
+	def mine(self, story):
+		story = self.get_part_text(story)
+
 		story = self.get_functional_role(story)
 		if not story.role.functional_role:
 			raise ValueError('Could not find a functional role', 2)
 
-		story = self.get_main_verb(story)
-		if not story.means.main_verb.main:
-			raise ValueError('Could not find a main verb', 3)
-
-		story = self.get_direct_object(story)
+		story = self.get_dobj_and_mv(story)
 		if not story.means.direct_object.main:
-			raise ValueError('Could not find a direct object', 4)	
+			raise ValueError('Could not find a direct object', 3)
+		if not story.means.main_verb.main:
+			raise ValueError('Could not find a main verb', 4)	
+		story = self.get_phrases(story)		
 
 		story = self.get_free_form(story)
 
@@ -56,63 +60,97 @@ class StoryMiner:
 			return max(found_pattern, key=len)
 		return []
 
+	def replace_I(self, story):
+		for token in story.data:
+			if token.text == 'I':
+				story.iloc.append(token.i)
+		story.sentence =str.replace(story.sentence, ' I ', ' FUNCROLE ')
+
+		return story
+
+	def get_part_text(self, story):
+		ends_b_idx = story.data[-1].i+1
+		ends_e_idx = ends_b_idx
+
+		if story.ends.indicator:
+			ends_b_idx = story.ends.indicator[-1].i-1
+			ends_e_idx = ends_b_idx + len(story.ends.indicator)
+
+		story.role.text = story.data[story.role.indicator[-1].i+1:story.means.indicator[0].i]
+		story.means.text = story.data[story.means.indicator[-1].i+1:ends_b_idx]
+
+		if story.ends.indicator:
+			story.ends.text = story.data[ends_e_idx:]
+
+		return story
+
 	def get_functional_role(self, story):
-		potential_role_part = story.data[story.role.indicator[-1].i + 1:story.means.indicator[0].i]
 		potential_without_with = []
 
 		with_i = -1
-		for token in potential_role_part:
+		for token in story.role.text:
 			if MinerUtility.lower(token.text) == 'with' or MinerUtility.lower(token.text) == 'w/':
 				with_i = token.i
 		if with_i > 0:
-			potential_without_with = potential_role_part[0:with_i]
+			potential_without_with = story.role.text[0:with_i]
 		else:
-			potential_without_with = potential_role_part
+			potential_without_with = story.role.text
 		
-		compound = MinerUtility.get_compound_nouns(story, potential_without_with)
-		story.role.functional_role.compound = compound
+		if len(story.role.text) == 1:
+			story.role.functional_role.main = story.role.text[0]
+		else:		
+			compound = MinerUtility.get_compound_nouns(story, potential_without_with)
+			story.role.functional_role.compound = compound
 
-		if story.role.functional_role.compound:
-			story.role.functional_role.main = story.role.functional_role.compound[-1]
-		else:
-			story.role.functional_role.main = story.role.indicator[0].right_edge
+			if story.role.functional_role.compound:
+				story.role.functional_role.main = story.role.functional_role.compound[-1]
+			else:
+				story.role.functional_role.main = story.role.indicator[0].right_edge
 
 		return story
 
-	def get_main_verb(self, story):
-		last_idx = story.means.indicator[-1].i
-		main_verb = story.data[last_idx].nbor(1)
+	def get_dobj_and_mv(self, story):
+		for token in story.means.text:
+			if token.dep_ == 'dobj':
+				story.means.direct_object.main = token
+			else:
+				story.means.direct_object.main = story.system.main
 
-		story.means.main_verb.main = main_verb
-		
-		pv = MinerUtility.get_phrasal_verb(story, main_verb)
+		if story.means.direct_object.main != story.system.main: # Apply new method
+			if story.means.direct_object.main.head.pos_ == 'VERB':
+				story.means.main_verb.main = story.means.direct_object.main.head
+		else: # Fallback: apply old method
+			story.means.main_verb.main = story.data[story.means.indicator[-1].i].nbor(1)
+			story = self.get_phrases(story, False)
+			if not story.means.main_verb.phrase:
+				pointer = story.means.main_verb.main
+			else:
+				pointer = story.means.main_verb.phrase[-1]
+			
+			if pointer.right_edge != pointer:
+				story.means.direct_object.main = pointer.right_edge
+
+		return story
+
+	def get_phrases(self, story, assume=True):
+		if assume:
+			for np in story.data.noun_chunks:
+				if story.means.direct_object.main in np:
+					story.means.direct_object.phrase = np
+
+			if story.means.direct_object.phrase:
+				compound = MinerUtility.get_compound_nouns(story, story.means.direct_object.phrase)
+				story.means.direct_object.compound = compound
+
+		pv = MinerUtility.get_phrasal_verb(story,
+ story.means.main_verb.main)
 		story.means.main_verb.phrase = MinerUtility.get_span(story, pv[0])
 		story.means.main_verb.type = pv[1]
 
-		return story
-
-	def get_direct_object(self, story):
-		if not story.means.main_verb.phrase:
-			pointer = story.means.main_verb.main
-		else:
-			phrase = story.means.main_verb.phrase
-			pointer = phrase[-1]
-	
-		np = MinerUtility.get_noun_phrase(story, pointer)
-		story.means.direct_object.main = np[0]
-		story.means.direct_object.phrase = np[1]
-		if story.means.direct_object.phrase:
-			compound = MinerUtility.get_compound_nouns(story, story.means.direct_object.phrase)
-			story.means.direct_object.compound = compound
-
-		return story
+		return story	
 
 	def get_free_form(self, story):
 		list = []
-
-		func_role = []
-		func_role.append(story.role.functional_role.main)
-		func_role.extend(story.role.functional_role.compound)
 
 		main_verb = []
 		main_verb.append(story.means.main_verb.main)
@@ -122,10 +160,10 @@ class StoryMiner:
 		direct_obj.append(story.means.direct_object.main)
 		direct_obj.extend(story.means.direct_object.phrase)		
 
-		not_free_form = story.indicators + func_role + main_verb + direct_obj
+		not_free_form = story.indicators + main_verb + direct_obj
 
 		for token in story.data:
-			if token not in not_free_form:
+			if token not in not_free_form and token.i not in story.iloc:
 				list.append(token)
 		
 		story.free_form = MinerUtility.get_span(story, list)
@@ -133,10 +171,10 @@ class StoryMiner:
 		means_free_form = []
 		ends_free_form = []
 		for token in story.free_form:
-			if story.ends.indicator and token.i > story.ends.indicator[-1].i:
-				ends_free_form.append(token)
-			else:
+			if token in story.means.text:
 				means_free_form.append(token)
+			elif story.ends.indicator and token in story.ends.text:
+				ends_free_form.append(token)
 		
 		story.means.free_form = MinerUtility.get_span(story, means_free_form)
 		story.ends.free_form = MinerUtility.get_span(story, ends_free_form)
@@ -201,6 +239,7 @@ class MinerUtility:
 		return ret
 
 	# Obtain noun phrases (including form 'x of y')
+	'''
 	def get_noun_phrase(story, pointer):
 		phrase = []
 		main = []
@@ -224,6 +263,7 @@ class MinerUtility:
 			main = story.data[pointer.i + 1]
 
 		return main, phrase
+	'''
 
 	# Obtain Type I, II and III phrasal verbs
 	def get_phrasal_verb(story, head):
