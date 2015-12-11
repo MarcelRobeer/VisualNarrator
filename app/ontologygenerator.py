@@ -38,17 +38,19 @@ class Generator:
 		return ontologytext
 
 	def gen_prolog_from_onto(self):
-		prologtext = ''
+		prologtext = []
 
 		for r in self.relationships:
 			diffrel = ['isa', 'role', 'means', 'ends']			
 
 			if str.lower(r.name) in diffrel:
-				prologtext += str.lower(r.name) + "('" + r.domain + "','" + r.range + "').\n"
+				prologtext.append(str.lower(r.name) + "('" + r.domain + "','" + r.range + "').")
 			else:
-				prologtext += "rel('" + r.domain + "','" + r.name + "','" + r.range + "').\n"
+				prologtext.append("rel('" + r.domain + "','" + r.name + "','" + r.range + "').")
 
-		return prologtext
+		prologtext.sort()
+
+		return '\n'.join(prologtext)
 
 
 class GenHelp:

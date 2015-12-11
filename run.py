@@ -140,6 +140,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, th
 		files.append(["Sentence statistics", sent_outputcsv])
 	if prolog:
 		outputpl = w.make_file(folder + "/prolog", str(systemname), "pl", output_prolog)
+		files.append(["Prolog", outputpl])
 
 	# Print the used ontology generation settings
 	Printer.print_gen_settings(matrix, base, threshold)
