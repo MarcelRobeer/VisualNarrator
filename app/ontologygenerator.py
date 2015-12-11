@@ -1,12 +1,16 @@
 from lang.owlprefix import PREFIX_DICT
 
 class Generator:
-	def __init__(self, classes, relationships, is_long=None):
+	def __init__(self, classes, relationships, onto=True, is_long=None):
 		self.classes = classes
 		self.relationships = relationships
 		self.long = is_long
+		self.onto = onto
 
 	def prt(self, onto): 
+		if not self.onto:
+			return self.gen_prolog_from_onto()
+
 		if self.long is None:
 			li = self.gen_ontology(onto)
 		else:
@@ -32,6 +36,19 @@ class Generator:
 			ontologytext += c.prt() + "\n"
 
 		return ontologytext
+
+	def gen_prolog_from_onto(self):
+		prologtext = ''
+
+		for r in self.relationships:
+			diffrel = ['isa', 'role', 'means', 'ends']			
+
+			if str.lower(r.name) in diffrel:
+				prologtext += str.lower(r.name) + "('" + r.domain + "','" + r.range + "').\n"
+			else:
+				prologtext += "rel('" + r.domain + "','" + r.name + "','" + r.range + "').\n"
+
+		return prologtext
 
 
 class GenHelp:
@@ -62,11 +79,12 @@ class GenHelp:
 		return "# " + com + "\n"
 
 class Ontology:
-	def __init__(self, ontology_name, option=None):
+	def __init__(self, ontology_name, stories, option=None):
 		self.ontology = ontology_name
 		self.ontology_name = "onto"
 		self.option = option
 		self.gh = GenHelp(self.ontology, option)
+		self.stories = stories
 		self.classes = []
 		self.relationships = []
 
@@ -77,57 +95,37 @@ class Ontology:
 		return [str(c.prefix) for c in self.classes]
 
 	def make_class(self, name, parent="Thing", prefix=''):
-		new_class = OntClass(self, name, parent, prefix)
-		return new_class
+		return OntClass(self, name, parent, prefix)
 	
 	def make_relationship(self, name, domain, range):
 		new_property = OntProperty(self, "Object", name, domain, range)
 		return new_property
-	'''OLD
-	def get_class_by_name(self, name, parent='', isp=False):
-		appendclass=True
 
-		if name.isspace():
-			appendclass=False
-
-		if self.classes:
-			for c in self.classes:
-				if str.lower(name) == str.lower(c.name) and str.lower(parent) == str.lower(c.parent):
-					appendclass=False
-					return c
-				elif str.lower(name) == str.lower(c.name) and c.parent.isspace() and not parent.isspace() and not isp:
-					self.classes.remove(c)
-
-		if parent.isspace():
-			parent = ''
-
-		new_class = self.make_class(name, parent)
-		if appendclass:
-			self.classes.append(new_class)		
-
-		if not isp:
-			parent_class = self.get_class_by_name(parent, '', True)
-			self.classes.append(parent_class)
-	
-		return new_class
-	'''
-
-	def get_class_by_name(self, name, parent=''):
+	def get_class_by_name(self, story, name, parent=''):		
 		if self.is_empty(name):
 			return False
 
+		c_stories = []
+
 		if self.classes:
 			for c in self.classes:
-				if str.lower(name) == str.lower(c.name) and str.lower(parent) == str.lower(c.parent):
+				if str.lower(name) == str.lower(c.name) and (str.lower(parent) == str.lower(c.parent) or (self.is_empty(parent) and self.is_empty(c.parent))):
+					c.stories.append(story)
+					return c
+				elif str.lower(name) == str.lower(c.name) and not self.is_empty(c.parent) and self.is_empty(parent):
+					c.stories.append(story)
 					return c
 				elif str.lower(name) == str.lower(c.name) and not self.is_empty(parent):
+					c_stories = c.stories
 					self.classes.remove(c)
-		
+
 		new_class = self.make_class(name, parent)
+		new_class.stories = c_stories
+		new_class.stories.append(story)
 		self.classes.append(new_class)
 
 		if not self.is_empty(parent):
-			parent_class = self.get_class_by_name(parent, '')
+			parent_class = self.get_class_by_name(-1, parent, '')
 			
 		return new_class
 
@@ -153,14 +151,18 @@ class OntClass(object):
 		self.name = name
 		self.parent = parent
 		self.prefix = prefix
+		self.story = []
 
 	def prt(self):
+		name = ''.join(self.name.split())
+		parent = ''.join(self.parent.split())
+
 		returnstr = ""
-		returnstr += "Class: " + self.ontobj.gh.make_obj(self.name)
+		returnstr += "Class: " + self.ontobj.gh.make_obj(name)
 		if self.parent == "Thing" or self.parent == '':
 			pass			
 		else:
-			returnstr += self.ontobj.gh.make_part("SubClassOf", self.ontobj.gh.make_obj(self.parent, self.prefix))
+			returnstr += self.ontobj.gh.make_part("SubClassOf", self.ontobj.gh.make_obj(parent, self.prefix))
 		return returnstr
 
 class OntProperty(object):
@@ -172,10 +174,14 @@ class OntProperty(object):
 		self.range = range
 
 	def prt(self):
+		name = ''.join(self.name.split())
+		domain = ''.join(self.domain.split())
+		range = ''.join(self.range.split())
+
 		returnstr = ""
-		returnstr += self.type + "Property: " + self.ontobj.gh.make_obj(self.name)
-		returnstr += self.ontobj.gh.make_part("Domain", self.ontobj.gh.make_obj(self.domain))
-		returnstr += self.ontobj.gh.make_part("Range", self.ontobj.gh.make_obj(self.range))
+		returnstr += self.type + "Property: " + self.ontobj.gh.make_obj(name)
+		returnstr += self.ontobj.gh.make_part("Domain", self.ontobj.gh.make_obj(domain))
+		returnstr += self.ontobj.gh.make_part("Range", self.ontobj.gh.make_obj(range))
 		return returnstr
 
 class Header:

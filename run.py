@@ -19,7 +19,7 @@ from app.pattern import Constructor
 from app.statistics import Statistics, Counter
 
 
-def main(filename, systemname, print_us, print_ont, statistics, link, threshold, base, weights):
+def main(filename, systemname, print_us, print_ont, statistics, link, prolog, threshold, base, weights):
 	"""General class to run the entire program
 	"""
 
@@ -34,7 +34,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 
 	# Read the input file
 	set = Reader.parse(filename)
-	us_id = 0
+	us_id = 1
 
 	# Keep track of all errors	
 	success = 0
@@ -75,6 +75,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 	m = matrices[0]
 	count_matrix = matrices[1]
 	stories_list = matrices[2]
+	rme = matrices[3]
 
 	matr_time = timeit.default_timer() - start_matr_time
 
@@ -89,7 +90,9 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 
 	patterns = Constructor(nlp, us_instances, m)
 	ontname = "http://fakesite.org/" + str(systemname).lower() + ".owl#"
-	output_ontology = patterns.make(ontname, threshold, link)
+	out = patterns.make(ontname, threshold, link)
+	output_ontology = out[0]
+	output_prolog = out[1]
 
 	# Print out the ontology in the terminal, if argument '-o'/'--print_ont' is chosen
 	if print_ont:
@@ -135,6 +138,8 @@ def main(filename, systemname, print_us, print_ont, statistics, link, threshold,
 		files.append(["General statistics", outputcsv])
 		files.append(["Term-by-User Story matrix", matrixcsv])
 		files.append(["Sentence statistics", sent_outputcsv])
+	if prolog:
+		outputpl = w.make_file(folder, str(systemname), "pl", output_prolog)
 
 	# Print the used ontology generation settings
 	Printer.print_gen_settings(matrix, base, threshold)
@@ -185,11 +190,14 @@ def parse(text, id, systemname, nlp, miner):
 	"""
 	no_punct = Utility.remove_punct(text)
 	doc = nlp(no_punct)
-	user_story = UserStory(id, text)
+	user_story = UserStory(id, text, no_punct)
 	user_story.system.main = nlp(systemname)[0]
 	user_story.data = doc
 	#Printer.print_dependencies(user_story)
 	#Printer.print_noun_phrases(user_story)
+	miner.structure(user_story)
+	user_story.old_data = user_story.data
+	user_story.data = nlp(user_story.sentence)
 	miner.mine(user_story)
 	return user_story
 	
@@ -236,6 +244,7 @@ This program has multiple functionalities:
 	g_p.add_argument("-u", "--print_us", dest="print_us", help="print data per user story in the console", action="store_true", default=False)
 	g_p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology in the console", action="store_true", default=False)
 	g_p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
+	g_p.add_argument("--prolog", dest="prolog", help="generate prolog output (.pl)", action="store_true", default=False)
 
 	s_p = p.add_argument_group("statistics arguments (optional)")
 	s_p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
@@ -255,7 +264,7 @@ This program has multiple functionalities:
 
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.threshold, args.base_weight, weights)
+	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.threshold, args.base_weight, weights)
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):

@@ -4,57 +4,97 @@ import pandas
 from enum import Enum
 
 from app.ontologygenerator import Generator, Ontology
-from app.utility import NLPUtility, Printer
+from app.utility import NLPUtility, Utility, Printer
 
 class Constructor:
-	def __init__(self, nlp, user_stories, matrix, role_means_ends):
+	def __init__(self, nlp, user_stories, matrix):
 		self.nlp = nlp
 		self.user_stories = user_stories
-		self.role_means_ends = role_means_ends
 		self.weights = matrix['sum'].reset_index().values.tolist()
 
 	def make(self, ontname, threshold, link):
 		weighted_tokens = WeightAttacher.make(self.user_stories, 
 self.weights)
 
-		self.onto = Ontology(ontname)
-		pf = PatternFactory(self.onto, weighted_tokens)
+		self.onto = Ontology(ontname, self.user_stories)
+		self.prolog = Ontology(ontname, self.user_stories)
+
+		pf = PatternFactory(self.onto, self.prolog, weighted_tokens)
 		self.onto = pf.make_patterns(self.user_stories, threshold)
+		self.prolog = pf.prolog
 		
 		if link:
-			for cl in self.onto.classes:
-				self.link_to_US(cl)
+			self.link_to_US(self.onto.classes, self.user_stories)
 			
 		#for c in self.onto.classes:		
 		#	print("\"" + c.name + "\"", "\"" + c.parent + "\"")
 
 		g = Generator(self.onto.classes, self.onto.relationships)
+		g_prolog = Generator(self.prolog.classes, self.prolog.relationships, False)
 		
-		return g.prt(self.onto)
+		return g.prt(self.onto), g_prolog.prt(self.prolog)
 
-	def link_to_US(self, cl):	
-		m = self.role_means_ends
-		used_us = []
+	def link_to_US(self, classes, stories):	
+		used_stories = []
 
-		if cl.name in m.index.values:
-			mloc = m.loc[cl.name]
-			mlist = mloc[mloc > 0].index.tolist()
-			for us in mlist:
-				used_us.append(us[0])
-				part_name = str(us[0]) + str(us[1])
-				self.onto.get_class_by_name(part_name, us[0])
-				self.onto.new_relationship(cl.name, str(cl.name) + 'occursIn' + str(us[0]) + str(us[1]), part_name)
+		for cl in classes:
+			for story in cl.stories:
+				if story >= 0:
+					s = self.get_story(story, stories)
+					part_name = self.get_parts(cl.name, s)
+
+					for part in part_name:
+						n = s.txtnr() + part
+						self.onto.get_class_by_name(-1, n, s.txtnr())
+						self.onto.new_relationship(cl.name, cl.name + 'OccursIn' + n, n)
+						self.prolog.new_relationship(cl.name, part, s.txtnr())
+
+					used_stories.append(s.txtnr())
 		
-		for us in used_us:
-			self.onto.get_class_by_name(us, 'UserStory')
+		for story in used_stories:
+			self.onto.get_class_by_name(-1, story, 'UserStory')
 
+	def get_story(self, nr, stories):
+		for story in stories:
+			if nr == story.number:
+				return story
+		return False
+
+	def get_parts(self, class_name, story):
+		role = []
+		means = []
+		ends = []
+		rme = []
+
+		for token in story.data:
+			if token in story.role.text:
+				role.append(NLPUtility.case(token))
+			if token in story.means.text:
+				means.append(NLPUtility.case(token))
+			if story.ends.indicator:
+				if token in story.ends.text:
+					ends.append(NLPUtility.case(token))
+
+		case = class_name.split()
+
+		if Utility.is_sublist(case, role):
+			rme.append('Role')
+
+		if Utility.is_sublist(case, means):
+			rme.append('Means')
+
+		if Utility.is_sublist(case, ends):
+			rme.append('Ends')
+
+		return rme
+			
+					
 
 class WeightedToken(object):
 	def __init__(self, token, weight):
 		self.token = token
 		self.case = NLPUtility.case(token)
 		self.weight = weight
-
 
 class WeightAttacher:
 	def make(stories, weights):
@@ -78,8 +118,9 @@ class WeightAttacher:
 		return weighted_tokens
 
 class PatternFactory:
-	def __init__(self, onto, weighted_tokens):
+	def __init__(self, onto, prolog, weighted_tokens):
 		self.onto = onto
+		self.prolog = prolog
 		self.weighted_tokens = weighted_tokens
 
 	def make_patterns(self, user_stories, threshold):
@@ -91,7 +132,7 @@ class PatternFactory:
 		th_rel = self.apply_threshold(pi.relationships, threshold)
 		unique_rel = self.unique_rel(th_rel)		
 
-		self.create_spare_classes(unique_rel, threshold)
+		self.create_spare_classes(unique_rel, user_stories, threshold)
 
 		return self.onto
 
@@ -149,28 +190,34 @@ class PatternFactory:
 
 		return wt
 
-	def create_spare_classes(self, relationships, threshold):
+	def create_spare_classes(self, relationships, stories, threshold):
 		used = []
 
 		for r in relationships:
 			pre = NLPUtility.get_case(r[1])
 			post = NLPUtility.get_case(r[3])
+
 			if r[2] != Pattern.parent:
 				rel = NLPUtility.get_case(r[4])
 
 			if r[2] == Pattern.parent:
-				self.onto.get_class_by_name(pre, post)
+				self.onto.get_class_by_name(r[0], pre, post)
+				self.prolog.new_relationship(pre, 'isa', post)
 			elif r[2] == Pattern.subj_do:
-				self.onto.get_class_by_name(pre)
-				self.onto.get_class_by_name(post)
+				self.onto.get_class_by_name(r[0], pre)
+				self.onto.get_class_by_name(r[0], post)
 				self.make_can_relationship(pre, rel, post)
+				self.prolog.new_relationship(pre, rel, post)
+
 			used.append(pre)
 			used.append(post)
 
 		for wo in self.weighted_tokens:
 			if wo.case not in used:
 				if wo.weight >= threshold:
-					self.onto.get_class_by_name(wo.case)
+					in_stories = self.find_us(wo, stories)
+					for in_story in in_stories:
+						self.onto.get_class_by_name(in_story, wo.case)
 
 	def make_can_relationship(self, pre, rel, post):
 		self.make_relationship(pre, rel, post, 'can')
@@ -180,6 +227,13 @@ class PatternFactory:
 
 	def make_relationship(self, pre, rel, post, connector):
 		self.onto.new_relationship(pre, connector + rel, post)	
+
+	def find_us(self, w_token, stories):
+		nrs = []
+		for story in stories:
+			if w_token.case in [NLPUtility.case(t) for t in story.data]:
+				nrs.append(story.number)
+		return nrs
 
 
 class PatternIdentifier:

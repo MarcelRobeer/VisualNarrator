@@ -8,7 +8,7 @@ class Utility:
 	def is_sublist(list_a, list_b):
 		if list_a == []: return True
 		if list_b == []: return False
-		return list_b[:len(list_a)] == list_a or Utility.is_sublist(list_a, list_b[1:])
+		return set(list_a).issubset(set(list_b))
 
 	def remove_punct(str):
 		return re.sub(r"[,!?\.]", '', str).strip()
@@ -49,9 +49,7 @@ class NLPUtility:
 	def get_case(concept):
 		c = ""
 		if type(concept) is list:
-			c = ""
-			for wt in concept:
-				c += wt.case
+			c = ' '.join([cc.case for cc in concept])
 		elif type(concept) is str:
 			return concept
 		else:			
