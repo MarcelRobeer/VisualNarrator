@@ -317,7 +317,7 @@ class MinerUtility:
 
 		for token in nouns:
 			for child in token.children:
-				if child.dep_ == "compound":
+				if child.dep_ == "compound" and child not in compounds:
 					compounds.append([child, token])
 		
 		for c in compounds:

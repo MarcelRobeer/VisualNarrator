@@ -15,14 +15,14 @@ class Constructor:
 	def make(self, ontname, threshold, link):
 		weighted_tokens = WeightAttacher.make(self.user_stories, 
 self.weights)
-
+		
 		self.onto = Ontology(ontname, self.user_stories)
 		self.prolog = Ontology(ontname, self.user_stories)
 
 		pf = PatternFactory(self.onto, self.prolog, weighted_tokens)
 		self.onto = pf.make_patterns(self.user_stories, threshold)
 		self.prolog = pf.prolog
-		
+
 		if link:
 			self.link_to_US(self.onto.classes, self.user_stories)
 			
@@ -40,7 +40,7 @@ self.weights)
 		for cl in classes:
 			for story in cl.stories:
 				if story >= 0:
-					s = self.get_story(story, stories)
+					s = self.get_story(int(story), stories)
 					part_name = self.get_parts(cl.name, s)
 
 					for part in part_name:
@@ -61,6 +61,24 @@ self.weights)
 		return False
 
 	def get_parts(self, class_name, story):
+		case = class_name.split()
+
+		means_compounds = []
+		means_compounds.append(story.means.direct_object.compound)
+		ends_compounds = story.ends.compounds
+
+		if story.means.free_form:
+			if len(story.means.compounds) > 0:
+				if type(story.means.compounds[0]) is list:
+					mc = [item for item in sublist for sublist in story.means.compounds]
+				else:
+					mc = story.means.compounds
+				means_compounds.extend(mc)
+			
+		if len(ends_compounds) > 0:
+			if type(ends_compounds[0]) is list:
+				ends_compounds = [item for item in sublist for sublist in story.ends.compounds]
+
 		role = []
 		means = []
 		ends = []
@@ -68,14 +86,21 @@ self.weights)
 
 		for token in story.data:
 			if token in story.role.text:
-				role.append(NLPUtility.case(token))
+				if len(case) != 1:
+					role.append(NLPUtility.case(token))
+				elif token not in story.role.functional_role.compound:
+					role.append(NLPUtility.case(token))
 			if token in story.means.text:
-				means.append(NLPUtility.case(token))
+				if len(case) != 1:
+					means.append(NLPUtility.case(token))
+				elif token not in means_compounds:
+					means.append(NLPUtility.case(token))
 			if story.ends.indicator:
 				if token in story.ends.text:
-					ends.append(NLPUtility.case(token))
-
-		case = class_name.split()
+					if len(case) != 1:
+						ends.append(NLPUtility.case(token))
+					elif token not in ends_compounds:
+						ends.append(NLPUtility.case(token))
 
 		if Utility.is_sublist(case, role):
 			rme.append('Role')

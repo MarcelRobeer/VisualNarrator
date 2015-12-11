@@ -87,7 +87,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, th
 
 	# Generate the ontology
 	start_gen_time = timeit.default_timer()
-
+	
 	patterns = Constructor(nlp, us_instances, m)
 	ontname = "http://fakesite.org/" + str(systemname).lower() + ".owl#"
 	out = patterns.make(ontname, threshold, link)
@@ -124,7 +124,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, th
 	reports_folder = folder + "/reports"
 	stats_folder = reports_folder + "/stats"
 
-	outputfile = w.make_file(folder, str(systemname), "omn", output_ontology)
+	outputfile = w.make_file(folder + "/ontology", str(systemname), "omn", output_ontology)
 	files = [["Manchester Ontology", outputfile]]
 
 	outputcsv = ""
@@ -139,7 +139,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, th
 		files.append(["Term-by-User Story matrix", matrixcsv])
 		files.append(["Sentence statistics", sent_outputcsv])
 	if prolog:
-		outputpl = w.make_file(folder, str(systemname), "pl", output_prolog)
+		outputpl = w.make_file(folder + "/prolog", str(systemname), "pl", output_prolog)
 
 	# Print the used ontology generation settings
 	Printer.print_gen_settings(matrix, base, threshold)
