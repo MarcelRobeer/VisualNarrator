@@ -41,6 +41,7 @@ Argument | Description
 `-n SYSTEM_NAME`, `--name SYSTEM_NAME` | Specify a name for your system
 `-u`, `--print_us` | Print additional information per User Story
 `-o`, `--print_ont` | Print the output ontology in the terminal
+`--prolog` | Output prolog arguments to a .pl file
 `--version` | Display the program's version number and exit
 
 ###### Statistics
