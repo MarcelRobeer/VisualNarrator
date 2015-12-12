@@ -39,6 +39,22 @@ class Utility:
 			return True
 		return False	
 
+	def occurence_list(li):
+		res = []
+		for o in li:
+			if str(o) not in res and o >= 0:
+				res.append(str(o))
+		if res:
+			return ', '.join(res)
+		return "Does not occur, deducted"
+
+	def is_us(cl):
+		if cl.name.startswith("US") or cl.name == 'UserStory':
+			return True
+		elif cl.parent.startswith("US"):
+			return True
+		return False
+
 
 class NLPUtility:
 	def case(token):

@@ -93,6 +93,8 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, th
 	out = patterns.make(ontname, threshold, link)
 	output_ontology = out[0]
 	output_prolog = out[1]
+	output_ontobj = out[2]
+	output_prologobj = out[3]
 
 	# Print out the ontology in the terminal, if argument '-o'/'--print_ont' is chosen
 	if print_ont:
@@ -164,7 +166,8 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, th
 		"matrix": matrix,
 		"weights": m['sum'].copy().reset_index().sort_values(['sum'], ascending=False).values.tolist(),
 		"counts": count_matrix.reset_index().values.tolist(),
-		"occurences": stories_list,
+		"classes": output_ontobj.classes,
+		"relationships": output_prologobj.relationships,
 		"types": list(count_matrix.columns.values),
 		"ontology": Utility.multiline(output_ontology)
 	}
@@ -215,6 +218,8 @@ def generate_report(report_dict):
 	env.globals['text'] = Utility.t
 	env.globals['apply_tab'] = Utility.tab
 	env.globals['is_comment'] = Utility.is_comment
+	env.globals['occurence_list'] = Utility.occurence_list
+	env.tests['is_us'] = Utility.is_us
 	template = env.get_template("report.html")
 
 	return template.render(report_dict)

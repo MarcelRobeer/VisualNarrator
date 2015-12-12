@@ -31,8 +31,8 @@ self.weights)
 
 		g = Generator(self.onto.classes, self.onto.relationships)
 		g_prolog = Generator(self.prolog.classes, self.prolog.relationships, False)
-		
-		return g.prt(self.onto), g_prolog.prt(self.prolog)
+
+		return g.prt(self.onto), g_prolog.prt(self.prolog), self.onto, self.prolog
 
 	def link_to_US(self, classes, stories):	
 		used_stories = []
@@ -46,8 +46,8 @@ self.weights)
 					for part in part_name:
 						n = s.txtnr() + part
 						self.onto.get_class_by_name(-1, n, s.txtnr())
-						self.onto.new_relationship(cl.name, cl.name + 'OccursIn' + n, n)
-						self.prolog.new_relationship(cl.name, part, s.txtnr())
+						self.onto.new_relationship(-1, cl.name, cl.name + 'OccursIn' + n, n)
+						self.prolog.new_relationship(-1, cl.name, part, s.txtnr())
 
 					used_stories.append(s.txtnr())
 		
@@ -154,31 +154,10 @@ class PatternFactory:
 		for us in user_stories:
 			pi.identify(us)
 		
-		th_rel = self.apply_threshold(pi.relationships, threshold)
-		unique_rel = self.unique_rel(th_rel)		
-
-		self.create_spare_classes(unique_rel, user_stories, threshold)
+		relationships = self.apply_threshold(pi.relationships, threshold)	
+		self.create(relationships, user_stories, threshold)
 
 		return self.onto
-
-	def unique_rel(self, relationships):
-		rel = []
-		wt_pairs = []
-		new_pairs = []
-		s = ""
-		o = ""
-
-		for r in relationships:
-			s = NLPUtility.get_case(r[1])
-			o = NLPUtility.get_case(r[3])
-			wt_pairs.append([s, r[2].name, o, r])
-	
-		for r in wt_pairs:
-			if [r[0], r[1], r[2]] not in new_pairs:
-				new_pairs.append([r[0], r[1], r[2]])
-				rel.append(r[3])
-
-		return rel
 
 	def apply_threshold(self, relationships, threshold):
 		rel = []
@@ -215,7 +194,7 @@ class PatternFactory:
 
 		return wt
 
-	def create_spare_classes(self, relationships, stories, threshold):
+	def create(self, relationships, stories, threshold):
 		used = []
 
 		for r in relationships:
@@ -227,12 +206,12 @@ class PatternFactory:
 
 			if r[2] == Pattern.parent:
 				self.onto.get_class_by_name(r[0], pre, post)
-				self.prolog.new_relationship(pre, 'isa', post)
+				self.prolog.new_relationship(r[0], pre, 'isa', post)
 			elif r[2] == Pattern.subj_do:
 				self.onto.get_class_by_name(r[0], pre)
 				self.onto.get_class_by_name(r[0], post)
-				self.make_can_relationship(pre, rel, post)
-				self.prolog.new_relationship(pre, rel, post)
+				self.make_can_relationship(r[0], pre, rel, post)
+				self.prolog.new_relationship(r[0], pre, rel, post)
 
 			used.append(pre)
 			used.append(post)
@@ -244,14 +223,14 @@ class PatternFactory:
 					for in_story in in_stories:
 						self.onto.get_class_by_name(in_story, wo.case)
 
-	def make_can_relationship(self, pre, rel, post):
-		self.make_relationship(pre, rel, post, 'can')
+	def make_can_relationship(self, story, pre, rel, post):
+		self.make_relationship(story, pre, rel, post, 'can')
 
-	def make_has_relationship(self, pre, rel, post):
-		self.make_relationship(pre, rel, post, 'has')
+	def make_has_relationship(self, story, pre, rel, post):
+		self.make_relationship(story, pre, rel, post, 'has')
 
-	def make_relationship(self, pre, rel, post, connector):
-		self.onto.new_relationship(pre, connector + rel, post)	
+	def make_relationship(self, story, pre, rel, post, connector):
+		self.onto.new_relationship(story, pre, connector + rel, post)	
 
 	def find_us(self, w_token, stories):
 		nrs = []

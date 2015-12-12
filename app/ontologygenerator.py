@@ -136,13 +136,15 @@ class Ontology:
 			return True
 		return False
 
-	def new_relationship(self, pre, rel, post):
+	def new_relationship(self, story, pre, rel, post):
 		if self.relationships:
 			for r in self.relationships:
 				if r.domain == pre and r.name == rel and r.range == post:
+					r.stories.append(story)
 					return r
 
 		new_rel = self.make_relationship(rel, pre, post)
+		new_rel.stories.append(story)
 		self.relationships.append(new_rel)
 		return new_rel
 
@@ -153,7 +155,7 @@ class OntClass(object):
 		self.name = name
 		self.parent = parent
 		self.prefix = prefix
-		self.story = []
+		self.stories = []
 
 	def prt(self):
 		name = ''.join(self.name.split())
@@ -174,6 +176,7 @@ class OntProperty(object):
 		self.name = name
 		self.domain = domain
 		self.range = range
+		self.stories = []
 
 	def prt(self):
 		name = ''.join(self.name.split())

@@ -214,7 +214,7 @@
 		</div>
 			<table class="table">
 				<thead>
-					<tr><th>Case</th><th>Weight</th><th>Occurs in US</th><th>Occurs as</th></tr>
+					<tr><th>Case</th><th>Weight</th></tr>
 				</thead>
 				<tbody>
 			{% for weight in weights %}
@@ -223,26 +223,48 @@
 				{% else %}
 				<tr>
 				{% endif %}
-				<td>{{weight[0]}}</td><td>{{weight[1]}}</td>
-				<td>
-				{% for occurence in occurences %}
-					{% if weight[0] == occurence[0] %}
-						{{ occurence[1]|join(', ') }}
-					{% endif %}
-				{% endfor %}
-				</td>
-				<td> 
-				{% for count in counts %}
-					{% if weight[0] == count[0] %}
-						{% for rc in count[1:] %}
-							{% if rc > 0 %}
-								{{ rc }}x as {{ types[loop.index0] }}<br>
-							{% endif %}			
-						{% endfor %}
-					{% endif %}
-				{% endfor %}
-				</td>
+				<td>{{ weight[0] }}</td><td>{{ weight[1]|round(5) }}</td>
 				</tr>
+			{% endfor %}
+				</tbody>
+			</table>
+	</div>
+
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Generated classes</h3>
+		</div>
+			<table class="table">
+				<thead>
+					<tr><th>Class</th><th>Parent</th><th>Occurs in</th></tr>
+				</thead>
+				<tbody>
+			{% for class in classes %}
+				{% if class is not is_us %}
+					<tr>
+					<td>{{ class.name }}</td><td>{{ class.parent }}</td><td>{{ occurence_list(class.stories) }}</td>
+					</tr>
+				{% endif %}
+			{% endfor %}
+				</tbody>
+			</table>
+	</div>
+
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Generated relationships</h3>
+		</div>
+			<table class="table">
+				<thead>
+					<tr><th>Subject</th><th>Predicate</th><th>Object</th><th>Occurs in</th></tr>
+				</thead>
+				<tbody>
+			{% for rel in relationships %}
+				{% if rel.name not in ['Role','Means','Ends'] %}
+					<tr>
+					<td>{{ rel.domain }}</td><td>{{ rel.name }}</td><td>{{ rel.range }}</td><td>{{ occurence_list(rel.stories) }}</td>
+					</tr>
+				{% endif %}
 			{% endfor %}
 				</tbody>
 			</table>
