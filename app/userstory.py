@@ -17,6 +17,11 @@ class UserStory(object):
 	def txtnr(self):
 		return "US" + str(self.number)
 
+	def is_func_role(self, token):
+		if token.text == "FUNCROLE" and token.i in self.iloc:
+			return True
+		return False
+
 
 class UserStoryPart(object):
 	def __init__(self):

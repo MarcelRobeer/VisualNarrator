@@ -46,11 +46,13 @@ class StoryMiner:
 	def get_one_indicator(self, story_data, indicator_type, reasonable_max):
 		pattern = [x.split(' ') for x in eval(indicator_type.upper() + '_INDICATORS')]
 		present_pattern = []
+
 		for p in pattern:
-			if Utility.is_sublist([MinerUtility.lower(pl) for pl in p], [MinerUtility.lower(sd) for sd in NLPUtility.get_tokens(story_data[0:reasonable_max])]):
+			if Utility.is_exact_sublist([MinerUtility.lower(pl) for pl in p], [MinerUtility.lower(sd) for sd in NLPUtility.get_tokens(story_data)]) >= 0:
 				present_pattern.append(p)		
 
 		found_pattern = []
+
 		for p in present_pattern:
 			for s in story_data:
 				if MinerUtility.lower(p[0]) == MinerUtility.lower(s.text):
@@ -58,13 +60,14 @@ class StoryMiner:
 					
 		if found_pattern:
 			return max(found_pattern, key=len)
+
 		return []
 
 	def replace_I(self, story):
 		for token in story.data:
 			if token.text == 'I':
 				story.iloc.append(token.i)
-		story.sentence =str.replace(story.sentence, ' I ', ' FUNCROLE ')
+		story.sentence = str.replace(story.sentence, ' I ', ' FUNCROLE ')
 
 		return story
 
@@ -110,6 +113,8 @@ class StoryMiner:
 		return story
 
 	def get_dobj_and_mv(self, story):
+		success = False
+
 		for token in story.means.text:
 			if token.dep_ == 'dobj':
 				story.means.direct_object.main = token
@@ -119,9 +124,18 @@ class StoryMiner:
 		if story.means.direct_object.main != story.system.main: # Apply new method
 			if story.means.direct_object.main.head.pos_ == 'VERB':
 				story.means.main_verb.main = story.means.direct_object.main.head
-		else: # Fallback: apply old method
+				success = True
+
+		if not success: # Fallback: apply old method
 			story.means.main_verb.main = story.data[story.means.indicator[-1].i].nbor(1)
+
+		if story.means.main_verb.main.pos_ != 'VERB':
+			if story.means.main_verb.main.head.pos_ == 'VERB':
+				story.means.main_verb.main = story.means.main_verb.main.head
+
 			story = self.get_phrases(story, False)
+	
+		if not success: # Do rest of old method
 			if not story.means.main_verb.phrase:
 				pointer = story.means.main_verb.main
 			else:
@@ -129,6 +143,9 @@ class StoryMiner:
 			
 			if pointer.right_edge != pointer:
 				story.means.direct_object.main = pointer.right_edge
+
+		if story.means.main_verb.main.pos_ != 'VERB':
+			print(story.number, ":", story.means.main_verb.main, story.means.main_verb.main.pos_, story.means.main_verb.main.head)
 
 		return story
 
@@ -215,20 +232,6 @@ class MinerUtility:
 	# Fixes that a real lower string is used, instead of a reference
 	def lower(str):
 		return str.lower()
-
-	def reasonable_max(doc):
-		rm = []
-		l = len(doc)
-		if l > 1:
-			rm.append(2)	# Role
-		else:
-			rm.append(l)
-		if l - 1 > 15:		# Means
-			rm.append(15)
-		else:
-			rm.append(l)
-		rm.append(l)		# Ends
-		return rm 
 
 	# Fixes that spaCy dependencies are not spans, but temporary objects that get deleted when loaded into memory
 	def get_span(story, li):

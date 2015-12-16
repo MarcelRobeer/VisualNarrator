@@ -193,8 +193,9 @@ def parse(text, id, systemname, nlp, miner):
 	:returns: A new user story object
 	"""
 	no_punct = Utility.remove_punct(text)
-	doc = nlp(no_punct)
-	user_story = UserStory(id, text, no_punct)
+	no_double_space = ' '.join(no_punct.split())
+	doc = nlp(no_double_space)
+	user_story = UserStory(id, text, no_double_space)
 	user_story.system.main = nlp(systemname)[0]
 	user_story.data = doc
 	#Printer.print_dependencies(user_story)

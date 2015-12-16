@@ -300,7 +300,7 @@ class PatternIdentifier:
 		fr = ""
 		for token in us.data:
 			if token.dep_ == 'subj':
-				if token.text == 'FUNCROLE' and token.i in us.iloc:
+				if us.is_func_role(token):
 					fr = self.get_func_role(us)
 				else:
 					fr = [token]

@@ -5,10 +5,29 @@ class Utility:
 	def split_list(a_list, nr): # Potentially obsolete
 		return a_list[:nr], a_list[nr:]
 
-	def is_sublist(list_a, list_b):
-		if list_a == []: return True
-		if list_b == []: return False
-		return set(list_a).issubset(set(list_b))
+	def is_sublist(subli, li):
+		""" Sees if X is a sublist of Y
+
+		:param subli: Sublist
+		:param li: List in which the sublist should occur
+		:returns: Boolean
+		"""
+		if subli == []: return True
+		if li == []: return False
+		return set(subli).issubset(set(li))
+
+	def is_exact_sublist(subli, li):
+		""" Sees if X is a sublist of Y and takes the exact order into account
+
+		:param subli: Sublist
+		:param li: List in which the sublist should occur
+		:returns: Index of first occurence of sublist in list
+		"""
+		for i in range(len(li)-len(subli)):
+			if li[i:i+len(subli)] == subli:
+				return i
+		else:
+			return -1
 
 	def remove_punct(str):
 		return re.sub(r"[,!?\.]", '', str).strip()
