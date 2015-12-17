@@ -3,7 +3,7 @@ import numpy as np
 import pandas
 from enum import Enum
 
-from app.ontologygenerator import Generator, Ontology
+from app.generator import Generator, Ontology
 from app.utility import NLPUtility, Utility, Printer
 
 class Constructor:
@@ -213,6 +213,9 @@ class PatternFactory:
 				self.make_can_relationship(r[0], pre, rel, post)
 				self.prolog.new_relationship(r[0], pre, rel, post)
 
+			self.prolog.get_class_by_name(r[0], pre)
+			self.prolog.get_class_by_name(r[0], post)
+
 			used.append(pre)
 			used.append(post)
 
@@ -370,6 +373,5 @@ class PatternIdentifier:
 
 class Pattern(Enum):
 	link_to_US = 0
-	basic = 1
-	parent = 2
-	subj_do = 3
+	parent = 1
+	subj_do = 2

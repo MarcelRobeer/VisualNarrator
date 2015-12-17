@@ -39,18 +39,45 @@ class Generator:
 
 	def gen_prolog_from_onto(self):
 		prologtext = []
+		concept = ""
+
+		for c in self.classes:
+			concept = self.get_concept(c.name)
+			prologtext.append(concept)
+			for s in c.stories:
+				if self.get_found(concept, s):
+					prologtext.append(self.get_found(concept, s))
 
 		for r in self.relationships:
-			diffrel = ['isa', 'role', 'means', 'ends']			
+			d_concept = self.get_concept(r.domain)
+			r_concept = self.get_concept(r.range)
+			rel = ""
+			linkrel = ['role', 'means', 'ends']
+			diffrel = linkrel + ['isa']
 
 			if str.lower(r.name) in diffrel:
-				prologtext.append(str.lower(r.name) + "('" + r.domain + "','" + r.range + "').")
+				if str.lower(r.name) in linkrel:
+					prologtext.append(str.lower(r.name) + "(" + d_concept + ",'" + r.range + "')")				
+				else:
+					prologtext.append(str.lower(r.name) + "(" + d_concept + "," + r_concept + ")")
 			else:
-				prologtext.append("rel('" + r.domain + "','" + r.name + "','" + r.range + "').")
+				rel = "rel(" + d_concept + ",'" + r.name + "'," + r_concept + ")"
+				prologtext.append(rel)
+				for s in r.stories:
+					if self.get_found(rel, s):
+						prologtext.append(self.get_found(rel, s))
 
 		prologtext.sort()
 
-		return '\n'.join(prologtext)
+		return '.\n'.join(prologtext)
+
+	def get_concept(self, text):
+		return "concept('" + str(text) + "')"
+
+	def get_found(self, text, story):
+		if story >= 0:
+			return "found(" + text + ",'US" + str(story) + "')"
+		return False
 
 
 class GenHelp:

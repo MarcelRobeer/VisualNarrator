@@ -29,11 +29,10 @@ class StoryMiner:
 
 	def get_indicators(self, story):
 		returnlist = []
-		rm = MinerUtility.reasonable_max(story.data)
-		indicators = [['Role', rm[0]], ['Means', rm[1]], ['Ends', rm[2]]]
+		indicators = ['Role', 'Means', 'Ends']
 
 		for indicator in indicators:
-			found_ind = self.get_one_indicator(story.data, indicator[0], indicator[1])
+			found_ind = self.get_one_indicator(story.data, indicator)
 			returnlist.append(found_ind)
 			story.indicators.extend(found_ind)
 
@@ -43,7 +42,7 @@ class StoryMiner:
 
 		return story
 
-	def get_one_indicator(self, story_data, indicator_type, reasonable_max):
+	def get_one_indicator(self, story_data, indicator_type):
 		pattern = [x.split(' ') for x in eval(indicator_type.upper() + '_INDICATORS')]
 		present_pattern = []
 
