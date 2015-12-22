@@ -28,13 +28,41 @@ class StoryMiner:
 		story = self.get_free_form(story)
 
 	def get_indicators(self, story):
+		foundlist = []
+		potentials = []
 		returnlist = []
 		indicators = ['Role', 'Means', 'Ends']
 
 		for indicator in indicators:
-			found_ind = self.get_one_indicator(story.data, indicator)
-			returnlist.append(found_ind)
-			story.indicators.extend(found_ind)
+			found_ind = self.get_one_indicator(story, indicator)	
+			foundlist.append(found_ind)
+
+		# Removes a role indicator of it comes after the first means/ends indicator, removes a means indicator if it comes after the first ends indicator
+		if foundlist[0] and foundlist[1]:
+			means_min = min([int(s) for s in [t[0].i for t in foundlist[1]]])
+			for f in foundlist[0]:
+				if f.i >= means_min:
+					foundlist[0].remove(f)
+			if foundlist[2]:
+				ends_min = min([int(s) for s in [t[0].i for t in foundlist[2]]])
+				for f in foundlist[0]:
+					if f.i >= ends_min:
+						foundlist[0].remove(f)
+				for f in foundlist[1]:
+					if f.i >= ends_min:
+						foundlist[1].remove(f)
+
+		# If there are multiple indicators left, choose the first one
+		for found in foundlist:
+			if len(found) > 1:
+				min_i = min([int(s) for s in [t[0].i for t in found]])
+				for f in found:
+					if f[0].i == min_i:
+						ind = f
+				found = ind
+			elif found:
+				found = found[0]
+			returnlist.append(found)
 
 		story.role.indicator = returnlist[0]
 		story.means.indicator = returnlist[1]
@@ -43,22 +71,32 @@ class StoryMiner:
 		return story
 
 	def get_one_indicator(self, story_data, indicator_type):
+		'''Returns all longest indicators for one type (role/means/ends)
+		'''
 		pattern = [x.split(' ') for x in eval(indicator_type.upper() + '_INDICATORS')]
 		present_pattern = []
-
-		for p in pattern:
-			if Utility.is_exact_sublist([MinerUtility.lower(pl) for pl in p], [MinerUtility.lower(sd) for sd in NLPUtility.get_tokens(story_data)]) >= 0:
-				present_pattern.append(p)		
-
 		found_pattern = []
 
+		# Get a list of all patterns present in the text
+		for p in pattern:
+			if Utility.is_exact_sublist([MinerUtility.lower(pl) for pl in p], [MinerUtility.lower(sd) for sd in NLPUtility.get_tokens(story_data)]) >= 0:
+				present_pattern.append(p)
+
+		# Gets equivalent token objects of the indicator(s) from story data
 		for p in present_pattern:
 			for s in story_data:
-				if MinerUtility.lower(p[0]) == MinerUtility.lower(s.text):
-					found_pattern.append(story_data[s.i:s.i++len(p)]) 
+				subl = story_data[s.i:s.i++len(p)]
+				if [MinerUtility.lower(pp) for pp in p] == [MinerUtility.lower(sl.text) for sl in subl]:
+					found_pattern.append(subl) 
+
+		# Gets the longest form of any present pattern (e.g., if 'As' and 'As a', remove 'As' from the list)
+		for pattern in found_pattern:
+			for p in found_pattern:
+				if pattern[0].i == p[0].i and len(pattern) > len(p):
+					found_pattern.remove(p)
 					
 		if found_pattern:
-			return max(found_pattern, key=len)
+			return found_pattern
 
 		return []
 
@@ -66,7 +104,6 @@ class StoryMiner:
 		for token in story.data:
 			if token.text == 'I':
 				story.iloc.append(token.i)
-		story.sentence = str.replace(story.sentence, ' I ', ' FUNCROLE ')
 
 		return story
 
