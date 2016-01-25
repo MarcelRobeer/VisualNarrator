@@ -23,7 +23,7 @@ class Counter:
 		story = self.count_nps(story)
 		story = self.count_indicators(story)
 		story = self.get_types(story)
-		story = self.get_structure(story)
+		#story = self.get_structure(story)
 		return story
 
 	def count_basic(self, story):
@@ -44,11 +44,11 @@ class Counter:
 
 	def count_indicators(self, story):
 		if story.role.indicator:
-			story.stats.indicators.role = NLPUtility.text_lower_tokens(story.role.indicator)
+			story.stats.indicators.role = str.lower(story.role.indicator)
 		if story.means.indicator:
-			story.stats.indicators.means = NLPUtility.text_lower_tokens(story.means.indicator)
+			story.stats.indicators.means = str.lower(story.role.indicator)
 		if story.ends.indicator:
-			story.stats.indicators.ends = NLPUtility.text_lower_tokens(story.ends.indicator)
+			story.stats.indicators.ends = str.lower(story.role.indicator)
 
 		return story
 
@@ -61,19 +61,17 @@ class Counter:
 		#	story.stats.do_type = story.means.direct_object.type
 		return story
 
-	def get_structure(self, story):
-		role = []
-		means = []
-		ends = []
+	'''def get_structure(self, story):
+		role = story.role.text
+		means = story.means.text
+		if story.has_ends:
+			ends = story.ends.text
+		else:
+			ends = []
 
-		for token in story.data:
-			if not token in story.indicators and token.pos_ != 'PUNCT' and token.pos_ != 'SPACE' and token.pos_ != 'X':
-				if token.i < story.means.indicator[0].i:
-					role.append([token.pos_, token.tag_, token.i])
-				elif story.ends.indicator and token.i > story.ends.indicator[-1].i:
-					ends.append([token.pos_, token.tag_, token.i])
-				else:
-					means.append([token.pos_, token.tag_, token.i])
+		print(type(role))
+		print(type(means))
+		print(type(ends))
 
 		return self.replace_nounphrase(story, role, means, ends)
 
@@ -128,6 +126,7 @@ class Counter:
 		index = eval('story.stats.' + part + '.nps').index(v)
 		eval('story.stats.' + part + '.nps')[index] = 'NOUNPHRASE(' + str(cnt.count(v)) + ')'
 		return story
+	'''
 
 
 class UserStoryStatistics:

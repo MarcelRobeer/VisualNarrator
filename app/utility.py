@@ -122,7 +122,7 @@ class Printer:
 		print("\n\n")
 		Printer.print_subhead("BEGIN U S")
 		print("User Story", story.number, ":", story.text)
-		print(" >> INDICATORS\n  All:", NLPUtility.get_tokens(story.indicators), "\n    Role:", NLPUtility.get_tokens(story.role.indicator), "\n    Means:", NLPUtility.get_tokens(story.means.indicator), "\n    Ends:", NLPUtility.get_tokens(story.ends.indicator))
+		print(" >> INDICATORS\n  Role:", story.role.indicator, "\n    Means:", story.means.indicator, "\n    Ends:", story.ends.indicator)
 		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", NLPUtility.get_tokens(story.role.functional_role.compound), ")")
 		print(" >> MEANS\n  Main verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", NLPUtility.get_tokens(story.means.direct_object.phrase), "w/ compound", NLPUtility.get_tokens(story.means.direct_object.compound), ")")
 		Printer.print_free_form(story, "means")

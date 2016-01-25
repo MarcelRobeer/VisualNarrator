@@ -24,7 +24,7 @@ self.weights)
 		self.prolog = pf.prolog
 
 		if link:
-			self.link_to_US(self.onto.classes, self.user_stories)
+			self.link_to_story(self.onto.classes, self.user_stories)
 			
 		#for c in self.onto.classes:		
 		#	print("\"" + c.name + "\"", "\"" + c.parent + "\"")
@@ -34,7 +34,7 @@ self.weights)
 
 		return g.prt(self.onto), g_prolog.prt(self.prolog), self.onto, self.prolog
 
-	def link_to_US(self, classes, stories):	
+	def link_to_story(self, classes, stories):	
 		used_stories = []
 
 		for cl in classes:
@@ -129,16 +129,22 @@ class WeightAttacher:
 		c = ""
 
 		for story in stories:
-			for token in story.data:
-				c = NLPUtility.case(token)
-				if c in indices:
-					for weight in weights:
-						if weight[0] == c:
-							w = weight[1]
-							break
-				else:
-					w = 0.0
-				weighted_tokens.append(WeightedToken(token, w))
+			if story.has_ends:
+				parts = ['role', 'means', 'ends']
+			else:
+				parts = ['role', 'means']
+
+			for part in parts:
+				for token in eval('story.' + str(part) + '.text'):
+					c = NLPUtility.case(token)
+					if c in indices:
+						for weight in weights:
+							if weight[0] == c:
+								w = weight[1]
+								break
+					else:
+						w = 0.0
+					weighted_tokens.append(WeightedToken(token, w))
 
 		return weighted_tokens
 
@@ -151,8 +157,8 @@ class PatternFactory:
 	def make_patterns(self, user_stories, threshold):
 		pi = PatternIdentifier(self.weighted_tokens)
 
-		for us in user_stories:
-			pi.identify(us)
+		for story in user_stories:
+			pi.identify(story)
 		
 		relationships = self.apply_threshold(pi.relationships, threshold)	
 		self.create(relationships, user_stories, threshold)
@@ -207,7 +213,7 @@ class PatternFactory:
 			if r[2] == Pattern.parent:
 				self.onto.get_class_by_name(r[0], pre, post)
 				self.prolog.new_relationship(r[0], pre, 'isa', post)
-			elif r[2] == Pattern.subj_do:
+			elif r[2] == Pattern.subj_dobj:
 				self.onto.get_class_by_name(r[0], pre)
 				self.onto.get_class_by_name(r[0], post)
 				self.make_can_relationship(r[0], pre, rel, post)
@@ -222,7 +228,7 @@ class PatternFactory:
 		for wo in self.weighted_tokens:
 			if wo.case not in used:
 				if wo.weight >= threshold:
-					in_stories = self.find_us(wo, stories)
+					in_stories = self.find_story(wo, stories)
 					for in_story in in_stories:
 						self.onto.get_class_by_name(in_story, wo.case)
 
@@ -235,7 +241,7 @@ class PatternFactory:
 	def make_relationship(self, story, pre, rel, post, connector):
 		self.onto.new_relationship(story, pre, connector + rel, post)	
 
-	def find_us(self, w_token, stories):
+	def find_story(self, w_token, stories):
 		nrs = []
 		for story in stories:
 			if w_token.case in [NLPUtility.case(t) for t in story.data]:
@@ -249,44 +255,47 @@ class PatternIdentifier:
 		self.relationships = []
 		self.func_role = False
 
-	def identify(self, us):
-		self.identify_compound(us)
-		self.identify_func_role(us)
-		self.identify_subj_do(us)
+	def identify(self, story):
+		self.identify_compound(story)
+		self.identify_func_role(story)
+		self.identify_subj_dobj(story)
+		if story.has_ends:
+			self.identify_subj_dobj(story, 'ends')
+		self.identify_dobj_conj(story)
 
 		if self.func_role:
 			self.relationships.append([-1, 'FunctionalRole', Pattern.parent, 'Person'])
 
-	def identify_compound(self, us):
+	def identify_compound(self, story):
 		compounds = []
-		if us.role.functional_role.compound:
-			compounds.append(us.role.functional_role.compound)
-		if us.means.direct_object.compound:
-			compounds.append(us.means.direct_object.compound)
-		if us.means.free_form:
-			if type(us.means.compounds) is list and len(us.means.compounds) > 0 and type(us.means.compounds[0]) is list:
-				compounds.extend(us.means.compounds)
-			elif len(us.means.compounds) > 0:
-				compounds.append(us.means.compounds)
-		if us.ends.free_form:
-			if type(us.ends.compounds) is list and len(us.ends.compounds) > 0 and type(us.ends.compounds[0]) is list:
-				compounds.extend(us.ends.compounds)
-			elif len(us.ends.compounds) > 0:
-				compounds.append(us.ends.compounds)
+		if story.role.functional_role.compound:
+			compounds.append(story.role.functional_role.compound)
+		if story.means.direct_object.compound:
+			compounds.append(story.means.direct_object.compound)
+		if story.means.free_form:
+			if type(story.means.compounds) is list and len(story.means.compounds) > 0 and type(story.means.compounds[0]) is list:
+				compounds.extend(story.means.compounds)
+			elif len(story.means.compounds) > 0:
+				compounds.append(story.means.compounds)
+		if story.ends.free_form:
+			if type(story.ends.compounds) is list and len(story.ends.compounds) > 0 and type(story.ends.compounds[0]) is list:
+				compounds.extend(story.ends.compounds)
+			elif len(story.ends.compounds) > 0:
+				compounds.append(story.ends.compounds)
 
 		if compounds:
 			for c in compounds:
-				self.relationships.append([us.number, [self.getwt(c[0]), self.getwt(c[1])], Pattern.parent, self.getwt(c[1])])
+				self.relationships.append([story.number, [self.getwt(c[0]), self.getwt(c[1])], Pattern.parent, self.getwt(c[1])])
 
-	def identify_func_role(self, us):
+	def identify_func_role(self, story):
 		role = []
 		has_parent = False
 
-		if us.role.functional_role.compound:
-			for c in us.role.functional_role.compound:
+		if story.role.functional_role.compound:
+			for c in story.role.functional_role.compound:
 				role.append(self.getwt(c))
 		else:
-			role.append(self.getwt(us.role.functional_role.main))
+			role.append(self.getwt(story.role.functional_role.main))
 		
 		is_subj = self.is_subject(role)
 		
@@ -296,44 +305,42 @@ class PatternIdentifier:
 				if i[1] == Pattern.parent:
 					role = i[2]
 
-		self.relationships.append([us.number, role, Pattern.parent, 'FunctionalRole'])
+		self.relationships.append([story.number, role, Pattern.parent, 'FunctionalRole'])
 		self.func_role = True			
 
-	def identify_subj_do(self, us):
-		fr = ""
-		for token in us.data:
-			if token.dep_ == 'subj':
-				if us.is_func_role(token):
-					fr = self.get_func_role(us)
-				else:
-					fr = [token]
-
-		if not fr:
-			fr = self.get_func_role(us)
+	def identify_subj_dobj(self, story, part='means'):
+		fr = self.get_func_role(story)
 			
-		if us.means.main_verb.phrase:
-			mv = us.means.main_verb.phrase
+		if eval('story.' + str(part) + '.main_verb.phrase'):
+			mv = eval('story.' + str(part) + '.main_verb.phrase')
 		else:
-			mv = [us.means.main_verb.main]
+			mv = [eval('story.' + str(part) + '.main_verb.main')]
 
-		if us.means.direct_object.compound:
-			do = us.means.direct_object.compound
+		if eval('story.' + str(part) + '.direct_object.compound'):
+			do = eval('story.' + str(part) + '.direct_object.compound')
 		else:
-			do = [us.means.direct_object.main]
+			do = [eval('story.' + str(part) + '.direct_object.main')]
 		
 		w_fr = [self.getwt(x) for x in fr]
 		w_mv = [self.getwt(x) for x in mv]
 		w_do = [self.getwt(x) for x in do]
 
-		self.relationships.append([us.number, w_fr, Pattern.subj_do, w_do, w_mv])
+		self.relationships.append([story.number, w_fr, Pattern.subj_dobj, w_do, w_mv])
 
-	def get_func_role(self, us):
-		if us.role.functional_role.phrase:
-			fr = us.role.functional_role.phrase
-		elif us.role.functional_role.compound:
-			fr = us.role.functional_role.compound
+	def identify_dobj_conj(self, story):
+		if story.means.free_form:
+			for token in story.means.direct_object.phrase:
+				if token.dep_ == 'conj':
+					print(token.text, token.dep_, token.head, token.head.dep_, story.text)
+				
+
+	def get_func_role(self, story):
+		if story.role.functional_role.phrase:
+			fr = story.role.functional_role.phrase
+		elif story.role.functional_role.compound:
+			fr = story.role.functional_role.compound
 		else:
-			fr = [us.role.functional_role.main]
+			fr = [story.role.functional_role.main]
 
 		return fr
 
@@ -372,6 +379,7 @@ class PatternIdentifier:
 		
 
 class Pattern(Enum):
-	link_to_US = 0
+	link_to_story = 0
 	parent = 1
-	subj_do = 2
+	subj_dobj = 2
+	freeform_conj = 3

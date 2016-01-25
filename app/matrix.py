@@ -68,9 +68,21 @@ class Matrix:
 		
 	def get_factor(self, matrix, stories):
 		for story in stories:
-			for token in story.data:
-				if NLPUtility.case(token) in matrix.index.values:
-					matrix.set_value(NLPUtility.case(token), story.txtnr(), self.score(token, story))
+			if story.has_ends:
+				parts = ['role', 'means', 'ends']
+			else:
+				parts = ['role', 'means']
+
+			for part in parts:
+				matrix = self.get_factor_part(matrix, story, part)		
+
+		return matrix
+
+	def get_factor_part(self, matrix, story, part):
+		for token in eval('story.' + str(part) + '.text'):
+			if NLPUtility.case(token) in matrix.index.values:
+				matrix.set_value(NLPUtility.case(token), story.txtnr(), self.score(token, story))
+
 		return matrix
 
 	def score(self, token, story):

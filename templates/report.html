@@ -121,14 +121,24 @@
 				<h4>Format</h4>
 				<dl>
 					<dt>Role indicator</dt>
-					<dd><kbd>{{ text(story.role.indicator) }}</kbd></dd>
+					<dd><kbd>{{ story.role.indicator }}</kbd></dd>
 					<dt>Means indicator</dt> 
-					<dd><kbd>{{ text(story.means.indicator) }}</kbd></dd>
-					{% if story.ends.indicators %}
+					<dd><kbd>{{ story.means.indicator }}</kbd></dd>
+					{% if story.has_ends %}
 					<dt>Ends indicator</dt>
-					<dd><kbd>{{ text(story.ends.indicator) }}</kbd></dd>
+					<dd><kbd>{{ story.ends.indicator }}</kbd></dd>
 					{% endif %}
 				</dl>
+				<h4>Simplified</h4>
+				<dl>
+					<dt>Role</dt>
+					<dd><kbd>{{ story.role.t }}</kbd></dd>
+					<dt>Means</dt> 
+					<dd><kbd>{{ story.means.simplified }}</kbd></dd>
+					{% if story.has_ends %}
+					<dt>Ends</dt>
+					<dd><kbd>{{ story.ends.simplified }}</kbd></dd>
+					{% endif %}
 				<h4>Role</h4>
 				<dl>				
 					<dt>Functional role<dt>
@@ -170,11 +180,36 @@
 					<dd><kbd>{{ text(story.means.free_form) }}</kbd></dd>
 					{% endif %}
 				</dl>
-				{% if story.ends.free_form %}
+				{% if story.has_ends %}
 				<h4>Ends</h4>
 				<dl>
+					{% if story.ends.free_form %}
 					<dt>Free form</dt>
 					<dd><kbd>{{ text(story.ends.free_form) }}</kbd></dd>
+					{% endif %}
+					<dt>Verb<dt>
+					<dd>
+					{% if text(story.ends.main_verb.phrase) == "" %}
+					<kbd>{{ text(story.ends.main_verb.main) }}</kbd>
+					{% else %}
+					<kbd>{{ text(story.ends.main_verb.phrase) }}</kbd> (type {{story.ends.main_verb.type}} phrasal verb)
+					{% endif %}
+					</dd>
+					<dt>Object<dt> 
+					<dd>
+					{% if text(story.ends.direct_object.compound) == "" %}
+						{% if text(story.ends.direct_object.main) != systemname %}
+						<kbd>{{ text(story.ends.direct_object.main) }}</kbd>
+						{% else %}
+						There does not seem to be a direct object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
+						{% endif %}
+					{% else %}
+					<kbd>{{ text(story.ends.direct_object.compound) }}</kbd> (compound)
+					{% endif %}
+					{% if text(story.ends.direct_object.phrase) != "" %}
+					with phrase <kbd>{{ text(story.ends.direct_object.phrase) }}</kbd>
+					{% endif %}
+					</dd>
 				</dl>
 				{% endif %}
 			</div>

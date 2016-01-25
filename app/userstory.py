@@ -12,13 +12,14 @@ class UserStory(object):
 		self.indicators = []
 		self.free_form = []
 		self.system = WithMain()
+		self.has_ends = False
 		self.stats = UserStoryStatistics()
 
 	def txtnr(self):
 		return "US" + str(self.number)
 
 	def is_func_role(self, token):
-		if token.text == "FUNCROLE" and token.i in self.iloc:
+		if token.i in self.iloc:
 			return True
 		return False
 
@@ -27,10 +28,15 @@ class UserStoryPart(object):
 	def __init__(self):
 		self.text = []
 		self.indicator = []
-
+		self.indicator_t = ""
+		self.indicator_i = -1
+		self.simplified = ""
 
 class FreeFormUSPart(UserStoryPart):
 	def __init__(self):
+		self.simplified = ""
+		self.main_verb = WithPhrase()
+		self.direct_object = WithPhrase()
 		self.free_form = []
 		self.verbs = []
 		self.phrasal_verbs = []
@@ -45,11 +51,7 @@ class Role(UserStoryPart):
 
 
 class Means(FreeFormUSPart):
-	def __init__(self):
-		self.main_verb = WithPhrase()
-		self.direct_object = WithPhrase()
-		self.indirect_object = ""
-
+	pass
 
 class Ends(FreeFormUSPart):
 	pass
