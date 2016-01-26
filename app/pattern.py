@@ -13,8 +13,7 @@ class Constructor:
 		self.weights = matrix['sum'].reset_index().values.tolist()
 
 	def make(self, ontname, threshold, link):
-		weighted_tokens = WeightAttacher.make(self.user_stories, 
-self.weights)
+		weighted_tokens = WeightAttacher.make(self.user_stories, self.weights)
 		
 		self.onto = Ontology(ontname, self.user_stories)
 		self.prolog = Ontology(ontname, self.user_stories)
@@ -25,14 +24,16 @@ self.weights)
 
 		if link:
 			self.link_to_story(self.onto.classes, self.user_stories)
-			
-		#for c in self.onto.classes:		
-		#	print("\"" + c.name + "\"", "\"" + c.parent + "\"")
 
 		g = Generator(self.onto.classes, self.onto.relationships)
 		g_prolog = Generator(self.prolog.classes, self.prolog.relationships, False)
 
-		return g.prt(self.onto), g_prolog.prt(self.prolog), self.onto, self.prolog
+		per_role_out = []
+		per_role_onto = self.get_per_role(self.user_stories, link)
+		for p in per_role_onto:
+			per_role_out.append([p[0].replace('/','_'), p[1].prt(self.onto)])
+
+		return g.prt(self.onto), g_prolog.prt(self.prolog), self.onto, self.prolog, per_role_out
 
 	def link_to_story(self, classes, stories):	
 		used_stories = []
@@ -53,6 +54,74 @@ self.weights)
 		
 		for story in used_stories:
 			self.onto.get_class_by_name(-1, story, 'UserStory')
+
+	def get_per_role(self, stories, link):	
+		roles_link = []
+		roles = []
+		stories_per_role = []
+		per_role_ontos = []
+
+		# Get a list of roles and a list where the stories are linked to their roles
+		for story in self.user_stories:
+			roles_link.append([story.role.t, story.number])
+			if str.lower(story.role.t) not in [str.lower(s) for s in roles]:
+				roles.append(story.role.t)
+
+		# Get a list of stories per role and get the generator object for these stories
+		for role in roles:
+			for link in roles_link:
+				if str.lower(role) == str.lower(link[0]):
+					stories_per_role.append(link[1])
+
+			per_role_ontos.append([role, self.get_generator(role, stories_per_role, link)])
+
+		return per_role_ontos
+
+	def get_generator(self, role, spr, link):		
+		role_classes = []
+		role_relationships = []
+		cl_names = []
+
+		# Get classes
+		for cl in self.onto.classes:
+			for story in cl.stories:
+				if story >= 0 and story in spr and cl.name not in cl_names:
+					role_classes.append(cl)
+					cl_names.append(cl.name)
+					if cl.parent != '':
+						for cp in self.onto.classes:
+							if cp.name == cl.parent:
+								role_classes.append(cp)
+
+			# Get the general classes
+			if cl.stories[0] == -1:
+				if cl.name == 'FunctionalRole' or cl.name == 'Person':
+					role_classes.append(cl)
+		
+		story_classes = []
+
+		# Get all relationships belonging to these classes
+		for rel in self.onto.relationships:
+			if rel.domain in cl_names and rel.range in cl_names:
+				role_relationships.append(rel)
+
+			# If 'link' add these classes too
+			if link:
+				for story in spr:
+					if rel.domain in cl_names and rel.range == 'US' + str(story):
+						role_relationships.append(rel)
+						story_classes.append(rel.range)
+
+		# Retrieve all classes for the relationships created in link
+		if link:
+			for cl in self.onto.classes:
+				for c in story_classes:
+					if story.name == c:
+						role_classes.append(cl)
+				if cl.name == 'UserStory':
+					role_classes.append(cl)
+
+		return Generator(role_classes, role_relationships)
 
 	def get_story(self, nr, stories):
 		for story in stories:

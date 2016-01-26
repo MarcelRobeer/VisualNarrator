@@ -19,7 +19,7 @@ from app.pattern import Constructor
 from app.statistics import Statistics, Counter
 
 
-def main(filename, systemname, print_us, print_ont, statistics, link, prolog, threshold, base, weights):
+def main(filename, systemname, print_us, print_ont, statistics, link, prolog, per_role, threshold, base, weights):
 	"""General class to run the entire program
 	"""
 
@@ -95,6 +95,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, th
 	output_prolog = out[1]
 	output_ontobj = out[2]
 	output_prologobj = out[3]
+	onto_per_role = out[4]
 
 	# Print out the ontology in the terminal, if argument '-o'/'--print_ont' is chosen
 	if print_ont:
@@ -143,6 +144,11 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, th
 	if prolog:
 		outputpl = w.make_file(folder + "/prolog", str(systemname), "pl", output_prolog)
 		files.append(["Prolog", outputpl])
+	if per_role:
+		for o in onto_per_role:
+			name = str(systemname) + "-" + str(o[0])
+			pont = w.make_file(folder + "/ontology", name, "omn", o[1])
+			files.append(["Individual Ontology for '" + str(o[0]) + "'", pont])
 
 	# Print the used ontology generation settings
 	Printer.print_gen_settings(matrix, base, threshold)
@@ -245,7 +251,7 @@ This program has multiple functionalities:
 	p.add_argument("filename",
                     help="input file with user stories", metavar="INPUT FILE",
                     type=lambda x: is_valid_file(p, x))
-	p.add_argument('--version', action='version', version='PROGRAM_NAME v0.8 BETA by M.J. Robeer')
+	p.add_argument('--version', action='version', version='PROGRAM_NAME v0.9 BETA by M.J. Robeer')
 
 	g_p = p.add_argument_group("general arguments (optional)")
 	g_p.add_argument("-n", "--name", dest="system_name", help="your system name, as used in ontology and output file(s) generation", required=False)
@@ -258,7 +264,7 @@ This program has multiple functionalities:
 	s_p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
 
 	w_p = p.add_argument_group("conceptual model generation tuning (optional)")
-	w_p.add_argument("-p", "--per_role", dest="per_role", help="create an additional conceptual model per role (TO BE IMPLEMENTED)", action="store_true", default=False)
+	w_p.add_argument("-p", "--per_role", dest="per_role", help="create an additional conceptual model per role", action="store_true", default=False)
 	w_p.add_argument("-t", dest="threshold", help="set threshold for conceptual model generation (INT, default = 1.0)", type=float, default=1.0)
 	w_p.add_argument("-b", dest="base_weight", help="set the base weight (INT, default = 1)", type=int, default=1)	
 	w_p.add_argument("-wfr", dest="weight_func_role", help="weight of functional role (FLOAT, default = 1.0)", type=float, default=1)
@@ -273,7 +279,7 @@ This program has multiple functionalities:
 
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.threshold, args.base_weight, weights)
+	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.per_role, args.threshold, args.base_weight, weights)
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):

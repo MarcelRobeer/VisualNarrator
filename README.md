@@ -1,6 +1,6 @@
 # [Working Title] User Story to Ontology
 
-> Bachelor Thesis
+> Utrecht University
 
 This program reads a text file (.txt, .csv, etc.) containing User Stories and outputs a Manchester Ontology file. As of yet, each line may only contain a single User Story.
 
@@ -52,7 +52,8 @@ Argument | Description
 ###### Ontology generation tuning
 Argument | Description | Type | Default
 --------|-----------|------------|--------
-`-l`, `--link` | Link all ontology classes to their respective User Story for usage in the set analysis | N/A | 
+`-p`, `--per_role` | Create an additional conceptual model per role | _N/A_
+`-l`, `--link` | Link all ontology classes to their respective User Story for usage in the set analysis | _N/A_
 `-t THRESHOLD` | Set the threshold for the selected classes | _FLOAT_ | 1.0
 `-b BASE_WEIGHT` | Set the base weight | _INT_ | 1
 `-wfr WEIGHT_FUNC_ROLE` | Weight of functional role | _FLOAT_ | 1.0
