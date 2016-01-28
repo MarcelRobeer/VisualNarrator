@@ -69,6 +69,7 @@ class Constructor:
 
 		# Get a list of stories per role and get the generator object for these stories
 		for role in roles:
+			stories_per_role = []
 			for link in roles_link:
 				if str.lower(role) == str.lower(link[0]):
 					stories_per_role.append(link[1])
@@ -102,8 +103,9 @@ class Constructor:
 
 		# Get all relationships belonging to these classes
 		for rel in self.onto.relationships:
-			if rel.domain in cl_names and rel.range in cl_names:
-				role_relationships.append(rel)
+			for story in rel.stories:
+				if rel.domain in cl_names and rel.range in cl_names and story in spr:
+					role_relationships.append(rel)
 
 			# If 'link' add these classes too
 			if link:

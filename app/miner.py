@@ -84,6 +84,13 @@ class StoryMiner:
 		if story.ends.indicator_i > -1 and story.ends.indicator != '':
 			story.has_ends = True
 
+		if story.means.indicator_i > story.ends.indicator_i and story.ends.indicator_i > -1:
+			story.means.indicator_i = -1
+			story.ends.indicator_i = -1
+			story.means.indicator = ''
+			story.ends.indicator = ''
+			story.has_ends = False
+
 		return story
 
 	def get_I(self, story):
@@ -104,7 +111,7 @@ class StoryMiner:
 
 		story.means.simplified = 'I' + story.means.t
 
-		if story.has_ends:
+		if story.has_ends and story.ends.indicator_i > story.means.indicator_i:
 			if str.lower(story.ends.t[:1]) == 'i':
 				if str.lower(story.ends.t[:5]) == 'i can':
 					story.ends.simplified = 'I ' + story.ends.t[6:]
@@ -112,6 +119,11 @@ class StoryMiner:
 					story.ends.simplified = story.ends.t
 			else:
 				story.ends.simplified = 'I ' + story.ends.t
+
+		if story.has_ends and story.ends.indicator_i <= story.means.indicator_i:
+			story.has_ends = False
+			story.ends.indicator_i = -1
+			story.ends.indicator = ""
 
 		return story
 
