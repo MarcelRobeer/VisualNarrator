@@ -44,18 +44,17 @@ class FreeFormUSPart(UserStoryPart):
 		self.proper_nouns = []
 		self.noun_phrases = []
 		self.compounds = []
+		self.subject = WithPhrase()
 
 class Role(UserStoryPart):
 	def __init__(self):
 		self.functional_role = WithPhrase()
-
 
 class Means(FreeFormUSPart):
 	pass
 
 class Ends(FreeFormUSPart):
 	pass
-
 
 class WithMain(object):
 	def __init__(self):

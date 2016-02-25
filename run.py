@@ -53,7 +53,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 			user_story = parse(s, us_id, systemname, nlp, miner)
 			user_story = c.count(user_story)
 			success = success + 1
-			us_instances.append(user_story)		
+			us_instances.append(user_story)	
 		except ValueError as err:
 			failed_stories.append([us_id, s, err.args])
 			errors += "\n[User Story " + str(us_id) + " ERROR] " + str(err.args[0]) + "! (\"" + " ".join(str.split(s)) + "\")"
@@ -223,6 +223,7 @@ def generate_report(report_dict):
 	loader = FileSystemLoader( searchpath=str(CURR_DIR) + "/templates/" )
 	env = Environment( loader=loader, trim_blocks=True, lstrip_blocks=True )
 	env.globals['text'] = Utility.t
+	env.globals['is_i'] = Utility.is_i
 	env.globals['apply_tab'] = Utility.tab
 	env.globals['is_comment'] = Utility.is_comment
 	env.globals['occurence_list'] = Utility.occurence_list

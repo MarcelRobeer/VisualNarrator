@@ -278,17 +278,22 @@ class PatternFactory:
 			pre = NLPUtility.get_case(r[1])
 			post = NLPUtility.get_case(r[3])
 
-			if r[2] != Pattern.parent:
-				rel = NLPUtility.get_case(r[4])
-
 			if r[2] == Pattern.parent:
 				self.onto.get_class_by_name(r[0], pre, post)
 				self.prolog.new_relationship(r[0], pre, 'isa', post)
-			elif r[2] == Pattern.subj_dobj:
+
+			if r[2] != Pattern.parent:
+				rel = NLPUtility.get_case(r[4])
+
+			if r[2] == Pattern.subj_dobj or r[2] == Pattern.compound_has:
 				self.onto.get_class_by_name(r[0], pre)
 				self.onto.get_class_by_name(r[0], post)
-				self.make_can_relationship(r[0], pre, rel, post)
 				self.prolog.new_relationship(r[0], pre, rel, post)
+
+				if r[2] == Pattern.subj_dobj:
+					self.make_can_relationship(r[0], pre, rel, post)
+				else:
+					self.make_has_relationship(r[0], pre, rel, post)
 
 			self.prolog.get_class_by_name(r[0], pre)
 			self.prolog.get_class_by_name(r[0], post)
@@ -355,8 +360,13 @@ class PatternIdentifier:
 				compounds.append(story.ends.compounds)
 
 		if compounds:
+			## C5
 			for c in compounds:
 				self.relationships.append([story.number, [self.getwt(c[0]), self.getwt(c[1])], Pattern.parent, self.getwt(c[1])])
+				
+				## R4
+				if c[0].head == c[1]:
+						self.relationships.append([story.number, self.getwt(c[0]), Pattern.compound_has, [self.getwt(c[0]), self.getwt(c[1])], self.getwt(c[1])])
 
 	def identify_func_role(self, story):
 		role = []
@@ -367,20 +377,29 @@ class PatternIdentifier:
 				role.append(self.getwt(c))
 		else:
 			role.append(self.getwt(story.role.functional_role.main))
-		
-		is_subj = self.is_subject(role)
+
+		is_child = self.is_child(role)
 		
 		# Checks if the functional role already has a parent, and then makes this parent the child for 'FunctionalRole'
-		if is_subj[0]:
-			for i in is_subj[1]:
+		if is_child[0]:
+			for i in is_child[1]:
 				if i[1] == Pattern.parent:
 					role = i[2]
 
 		self.relationships.append([story.number, role, Pattern.parent, 'FunctionalRole'])
 		self.func_role = True			
 
+	## C1, C2, C3, R1, R2
 	def identify_subj_dobj(self, story, part='means'):
-		fr = self.get_func_role(story)
+		if part == 'means':
+			fr = self.get_func_role(story)
+		else:
+			fr = self.get_subject(story)
+			if type(fr) is list:
+				txtfr = fr[0]
+			else:
+				txtfr = fr
+			print(txtfr, story.ends.main_verb.main, story.ends.direct_object.main)
 			
 		if eval('story.' + str(part) + '.main_verb.phrase'):
 			mv = eval('story.' + str(part) + '.main_verb.phrase')
@@ -404,20 +423,27 @@ class PatternIdentifier:
 				if token.dep_ == 'conj':
 					print(token.text, token.dep_, token.head, token.head.dep_, story.text)
 				
-
 	def get_func_role(self, story):
-		if story.role.functional_role.phrase:
-			fr = story.role.functional_role.phrase
-		elif story.role.functional_role.compound:
+		if story.role.functional_role.compound:
 			fr = story.role.functional_role.compound
 		else:
 			fr = [story.role.functional_role.main]
 
 		return fr
 
-	def is_subject(self, weighted_tokens):
-		is_subj = False
-		subjects = []
+	def get_subject(self, story):
+		if story.ends.subject.phrase:
+			subj = story.ends.subject.phrase
+		elif story.ends.subject.compound:
+			subj = story.ends.subject.compound
+		else:
+			subj = [story.ends.subject.main]
+
+		return subj
+
+	def is_child(self, weighted_tokens):
+		is_child = False
+		children = []
 
 		for r in self.relationships:
 			if type(r[1]) is list and type(weighted_tokens) is list:
@@ -428,18 +454,18 @@ class PatternIdentifier:
 				for j in weighted_tokens:
 					case_w += j.case
 				if i == j:
-					subjects.append([r[1], r[2], r[3]])
+					children.append([r[1], r[2], r[3]])
 					is_subj = True														
 			if type(r[1]) is str and type(weighted_tokens) is str:
 				if r[1] == weighted_tokens:
-					subjects.append([r[1], r[2], r[3]])
+					children.append([r[1], r[2], r[3]])
 					is_subj = True					
 			if type(r[1]) is WeightedToken and type(weighted_tokens) is WeightedToken:
 				if r[1].case == weighted_tokens.case:
-					subjects.append([r[1], r[2], r[3]])
+					children.append([r[1], r[2], r[3]])
 					is_subj = True
 
-		return is_subj, subjects	
+		return is_child, children	
 
 	def getwt(self, token):
 		for wt in self.weighted_tokens:
@@ -454,3 +480,4 @@ class Pattern(Enum):
 	parent = 1
 	subj_dobj = 2
 	freeform_conj = 3
+	compound_has = 4

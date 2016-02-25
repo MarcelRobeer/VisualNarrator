@@ -40,6 +40,11 @@ class Utility:
 			return Utility.text(NLPUtility.get_tokens(li))
 		return li.text
 
+	def is_i(li):
+		if str.lower(Utility.t(li)) == 'i':
+			return True
+		return False
+
 	def remove_duplicates(self, arr): # Potentially obsolete
 		li = list()
 		li_add = li.append
@@ -151,7 +156,7 @@ class Printer:
 	def print_details(fail, success, nlp_time, parse_time, matr_time, gen_time, stats_time):
 		total = success + fail
 		if success is not 0:
-			frate = fail/success
+			frate = fail/(success + fail)
 		else:
 			frate = 1
 

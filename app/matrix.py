@@ -30,11 +30,12 @@ class Matrix:
 
 		w_us = pd.DataFrame(0.0, index=words, columns=ids)
 		w_us = w_us.iloc[np.unique(w_us.index, return_index=True)[1]]
-	
-		w_us = self.get_factor(w_us, stories)
-		w_us['sum'] = w_us.sum(axis=1)
+
 		w_us = self.remove_stop_words(w_us, doc_array)
 		w_us = self.remove_indicators(w_us, stories)
+		w_us = self.get_factor(w_us, stories)
+
+		w_us['sum'] = w_us.sum(axis=1)
 
 		###
 		us_ids = []
@@ -81,7 +82,7 @@ class Matrix:
 	def get_factor_part(self, matrix, story, part):
 		for token in eval('story.' + str(part) + '.text'):
 			if NLPUtility.case(token) in matrix.index.values:
-				matrix.set_value(NLPUtility.case(token), story.txtnr(), self.score(token, story))
+				matrix = self.add(matrix, NLPUtility.case(token), story.txtnr(), self.score(token, story))
 
 		return matrix
 
@@ -102,7 +103,7 @@ class Matrix:
 			weight += self.VAL_MEANS_NOUN
 
 		if self.is_freeform('ends', token, story) == 1:
-			weight += self.VAL_ENDS_NOUN			
+			weight += self.VAL_ENDS_NOUN	
 
 		return weight
 

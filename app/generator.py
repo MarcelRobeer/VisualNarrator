@@ -15,6 +15,7 @@ class Generator:
 			li = self.gen_ontology(onto)
 		else:
 			li = self.gen_ontology(onto)
+
 		return li	
 		
 	def gen_ontology(self, onto):
@@ -26,7 +27,9 @@ class Generator:
 		if self.relationships:
 			ontologytext += onto.gh.comment("Relationships")
 
-		for r in self.relationships:
+		unique_rels = self.make_unique_relationships()
+
+		for r in unique_rels:	
 			ontologytext += r.prt() + "\n"
 
 		if self.classes:
@@ -36,6 +39,35 @@ class Generator:
 			ontologytext += c.prt() + "\n"
 
 		return ontologytext
+
+	def make_unique_relationships(self):
+		rel_names = set([r.name for r in self.relationships])
+		new_rels = []
+
+		for rn in rel_names:
+			rels_of_name = []
+			pairs = []
+			cnt = 1
+
+			for r in self.relationships:
+				if r.name == rn:
+					if [r.domain, r.range] not in pairs:
+						rels_of_name.append(r)
+						pairs.append([r.domain, r.range])
+
+			if len(rels_of_name) > 1:
+				for ron in rels_of_name:
+					new_relationship = OntProperty(ron.ontobj, "Object", ron.name + str(cnt), ron.domain, ron.range)
+					new_relationship.stories = ron.stories
+					new_rels.append(new_relationship)
+					cnt += 1
+
+			else:
+				for r in self.relationships:
+					if r.name == rn:
+						new_rels.append(r)		
+
+		return new_rels
 
 	def gen_prolog_from_onto(self):
 		prologtext = []

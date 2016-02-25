@@ -115,10 +115,12 @@ class StoryMiner:
 			if str.lower(story.ends.t[:1]) == 'i':
 				if str.lower(story.ends.t[:5]) == 'i can':
 					story.ends.simplified = 'I ' + story.ends.t[6:]
+				elif str.lower(story.ends.t[:12]) == 'i am able to':
+					story.ends.simplified = 'I ' + story.ends.t[13:]
 				else:
 					story.ends.simplified = story.ends.t
 			else:
-				story.ends.simplified = 'I ' + story.ends.t
+				story.ends.simplified = story.ends.t
 
 		if story.has_ends and story.ends.indicator_i <= story.means.indicator_i:
 			story.has_ends = False
@@ -130,7 +132,7 @@ class StoryMiner:
 	def nlp_part(self, story, nlp):
 		story.role.text = nlp(story.role.t)
 		story.means.text = nlp(story.means.simplified)
-		if story.ends.simplified:
+		if story.has_ends:
 			story.ends.text = nlp(story.ends.simplified)
 
 		return story
@@ -151,7 +153,14 @@ class StoryMiner:
 		if len(story.role.text) == 1:
 			story.role.functional_role.main = story.role.text[0]
 		else:		
-			compound = MinerUtility.get_compound_nouns(story, potential_without_with)
+			compound = []
+			for token in potential_without_with:
+				if token.dep_ == 'compound':
+					compound.append([token, token.head])
+
+			if len(compound) > 0 and type(compound[0]) is list:
+				compound = compound[0]
+
 			story.role.functional_role.compound = compound
 
 			# If it is a compound
@@ -171,6 +180,7 @@ class StoryMiner:
 		simple = False
 		found_verb = False
 		found_obj = False
+		subject = []
 		main_verb = []
 		direct_object = []
 
@@ -178,10 +188,14 @@ class StoryMiner:
 		for token in eval('story.' + str(part) + '.text'):
 			if token.dep_[:5] == 'nsubj':
 				has_subj = True
+				subject = token
 				if token.head.pos_ == 'VERB':
 					found_verb = True
 					main_verb = token.head
 					break
+
+		if type(subject) is list:
+			subject = eval('story.' + str(part) + '.text')[0]
 
 		for token in eval('story.' + str(part) + '.text'):
 			if token.dep_ == 'dobj':
@@ -207,7 +221,7 @@ class StoryMiner:
 
 		# If the sentence contains no dobj it must be another obj
 		if not found_obj:
-			for token in story.means.text:
+			for token in eval('story.' + str(part) + '.text'):
 				if token.dep_[1:] == 'obj':
 					found_obj = True
 					direct_object = token
@@ -222,6 +236,7 @@ class StoryMiner:
 			story.means.main_verb.main = main_verb
 			story.means.direct_object.main = direct_object
 		else:
+			story.ends.subject.main = subject
 			story.ends.main_verb.main = main_verb
 			story.ends.direct_object.main = direct_object
 
@@ -260,6 +275,18 @@ class StoryMiner:
 					if token.dep_ == 'compound' and token.head == story.ends.direct_object.main:
 						story.ends.direct_object.compound = [token, story.ends.direct_object.main]
 
+		ends_subj = story.ends.subject.main
+
+		if str.lower(story.ends.subject.main.text) != '' and str.lower(story.ends.subject.main.text) != 'i':
+			for np in story.ends.text.noun_chunks:
+				if story.ends.subject.main in np:
+					story.ends.subject.phrase = np
+		
+			if story.ends.subject.phrase:
+				for token in story.ends.subject.phrase:
+					if token.dep_ == 'compound' and token.head == story.ends.subject.main:
+						story.ends.subject.compound = [token, story.ends.subject.main]
+
 		pv = MinerUtility.get_phrasal_verb(story, story.ends.main_verb.main, 'ends.text')
 		story.ends.main_verb.phrase = MinerUtility.get_span(story, pv[0], 'ends.text')
 		story.ends.main_verb.type = pv[1]
@@ -292,7 +319,7 @@ class StoryMiner:
 			story.ends.free_form = story.ends.text
 		
 		# Extract useful information from free form
-		if story.means.free_form or story.ends.free_form:
+		if story.means.free_form or story.has_ends:
 			self.get_ff_subj_dobj(story)
 			self.get_ff_verbs(story)
 			self.get_ff_nouns(story)
@@ -300,7 +327,7 @@ class StoryMiner:
 				story.means.proper_nouns = MinerUtility.get_proper_nouns(story, story.means.nouns)
 				story.means.noun_phrases = MinerUtility.get_noun_phrases(story, story.means.free_form)
 				story.means.compounds = MinerUtility.get_compound_nouns(story, story.means.free_form)
-			if story.ends.free_form:
+			if story.has_ends:
 				story.ends.proper_nouns = MinerUtility.get_proper_nouns(story, story.ends.nouns)
 				story.ends.noun_phrases = MinerUtility.get_noun_phrases(story, story.ends.free_form)
 				story.ends.compounds = MinerUtility.get_compound_nouns(story, story.ends.free_form)
@@ -426,7 +453,7 @@ class MinerUtility:
 			if token.pos_ == "NOUN":
 				nouns.append(token)
 
-		return MinerUtility.get_span(story, nouns)
+		return nouns
 
 	def get_proper_nouns(story, nouns):
 		proper = []
@@ -435,7 +462,7 @@ class MinerUtility:
 			if token.tag_ == "NNP" or token.tag_ == "NNPS":
 				proper.append(token)
 
-		return MinerUtility.get_span(story, proper)
+		return proper
 
 	def get_compound_nouns(story, span):
 		compounds = []
