@@ -173,10 +173,10 @@ class Ontology:
 				if str.lower(name) == str.lower(c.name) and (str.lower(parent) == str.lower(c.parent) or (self.is_empty(parent) and self.is_empty(c.parent))):
 					c.stories.append(story)
 					return c
-				elif str.lower(name) == str.lower(c.name) and not self.is_empty(c.parent) and self.is_empty(parent):
+				if str.lower(name) == str.lower(c.name) and not self.is_empty(c.parent) and self.is_empty(parent):
 					c.stories.append(story)
 					return c
-				elif str.lower(name) == str.lower(c.name) and not self.is_empty(parent):
+				if str.lower(name) == str.lower(c.name) and not self.is_empty(parent):
 					c_stories = c.stories
 					self.classes.remove(c)
 

@@ -229,7 +229,7 @@ class StoryMiner:
 
 		# If none is found it points to the unknown 'system part'
 		# + get phrases for direct_object and main_verb
-		if not found_obj:
+		if not found_obj and part != 'means':
 			direct_object = story.system.main
 
 		if part == 'means':

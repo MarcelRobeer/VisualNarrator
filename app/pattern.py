@@ -30,6 +30,7 @@ class Constructor:
 
 		per_role_out = []
 		per_role_onto = self.get_per_role(self.user_stories, link)
+
 		for p in per_role_onto:
 			per_role_out.append([p[0].replace('/','_'), p[1].prt(self.onto)])
 
@@ -44,10 +45,13 @@ class Constructor:
 					s = self.get_story(int(story), stories)
 					part_name = self.get_parts(cl.name, s)
 
-					for part in part_name:
-						n = s.txtnr() + part
-						self.onto.get_class_by_name(-1, n, s.txtnr())
-						self.onto.new_relationship(-1, cl.name, cl.name + 'OccursIn' + n, n)
+					# for part in part_name:
+					#	n = s.txtnr() + part
+					#	self.onto.get_class_by_name(-1, n, s.txtnr())
+					#	self.onto.new_relationship(-1, cl.name, cl.name + 'OccursIn' + n, n)
+					self.onto.new_relationship(-1, cl.name, cl.name + 'OccursIn' + s.txtnr(), s.txtnr())
+
+					for part in part_name:					
 						self.prolog.new_relationship(-1, cl.name, part, s.txtnr())
 
 					used_stories.append(s.txtnr())
@@ -118,7 +122,7 @@ class Constructor:
 		if link:
 			for cl in self.onto.classes:
 				for c in story_classes:
-					if story.name == c:
+					if cl.name == c:
 						role_classes.append(cl)
 				if cl.name == 'UserStory':
 					role_classes.append(cl)
@@ -166,7 +170,7 @@ class Constructor:
 					means.append(NLPUtility.case(token))
 				elif token not in means_compounds:
 					means.append(NLPUtility.case(token))
-			if story.ends.indicator:
+			if story.has_ends:
 				if token in story.ends.text:
 					if len(case) != 1:
 						ends.append(NLPUtility.case(token))
@@ -230,8 +234,9 @@ class PatternFactory:
 
 		for story in user_stories:
 			pi.identify(story)
-		
+
 		relationships = self.apply_threshold(pi.relationships, threshold)	
+
 		self.create(relationships, user_stories, threshold)
 
 		return self.onto
@@ -302,11 +307,10 @@ class PatternFactory:
 			used.append(post)
 
 		for wo in self.weighted_tokens:
-			if wo.case not in used:
-				if wo.weight >= threshold:
-					in_stories = self.find_story(wo, stories)
-					for in_story in in_stories:
-						self.onto.get_class_by_name(in_story, wo.case)
+			if wo.weight >= threshold:
+				in_stories = self.find_story(wo, stories)
+				for in_story in in_stories:
+					self.onto.get_class_by_name(in_story, wo.case)
 
 	def make_can_relationship(self, story, pre, rel, post):
 		self.make_relationship(story, pre, rel, post, 'can')
@@ -344,6 +348,7 @@ class PatternIdentifier:
 
 	def identify_compound(self, story):
 		compounds = []
+
 		if story.role.functional_role.compound:
 			compounds.append(story.role.functional_role.compound)
 		if story.means.direct_object.compound:
@@ -366,7 +371,7 @@ class PatternIdentifier:
 				
 				## R4
 				if c[0].head == c[1]:
-						self.relationships.append([story.number, self.getwt(c[0]), Pattern.compound_has, [self.getwt(c[0]), self.getwt(c[1])], self.getwt(c[1])])
+					self.relationships.append([story.number, self.getwt(c[0]), Pattern.compound_has, [self.getwt(c[0]), self.getwt(c[1])], self.getwt(c[1])])
 
 	def identify_func_role(self, story):
 		role = []
@@ -395,11 +400,14 @@ class PatternIdentifier:
 			fr = self.get_func_role(story)
 		else:
 			fr = self.get_subject(story)
+
 			if type(fr) is list:
 				txtfr = fr[0]
 			else:
 				txtfr = fr
-			print(txtfr, story.ends.main_verb.main, story.ends.direct_object.main)
+			
+			if str.lower(txtfr.text) == 'i':
+				fr = self.get_func_role(story)
 			
 		if eval('story.' + str(part) + '.main_verb.phrase'):
 			mv = eval('story.' + str(part) + '.main_verb.phrase')
@@ -411,11 +419,12 @@ class PatternIdentifier:
 		else:
 			do = [eval('story.' + str(part) + '.direct_object.main')]
 		
-		w_fr = [self.getwt(x) for x in fr]
-		w_mv = [self.getwt(x) for x in mv]
-		w_do = [self.getwt(x) for x in do]
+		if type(do[0]) is not list:
+			w_fr = [self.getwt(x) for x in fr]
+			w_mv = [self.getwt(x) for x in mv]
+			w_do = [self.getwt(x) for x in do]
 
-		self.relationships.append([story.number, w_fr, Pattern.subj_dobj, w_do, w_mv])
+			self.relationships.append([story.number, w_fr, Pattern.subj_dobj, w_do, w_mv])
 
 	def identify_dobj_conj(self, story):
 		if story.means.free_form:
