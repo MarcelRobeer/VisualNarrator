@@ -143,8 +143,9 @@ class GenHelp:
 		return "# " + com + "\n"
 
 class Ontology:
-	def __init__(self, ontology_name, stories, option=None):
-		self.ontology = ontology_name
+	def __init__(self, sysname, stories, option=None):
+		self.sys_name = sysname
+		self.ontology = "http://fakesite.org/" + str(sysname).lower() + ".owl#"
 		self.ontology_name = "onto"
 		self.option = option
 		self.gh = GenHelp(self.ontology, option)
@@ -165,7 +166,7 @@ class Ontology:
 		new_property = OntProperty(self, "Object", name, domain, range)
 		return new_property
 
-	def get_class_by_name(self, story, name, parent=''):		
+	def get_class_by_name(self, story, name, parent='', is_role=False):		
 		if self.is_empty(name):
 			return False
 
@@ -174,9 +175,13 @@ class Ontology:
 		if self.classes:
 			for c in self.classes:
 				if str.lower(name) == str.lower(c.name) and (str.lower(parent) == str.lower(c.parent) or (self.is_empty(parent) and self.is_empty(c.parent))):
+					if is_role:
+						c.is_role = True
 					c.stories.append(story)
 					return c
 				if str.lower(name) == str.lower(c.name) and not self.is_empty(c.parent) and self.is_empty(parent):
+					if is_role:
+						c.is_role = True
 					c.stories.append(story)
 					return c
 				if str.lower(name) == str.lower(c.name) and not self.is_empty(parent):
@@ -184,6 +189,8 @@ class Ontology:
 					self.classes.remove(c)
 
 		new_class = self.make_class(name, parent)
+		if is_role:
+			new_class.is_role = True
 		new_class.stories = c_stories
 		new_class.stories.append(story)
 		self.classes.append(new_class)
@@ -218,6 +225,7 @@ class OntClass(object):
 		self.parent = parent
 		self.prefix = prefix
 		self.stories = []
+		self.is_role = False
 
 	def prt(self):
 		name = ''.join(self.name.split())
@@ -229,7 +237,21 @@ class OntClass(object):
 			pass			
 		else:
 			returnstr += self.ontobj.gh.make_part("SubClassOf", self.ontobj.gh.make_obj(parent, self.prefix))
+
+		if self.name != name or self.is_role:
+			returnstr += "\tAnnotations:"
+		if self.name != name:
+			returnstr += "\n\t\trdfs:label \"%s\"" % (self.name)
+		if self.name != name and self.is_role:
+			returnstr += ","
+		if self.is_role:
+			returnstr += "\n\t\trdfs:comment \"Functional Role\""
+		returnstr += "\n"
+
 		return returnstr
+
+	def set_role(self):
+		self.is_role = True
 
 class OntProperty(object):
 	def __init__(self, ontology, type, name, domain, range):
@@ -254,20 +276,22 @@ class OntProperty(object):
 class Header:
 	def __init__(self, ontology, used_prefixes):
 		self.ontobj = ontology
-		self.standard_prefixes = ['owl', 'rdf', 'rdfs', 'xsd']
+		self.standard_prefixes = ['owl', 'rdf', 'rdfs', 'xsd', 'dc']
 		self.used_prefixes = self.standard_prefixes + used_prefixes
 
 	def prt(self):
 		returnstr = ""
-		returnstr += self.ontobj.gh.comment("Generated with PROGRAM_NAME")
+		returnstr += self.ontobj.gh.comment("Generated with Visual Narrator")
 		returnstr += self.ontobj.gh.make_prefix('', self.ontobj.ontology)
 		for prefix in self.used_prefixes:
 			if prefix is not '':
 				link = str(PREFIX_DICT[prefix])
 				returnstr += self.ontobj.gh.make_prefix(prefix, link)
 		returnstr += self.ontobj.gh.make_prefix(self.ontobj.ontology_name, self.ontobj.ontology)	
-		if self.ontobj.option is not None:
-			returnstr += "\nOntology: <" + self.ontobj.ontology + ">"
+		returnstr += "\nOntology: <:>\n\n"
+		returnstr += "Annotations:\n\tdc:title \"" + str(self.ontobj.sys_name) + "\",\n\tdc:creator \"Visual Narrator\",\n\trdfs:comment \"Generated with Visual Narrator\"\n\n"
+		returnstr += "AnnotationProperty: dc:creator\n\n"
+		returnstr += "AnnotationProperty: dc:title\n\n"
 		return returnstr	
 
 	

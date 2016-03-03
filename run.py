@@ -89,8 +89,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 	start_gen_time = timeit.default_timer()
 	
 	patterns = Constructor(nlp, us_instances, m)
-	ontname = "http://fakesite.org/" + str(systemname).lower() + ".owl#"
-	out = patterns.make(ontname, threshold, link)
+	out = patterns.make(systemname, threshold, link)
 	output_ontology = out[0]
 	output_prolog = out[1]
 	output_ontobj = out[2]

@@ -5,6 +5,9 @@ class StoryMiner:
 	def structure(self, story):
 		story = self.get_indicators(story)
 
+		for token in story.data:
+			print(token.text, token.is_stop)
+
 		if not story.role.indicator:
 			raise ValueError('Could not find a role indicator', 0)
 		if not story.means.indicator:

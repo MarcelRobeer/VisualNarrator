@@ -31,8 +31,9 @@ class Matrix:
 		w_us = pd.DataFrame(0.0, index=words, columns=ids)
 		w_us = w_us.iloc[np.unique(w_us.index, return_index=True)[1]]
 
-		w_us = self.remove_stop_words(w_us, doc_array)
-		w_us = self.remove_indicators(w_us, stories)
+		# w_us = self.remove_stop_words(w_us, doc_array)
+		w_us = self.remove_indicators(w_us, stories, nlp)
+		w_us = self.remove_verbs(w_us, stories)
 		w_us = self.get_factor(w_us, stories)
 
 		w_us['sum'] = w_us.sum(axis=1)
@@ -199,17 +200,39 @@ class Matrix:
 					return 1
 		return -1
 
-	def remove_indicators(self, matrix, stories):
+	def remove_indicators(self, matrix, stories, nlp):
 		indicators = []
+
 		for story in stories:
-			for i in story.indicators:
-				if NLPUtility.case(i) not in indicators:
-					indicators.append(NLPUtility.case(i))
+			ind = story.role.indicator + " " + story.means.indicator
+			if story.has_ends:
+				ind += " " + story.ends.indicator
+
+			[indicators.append(NLPUtility.case(t)) for t in nlp(ind)]
+
+			[indicators.append(i) for i in story.indicators]
 
 		# Something is off here...
 		# Remove if it is in the list of indicators AND its sum is 0...		
 		# matrix[(-matrix.index.isin(indicators)) & (matrix['sum'] != 0)]
 		return matrix[(-matrix.index.isin(indicators))]
+
+	def remove_verbs(self, matrix, stories):
+		verbs = []
+		cases = matrix.index.values.tolist()		
+
+		for case in cases:
+			pos = []
+
+			for story in stories:
+				for token in story.data:
+					if NLPUtility.case(token) == case:
+						pos.append(token.pos_)
+
+			if len(set(pos)) == 1 and pos[0] == 'VERB':
+				verbs.append(case)
+
+		return matrix[(-matrix.index.isin(verbs))]
 
 	def remove_stop_words(self, matrix, stopwords):
 		result = pd.merge(matrix, stopwords, left_index=True, right_index=True, how='inner')

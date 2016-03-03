@@ -237,7 +237,7 @@ class PatternFactory:
 
 		relationships = self.apply_threshold(pi.relationships, threshold)	
 
-		self.create(relationships, user_stories, threshold)
+		self.create(relationships, user_stories, threshold, pi.roles)
 
 		return self.onto
 
@@ -276,7 +276,7 @@ class PatternFactory:
 
 		return wt
 
-	def create(self, relationships, stories, threshold):
+	def create(self, relationships, stories, threshold, roles):
 		used = []
 
 		for r in relationships:
@@ -312,6 +312,9 @@ class PatternFactory:
 				for in_story in in_stories:
 					self.onto.get_class_by_name(in_story, wo.case)
 
+		for r in roles:
+			self.onto.get_class_by_name(r[0], NLPUtility.get_case(r[1]), '', True)
+
 	def make_can_relationship(self, story, pre, rel, post):
 		self.make_relationship(story, pre, rel, post, 'can')
 
@@ -333,7 +336,7 @@ class PatternIdentifier:
 	def __init__(self, weighted_tokens):
 		self.weighted_tokens = weighted_tokens
 		self.relationships = []
-		self.func_role = False
+		self.roles = []
 
 	def identify(self, story):
 		self.identify_compound(story)
@@ -342,9 +345,6 @@ class PatternIdentifier:
 		if story.has_ends:
 			self.identify_subj_dobj(story, 'ends')
 		self.identify_dobj_conj(story)
-
-		if self.func_role:
-			self.relationships.append([-1, 'FunctionalRole', Pattern.parent, 'Person'])
 
 	def identify_compound(self, story):
 		compounds = []
@@ -383,6 +383,8 @@ class PatternIdentifier:
 		else:
 			role.append(self.getwt(story.role.functional_role.main))
 
+		self.roles.append([story.number, role])
+
 		is_child = self.is_child(role)
 		
 		# Checks if the functional role already has a parent, and then makes this parent the child for 'FunctionalRole'
@@ -391,7 +393,7 @@ class PatternIdentifier:
 				if i[1] == Pattern.parent:
 					role = i[2]
 
-		self.relationships.append([story.number, role, Pattern.parent, 'FunctionalRole'])
+		# self.relationships.append([story.number, role, Pattern.parent, 'FunctionalRole'])
 		self.func_role = True			
 
 	## C1, C2, C3, R1, R2
