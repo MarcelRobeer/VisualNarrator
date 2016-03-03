@@ -324,7 +324,7 @@ class PatternFactory:
 	def find_story(self, w_token, stories):
 		nrs = []
 		for story in stories:
-			if w_token.case in [NLPUtility.case(t) for t in story.data]:
+			if w_token.case in [NLPUtility.case(t) for t in story.data if t.pos_ == 'NOUN']:
 				nrs.append(story.number)
 		return nrs
 

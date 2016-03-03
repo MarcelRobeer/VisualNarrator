@@ -8,6 +8,9 @@ class Generator:
 		self.onto = onto
 
 	def prt(self, onto): 
+		for c in self.classes:
+			c.stories.sort()
+
 		if not self.onto:
 			return self.gen_prolog_from_onto()
 
