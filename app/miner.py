@@ -5,9 +5,6 @@ class StoryMiner:
 	def structure(self, story):
 		story = self.get_indicators(story)
 
-		for token in story.data:
-			print(token.text, token.is_stop)
-
 		if not story.role.indicator:
 			raise ValueError('Could not find a role indicator', 0)
 		if not story.means.indicator:
@@ -409,23 +406,32 @@ class MinerUtility:
 		particles = TYPE_II_PARTICLES + TYPE_II_PARTICLES_MARGINAL
 		phrasal_verb = head
 		phrase = []
+		dobj_i = 1000
 		vtype = ""
 
-		if MinerUtility.lower(phrasal_verb.right_edge.text) in particles:
+		if part == 'means.text' or part == 'ends.text':
+			for token in eval('story.' + str(part)):
+				if token.dep_ == 'dobj':
+					dobj_i = token.i
+					break
+
+		if str.lower(phrasal_verb.right_edge.text) in particles and phrasal_verb.right_edge.i < dobj_i:
 			phrasal_verb = phrasal_verb.right_edge
 			phrase.append(phrasal_verb)
 			vtype = "II"
 		else:
 			for chunk in eval('story.' + str(part) + '.noun_chunks'):
 				for c in phrasal_verb.children:
-					if c == chunk.root.head:
+					if c == chunk.root.head and c.i < dobj_i:
 						if c.pos_ == 'PART':
 							phrase.append(c)
 							vtype = "I"
+							break
 						if c.pos_ == 'ADP':
 							phrase.append(c)
 							vtype = "III"
-		
+							break
+
 		if phrase:
 			phrase.insert(0, head)
 

@@ -1,6 +1,6 @@
-# [Working Title] User Story to Ontology
+# Visual Narrator
 
-> Utrecht University
+> Tells Your User Story Graphically
 
 This program reads a text file (.txt, .csv, etc.) containing User Stories and outputs a Manchester Ontology file. As of yet, each line may only contain a single User Story.
 

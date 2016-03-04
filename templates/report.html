@@ -152,7 +152,7 @@
 				</dl>
 				<h4>Means</h4>
 				<dl>
-					<dt>Main verb<dt>
+					<dt>Main verb</dt>
 					<dd>
 					{% if text(story.means.main_verb.phrase) == "" %}
 					<kbd>{{ text(story.means.main_verb.main) }}</kbd>
@@ -160,7 +160,7 @@
 					<kbd>{{ text(story.means.main_verb.phrase) }}</kbd> (type {{story.means.main_verb.type}} phrasal verb)
 					{% endif %}
 					</dd>
-					<dt>Direct object<dt> 
+					<dt>Direct object</dt> 
 					<dd>
 					{% if text(story.means.direct_object.compound) == "" %}
 						{% if text(story.means.direct_object.main) != systemname %}
@@ -187,7 +187,22 @@
 					<dt>Free form</dt>
 					<dd><kbd>{{ text(story.ends.free_form) }}</kbd></dd>
 					{% endif %}
-					<dt>Verb<dt>
+					<dt>Subject</dt>
+					<dd>
+					{% if is_i(story.ends.subject.main) %}
+						Found <kbd>{{ text(story.ends.subject.main) }}</kbd>, so it was replaced with the functional role
+					{% else %}
+						{% if text(story.ends.direct_object.compound) == "" %}
+							<kbd>{{ text(story.ends.subject.main) }}</kbd>
+						{% else %}
+						<kbd>{{ text(story.ends.subject.compound) }}</kbd> (compound)
+						{% endif %}
+						{% if text(story.ends.direct_object.phrase) != "" %}
+						with phrase <kbd>{{ text(story.ends.subject.phrase) }}</kbd>
+						{% endif %}
+					{% endif %}
+					</dd>
+					<dt>Verb</dt>
 					<dd>
 					{% if text(story.ends.main_verb.phrase) == "" %}
 					<kbd>{{ text(story.ends.main_verb.main) }}</kbd>
@@ -195,7 +210,7 @@
 					<kbd>{{ text(story.ends.main_verb.phrase) }}</kbd> (type {{story.ends.main_verb.type}} phrasal verb)
 					{% endif %}
 					</dd>
-					<dt>Object<dt> 
+					<dt>Object</dt> 
 					<dd>
 					{% if text(story.ends.direct_object.compound) == "" %}
 						{% if text(story.ends.direct_object.main) != systemname %}
@@ -271,13 +286,13 @@
 		</div>
 			<table class="table">
 				<thead>
-					<tr><th>Class</th><th>Parent</th><th>Occurs in</th></tr>
+					<tr><th>Type</th><th>Class</th><th>Parent</th><th>Occurs in</th></tr>
 				</thead>
 				<tbody>
 			{% for class in classes %}
 				{% if class is not is_us %}
 					<tr>
-					<td>{{ class.name }}</td><td>{{ class.parent }}</td><td>{{ occurence_list(class.stories) }}</td>
+					<td>{% if class.is_role %}FunctionalRole{% endif %}</td><td>{{ class.name }}</td><td>{{ class.parent }}</td><td>{{ occurence_list(class.stories) }}</td>
 					</tr>
 				{% endif %}
 			{% endfor %}

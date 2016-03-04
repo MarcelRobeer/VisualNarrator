@@ -412,6 +412,7 @@ class PatternIdentifier:
 				fr = self.get_func_role(story)
 			
 		if eval('story.' + str(part) + '.main_verb.phrase'):
+			#and (eval('story.' + str(part) + '.main_verb.type') == 'II' or str.lower(eval('story.' + str(part) + '.main_verb.phrase')[1].text) in ['on', 'in', 'by', 'to']):
 			mv = eval('story.' + str(part) + '.main_verb.phrase')
 		else:
 			mv = [eval('story.' + str(part) + '.main_verb.main')]
