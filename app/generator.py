@@ -145,7 +145,7 @@ class GenHelp:
 class Ontology:
 	def __init__(self, sysname, stories, option=None):
 		self.sys_name = sysname
-		self.ontology = "http://fakesite.org/" + str(sysname).lower() + ".owl#"
+		self.ontology = "http://fakesite.org/" + "_".join(str(sysname).lower().split()) + ".owl#"
 		self.ontology_name = "onto"
 		self.option = option
 		self.gh = GenHelp(self.ontology, option)
