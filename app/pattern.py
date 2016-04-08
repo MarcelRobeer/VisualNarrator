@@ -139,7 +139,7 @@ class Constructor:
 		case = class_name.split()
 
 		means_compounds = []
-		means_compounds.append(story.means.direct_object.compound)
+		means_compounds.append(story.means.main_object.compound)
 		ends_compounds = story.ends.compounds
 
 		if story.means.free_form:
@@ -351,8 +351,8 @@ class PatternIdentifier:
 
 		if story.role.functional_role.compound:
 			compounds.append(story.role.functional_role.compound)
-		if story.means.direct_object.compound:
-			compounds.append(story.means.direct_object.compound)
+		if story.means.main_object.compound:
+			compounds.append(story.means.main_object.compound)
 		if story.means.free_form:
 			if type(story.means.compounds) is list and len(story.means.compounds) > 0 and type(story.means.compounds[0]) is list:
 				compounds.extend(story.means.compounds)
@@ -417,10 +417,10 @@ class PatternIdentifier:
 		else:
 			mv = [eval('story.' + str(part) + '.main_verb.main')]
 
-		if eval('story.' + str(part) + '.direct_object.compound'):
-			do = eval('story.' + str(part) + '.direct_object.compound')
+		if eval('story.' + str(part) + '.main_object.compound'):
+			do = eval('story.' + str(part) + '.main_object.compound')
 		else:
-			do = [eval('story.' + str(part) + '.direct_object.main')]
+			do = [eval('story.' + str(part) + '.main_object.main')]
 		
 		if type(do[0]) is not list:
 			w_fr = [self.getwt(x) for x in fr]
@@ -431,7 +431,7 @@ class PatternIdentifier:
 
 	def identify_dobj_conj(self, story):
 		if story.means.free_form:
-			for token in story.means.direct_object.phrase:
+			for token in story.means.main_object.phrase:
 				if token.dep_ == 'conj':
 					print(token.text, token.dep_, token.head, token.head.dep_, story.text)
 				
