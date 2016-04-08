@@ -57,8 +57,8 @@ class Counter:
 		#	story.stats.fr_type = story.role.functional_role.type
 		if not story.means.main_verb.type == "":
 			story.stats.mv_type = story.means.main_verb.type
-		#if not story.means.direct_object.type == "":
-		#	story.stats.do_type = story.means.direct_object.type
+		#if not story.means.main_object.type == "":
+		#	story.stats.do_type = story.means.main_object.type
 		return story
 
 	'''def get_structure(self, story):
