@@ -36,7 +36,7 @@ class FreeFormUSPart(UserStoryPart):
 	def __init__(self):
 		self.simplified = ""
 		self.main_verb = WithPhrase()
-		self.direct_object = WithPhrase()
+		self.main_object = WithPhrase()
 		self.free_form = []
 		self.verbs = []
 		self.phrasal_verbs = []
