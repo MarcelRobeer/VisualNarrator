@@ -268,14 +268,14 @@ This program has multiple functionalities:
 	w_p.add_argument("-t", dest="threshold", help="set threshold for conceptual model generation (INT, default = 1.0)", type=float, default=1.0)
 	w_p.add_argument("-b", dest="base_weight", help="set the base weight (INT, default = 1)", type=int, default=1)	
 	w_p.add_argument("-wfr", dest="weight_func_role", help="weight of functional role (FLOAT, default = 1.0)", type=float, default=1)
-	w_p.add_argument("-wdo", dest="weight_direct_obj", help="weight of direct object (FLOAT, default = 1.0)", type=float, default=1)
+	w_p.add_argument("-wmo", dest="weight_main_obj", help="weight of main object (FLOAT, default = 1.0)", type=float, default=1)
 	w_p.add_argument("-wffm", dest="weight_ff_means", help="weight of noun in free form means (FLOAT, default = 0.7)", type=float, default=0.7)
 	w_p.add_argument("-wffe", dest="weight_ff_ends", help="weight of noun in free form ends (FLOAT, default = 0.5)", type=float, default=0.5)		
 	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)		
 	
 	args = p.parse_args()
 
-	weights = [args.weight_func_role, args.weight_direct_obj, args.weight_ff_means, args.weight_ff_ends, args.weight_compound]
+	weights = [args.weight_func_role, args.weight_main_obj, args.weight_ff_means, args.weight_ff_ends, args.weight_compound]
 
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
