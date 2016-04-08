@@ -129,7 +129,7 @@ class Printer:
 		print("User Story", story.number, ":", story.text)
 		print(" >> INDICATORS\n  Role:", story.role.indicator, "\n    Means:", story.means.indicator, "\n    Ends:", story.ends.indicator)
 		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", NLPUtility.get_tokens(story.role.functional_role.compound), ")")
-		print(" >> MEANS\n  Main verb:", story.means.main_verb.main, phrasetext, "\n  Direct object:", story.means.direct_object.main, "( w/ noun phrase", NLPUtility.get_tokens(story.means.direct_object.phrase), "w/ compound", NLPUtility.get_tokens(story.means.direct_object.compound), ")")
+		print(" >> MEANS\n  Main verb:", story.means.main_verb.main, phrasetext, "\n  Main object:", story.means.main_object.main, "( w/ noun phrase", NLPUtility.get_tokens(story.means.main_object.phrase), "w/ compound", NLPUtility.get_tokens(story.means.main_object.compound), ")")
 		Printer.print_free_form(story, "means")
 		Printer.print_free_form(story, "ends")
 
@@ -212,7 +212,7 @@ class Printer:
 		print("Threshold:\t\t\t", threshold)
 		print("Absolute Weights ( base =", base ,"):")
 		print("  Functional role:\t\t", matrix.VAL_FUNC_ROLE)
-		print("  Direct object:\t\t", matrix.VAL_DIRECT_OBJ)
+		print("  Main object:\t\t", matrix.VAL_MAIN_OBJ)
 		print("  Noun in free form means:\t", matrix.VAL_MEANS_NOUN)
 		print("  Noun in free form ends:\t", matrix.VAL_ENDS_NOUN)
 		print("Relative Weights:")
