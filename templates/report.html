@@ -160,19 +160,19 @@
 					<kbd>{{ text(story.means.main_verb.phrase) }}</kbd> (type {{story.means.main_verb.type}} phrasal verb)
 					{% endif %}
 					</dd>
-					<dt>Direct object</dt> 
+					<dt>Main object</dt> 
 					<dd>
-					{% if text(story.means.direct_object.compound) == "" %}
-						{% if text(story.means.direct_object.main) != systemname %}
-						<kbd>{{ text(story.means.direct_object.main) }}</kbd>
+					{% if text(story.means.main_object.compound) == "" %}
+						{% if text(story.means.main_object.main) != systemname %}
+						<kbd>{{ text(story.means.main_object.main) }}</kbd>
 						{% else %}
-						There does not seem to be a direct object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
+						There does not seem to be an explicit main object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
 						{% endif %}
 					{% else %}
-					<kbd>{{ text(story.means.direct_object.compound) }}</kbd> (compound)
+					<kbd>{{ text(story.means.main_object.compound) }}</kbd> (compound)
 					{% endif %}
-					{% if text(story.means.direct_object.phrase) != "" %}
-					with phrase <kbd>{{ text(story.means.direct_object.phrase) }}</kbd>
+					{% if text(story.means.main_object.phrase) != "" %}
+					with phrase <kbd>{{ text(story.means.main_object.phrase) }}</kbd>
 					{% endif %}
 					</dd>
 					{% if story.means.free_form %}
@@ -192,12 +192,12 @@
 					{% if is_i(story.ends.subject.main) %}
 						Found <kbd>{{ text(story.ends.subject.main) }}</kbd>, so it was replaced with the functional role
 					{% else %}
-						{% if text(story.ends.direct_object.compound) == "" %}
+						{% if text(story.ends.main_object.compound) == "" %}
 							<kbd>{{ text(story.ends.subject.main) }}</kbd>
 						{% else %}
 						<kbd>{{ text(story.ends.subject.compound) }}</kbd> (compound)
 						{% endif %}
-						{% if text(story.ends.direct_object.phrase) != "" %}
+						{% if text(story.ends.main_object.phrase) != "" %}
 						with phrase <kbd>{{ text(story.ends.subject.phrase) }}</kbd>
 						{% endif %}
 					{% endif %}
@@ -212,17 +212,17 @@
 					</dd>
 					<dt>Object</dt> 
 					<dd>
-					{% if text(story.ends.direct_object.compound) == "" %}
-						{% if text(story.ends.direct_object.main) != systemname %}
-						<kbd>{{ text(story.ends.direct_object.main) }}</kbd>
+					{% if text(story.ends.main_object.compound) == "" %}
+						{% if text(story.ends.main_object.main) != systemname %}
+						<kbd>{{ text(story.ends.main_object.main) }}</kbd>
 						{% else %}
-						There does not seem to be a direct object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
+						There does not seem to be an explicit main object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
 						{% endif %}
 					{% else %}
-					<kbd>{{ text(story.ends.direct_object.compound) }}</kbd> (compound)
+					<kbd>{{ text(story.ends.main_object.compound) }}</kbd> (compound)
 					{% endif %}
-					{% if text(story.ends.direct_object.phrase) != "" %}
-					with phrase <kbd>{{ text(story.ends.direct_object.phrase) }}</kbd>
+					{% if text(story.ends.main_object.phrase) != "" %}
+					with phrase <kbd>{{ text(story.ends.main_object.phrase) }}</kbd>
 					{% endif %}
 					</dd>
 				</dl>
