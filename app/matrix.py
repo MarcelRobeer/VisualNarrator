@@ -7,7 +7,7 @@ from app.utility import NLPUtility
 class Matrix:
 	def __init__(self, base, weight):
 		self.VAL_FUNC_ROLE = base * weight[0]
-		self.VAL_DIRECT_OBJ = base * weight[1]
+		self.VAL_MAIN_OBJ = base * weight[1]
 		self.VAL_MEANS_NOUN = base * weight[2]
 		self.VAL_ENDS_NOUN = base * weight[3]
 		self.VAL_COMPOUND = weight[4]
@@ -59,7 +59,7 @@ class Matrix:
 		rme_us = self.get_role_means_ends(rme_us, stories)	
 		###
 
-		colnames = ['Functional Role', 'Functional Role Compound', 'Direct Object', 'Direct Object Compound', 'Means Free Form Noun', 'Ends Free Form Noun']
+		colnames = ['Functional Role', 'Functional Role Compound', 'Man Object', 'Main Object Compound', 'Means Free Form Noun', 'Ends Free Form Noun']
 		stories_list = [[l, []] for l in list(w_us.index.values)]
 		count_matrix = pd.DataFrame(0, index=w_us.index, columns=colnames)
 		co = self.count_occurence(count_matrix, stories_list, stories)
@@ -95,10 +95,10 @@ class Matrix:
 		elif self.is_phrasal('role.functional_role', token, story) == 2:
 			weight += self.VAL_FUNC_ROLE * self.VAL_COMPOUND
 
-		if self.is_phrasal('means.direct_object', token, story) == 1:
-			weight += self.VAL_DIRECT_OBJ
-		elif self.is_phrasal('means.direct_object', token, story) == 2:
-			weight += self.VAL_DIRECT_OBJ * self.VAL_COMPOUND
+		if self.is_phrasal('means.main_object', token, story) == 1:
+			weight += self.VAL_MAIN_OBJ
+		elif self.is_phrasal('means.main_object', token, story) == 2:
+			weight += self.VAL_MAIN_OBJ * self.VAL_COMPOUND
 
 		if self.is_freeform('means', token, story) == 1:
 			weight += self.VAL_MEANS_NOUN
@@ -122,10 +122,10 @@ class Matrix:
 					elif self.is_phrasal('role.functional_role', token, story) == 2:
 						cm = self.add(cm, c, 'Functional Role Compound')
 
-					if self.is_phrasal('means.direct_object', token, story) == 1:
-						cm = self.add(cm, c, 'Direct Object')
-					elif self.is_phrasal('means.direct_object', token, story) == 2:
-						cm = self.add(cm, c, 'Direct Object Compound')
+					if self.is_phrasal('means.main_object', token, story) == 1:
+						cm = self.add(cm, c, 'Main Object')
+					elif self.is_phrasal('means.main_object', token, story) == 2:
+						cm = self.add(cm, c, 'Main Object Compound')
 
 					if self.is_freeform('means', token, story) == 1:
 						cm = self.add(cm, c, 'Means Free Form Noun')
