@@ -160,24 +160,32 @@
 					<kbd>{{ text(story.means.main_verb.phrase) }}</kbd> (type {{story.means.main_verb.type}} phrasal verb)
 					{% endif %}
 					</dd>
-					<dt>Main object</dt> 
+					<dt>Direct object</dt> 
 					<dd>
-					{% if text(story.means.main_object.compound) == "" %}
-						{% if text(story.means.main_object.main) != systemname %}
-						<kbd>{{ text(story.means.main_object.main) }}</kbd>
+					{% if text(story.means.direct_object.compound) == "" %}
+						{% if text(story.means.direct_object.main) != systemname %}
+						<kbd>{{ text(story.means.direct_object.main) }}</kbd>
 						{% else %}
-						There does not seem to be an explicit main object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
+						There does not seem to be a direct object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
 						{% endif %}
 					{% else %}
-					<kbd>{{ text(story.means.main_object.compound) }}</kbd> (compound)
+					<kbd>{{ text(story.means.direct_object.compound) }}</kbd> (compound)
 					{% endif %}
-					{% if text(story.means.main_object.phrase) != "" %}
-					with phrase <kbd>{{ text(story.means.main_object.phrase) }}</kbd>
+					{% if text(story.means.direct_object.phrase) != "" %}
+					with phrase <kbd>{{ text(story.means.direct_object.phrase) }}</kbd>
 					{% endif %}
 					</dd>
 					{% if story.means.free_form %}
 					<dt>Free form</dt>
 					<dd><kbd>{{ text(story.means.free_form) }}</kbd></dd>
+						{% if story.means.nouns is defined %}
+						<dd>with nouns 
+						{% for noun in story.means.nouns %}<kbd>{{ text(noun) }}</kbd>{% endfor %}</dd>
+						{% endif %}
+						{% if story.means.compounds is defined %}
+						<dd>of which compounds 
+						{% for compound in story.means.compounds %}<kbd>{{ text(compound) }}</kbd>{% endfor %}</dd>
+						{% endif %}
 					{% endif %}
 				</dl>
 				{% if story.has_ends %}
@@ -192,12 +200,12 @@
 					{% if is_i(story.ends.subject.main) %}
 						Found <kbd>{{ text(story.ends.subject.main) }}</kbd>, so it was replaced with the functional role
 					{% else %}
-						{% if text(story.ends.main_object.compound) == "" %}
+						{% if text(story.ends.direct_object.compound) == "" %}
 							<kbd>{{ text(story.ends.subject.main) }}</kbd>
 						{% else %}
 						<kbd>{{ text(story.ends.subject.compound) }}</kbd> (compound)
 						{% endif %}
-						{% if text(story.ends.main_object.phrase) != "" %}
+						{% if text(story.ends.direct_object.phrase) != "" %}
 						with phrase <kbd>{{ text(story.ends.subject.phrase) }}</kbd>
 						{% endif %}
 					{% endif %}
@@ -212,19 +220,28 @@
 					</dd>
 					<dt>Object</dt> 
 					<dd>
-					{% if text(story.ends.main_object.compound) == "" %}
-						{% if text(story.ends.main_object.main) != systemname %}
-						<kbd>{{ text(story.ends.main_object.main) }}</kbd>
+					{% if text(story.ends.direct_object.compound) == "" %}
+						{% if text(story.ends.direct_object.main) != systemname %}
+						<kbd>{{ text(story.ends.direct_object.main) }}</kbd>
 						{% else %}
-						There does not seem to be an explicit main object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
+						There does not seem to be a direct object, so it was replaced with the system name <kbd>{{ systemname }}</kbd>
 						{% endif %}
 					{% else %}
-					<kbd>{{ text(story.ends.main_object.compound) }}</kbd> (compound)
+					<kbd>{{ text(story.ends.direct_object.compound) }}</kbd> (compound)
 					{% endif %}
-					{% if text(story.ends.main_object.phrase) != "" %}
-					with phrase <kbd>{{ text(story.ends.main_object.phrase) }}</kbd>
+					{% if text(story.ends.direct_object.phrase) != "" %}
+					with phrase <kbd>{{ text(story.ends.direct_object.phrase) }}</kbd>
 					{% endif %}
 					</dd>
+					
+					{% if story.ends.nouns is defined %}
+					<dt>Nouns</dt>
+					<dd>{% for noun in story.ends.nouns %}<kbd>{{ text(noun) }}</kbd>{% endfor %}</dd>
+					{% endif %}
+					{% if story.ends.compounds is defined %}
+					<dd>of which compounds (excluded if already as compound object)  
+					{% for compound in story.ends.compounds %}<kbd>{{ text(compound) }}</kbd>{% endfor %}</dd>
+					{% endif %}
 				</dl>
 				{% endif %}
 			</div>
@@ -243,7 +260,7 @@
 			<h4>Absolute weights (base = {{ base }})</h4>	
 			<dl class="dl-horizontal">
 				<dt>Functional role</dt><dd>{{ matrix.VAL_FUNC_ROLE }}</dd>
-				<dt>Main objects</dt><dd>{{ matrix.VAL_MAIN_OBJ }}</dd>
+				<dt>Direct objects</dt><dd>{{ matrix.VAL_DIRECT_OBJ }}</dd>
 				<dt>Noun in free form means</dt><dd>{{ matrix.VAL_MEANS_NOUN }}</dd>
 				<dt>Noun in free form ends</dt><dd>{{ matrix.VAL_ENDS_NOUN }}</dd>
 			</dl>
