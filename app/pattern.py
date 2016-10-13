@@ -43,15 +43,15 @@ class Constructor:
 			for story in cl.stories:
 				if story >= 0:
 					s = self.get_story(int(story), stories)
-					part_name = self.get_parts(cl.name, s)
+					parts = self.get_parts(cl.name, s)
 
-					# for part in part_name:
+					#for part in part_name:
 					#	n = s.txtnr() + part
 					#	self.onto.get_class_by_name(-1, n, s.txtnr())
 					#	self.onto.new_relationship(-1, cl.name, cl.name + 'OccursIn' + n, n)
 					self.onto.new_relationship(-1, cl.name, cl.name + 'OccursIn' + s.txtnr(), s.txtnr())
 
-					for part in part_name:					
+					for part in parts:					
 						self.prolog.new_relationship(-1, cl.name, part, s.txtnr())
 
 					used_stories.append(s.txtnr())

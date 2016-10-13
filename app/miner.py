@@ -20,14 +20,14 @@ class StoryMiner:
 		if not story.role.functional_role:
 			raise ValueError('Could not find a functional role', 2)
 
-		story = self.get_dobj_and_mv(story)
-		if not story.means.direct_object.main:
-			raise ValueError('Could not find a direct object', 3)
+		story = self.get_mobj_and_mv(story)
+		if not story.means.main_object.main:
+			raise ValueError('Could not find a main object', 3)
 		if not story.means.main_verb.main:
 			raise ValueError('Could not find a main verb', 4)	
 		
 		if story.has_ends:
-			story = self.get_dobj_and_mv(story, 'ends')	
+			story = self.get_mobj_and_mv(story, 'ends')	
 
 		story = self.get_free_form(story)
 
@@ -155,7 +155,7 @@ class StoryMiner:
 		else:		
 			compound = []
 			for token in potential_without_with:
-				if token.dep_ == 'compound':
+				if MinerUtility.is_compound(token):
 					compound.append([token, token.head])
 
 			if len(compound) == 1 and type(compound[0]) is list:
@@ -178,16 +178,16 @@ class StoryMiner:
 
 		return story
 
-	def get_dobj_and_mv(self, story, part='means'):
+	def get_mobj_and_mv(self, story, part='means'):
 		has_subj = False
 		simple = False
 		found_verb = False
 		found_obj = False
 		subject = []
 		main_verb = []
-		direct_object = []
+		main_object = []
 
-		# Simple case if the subj and dobj are linked by a verb
+		# Simple case if the subj and mobj are linked by a verb
 		for token in eval('story.' + str(part) + '.text'):
 			if token.dep_[:5] == 'nsubj':
 				has_subj = True
@@ -205,7 +205,7 @@ class StoryMiner:
 				found_obj = True
 				if token.head == main_verb:
 					simple = True
-				direct_object = token
+				main_object = token
 				break
 	
 		# If the root of the sentence is a verb
@@ -227,23 +227,23 @@ class StoryMiner:
 			for token in eval('story.' + str(part) + '.text'):
 				if token.dep_[1:] == 'obj':
 					found_obj = True
-					direct_object = token
+					main_object = token
 					break
 
 		# If none is found it points to the unknown 'system part'
-		# + get phrases for direct_object and main_verb
+		# + get phrases for main_object and main_verb
 		if not found_obj and part == 'means':
-			direct_object = story.system.main
+			main_object = story.system.main
 
 		if part == 'means':
 			story.means.main_verb.main = main_verb
-			story.means.direct_object.main = direct_object
+			story.means.main_object.main = main_object
 		else:
 			story.ends.subject.main = subject
 			story.ends.main_verb.main = main_verb
-			story.ends.direct_object.main = direct_object
+			story.ends.main_object.main = main_object
 
-		if direct_object == story.system.main:
+		if main_object == story.system.main:
 			story = eval('self.get_' + str(part) + '_phrases(story, False)')
 		else:
 			story = eval('self.get_' + str(part) + '_phrases(story)')
@@ -253,16 +253,16 @@ class StoryMiner:
 	def get_means_phrases(self, story, assume=True):
 		if assume:
 			for np in story.means.text.noun_chunks:
-				if story.means.direct_object.main in np:
-					story.means.direct_object.phrase = np
-			if story.means.direct_object.phrase:
-				m = story.means.direct_object.main
-				if m.nbor(-1) and m.nbor(-1).dep_ == 'compound' and m.nbor(-1).head == m:
-					story.means.direct_object.compound = [m.nbor(-1), m]
+				if story.means.main_object.main in np:
+					story.means.main_object.phrase = np
+			if story.means.main_object.phrase:
+				m = story.means.main_object.main
+				if m.i > 0 and MinerUtility.is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
+					story.means.main_object.compound = [m.nbor(-1), m]
 				else:
-					for token in story.means.direct_object.phrase:
-						if token.dep_ == 'compound' and token.head == story.means.direct_object.main:
-							story.means.direct_object.compound = [token, story.means.direct_object.main]
+					for token in story.means.main_object.phrase:
+						if MinerUtility.is_compound(token) and token.head == story.means.main_object.main:
+							story.means.main_object.compound = [token, story.means.main_object.main]
 
 		pv = MinerUtility.get_phrasal_verb(story, story.means.main_verb.main, 'means.text')
 		story.means.main_verb.phrase = MinerUtility.get_span(story, pv[0], 'means.text')
@@ -273,16 +273,16 @@ class StoryMiner:
 	def get_ends_phrases(self, story, assume=True):
 		if assume:
 			for np in story.ends.text.noun_chunks:
-				if story.ends.direct_object.main in np:
-					story.ends.direct_object.phrase = np
-			if story.ends.direct_object.phrase:
-				m = story.ends.direct_object.main
-				if m.nbor(-1) and m.nbor(-1).dep_ == 'compound' and m.nbor(-1).head == m:
-					story.ends.direct_object.compound = [m.nbor(-1), m]
+				if story.ends.main_object.main in np:
+					story.ends.main_object.phrase = np
+			if story.ends.main_object.phrase:
+				m = story.ends.main_object.main
+				if m.i > 0 and MinerUtility.is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
+					story.ends.main_object.compound = [m.nbor(-1), m]
 				else:
-					for token in story.ends.direct_object.phrase:
-						if token.dep_ == 'compound' and token.head == story.ends.direct_object.main:
-							story.ends.direct_object.compound = [token, story.ends.direct_object.main]
+					for token in story.ends.main_object.phrase:
+						if MinerUtility.is_compound(token) and token.head == story.ends.main_object.main:
+							story.ends.main_object.compound = [token, story.ends.main_object.main]
 
 		ends_subj = story.ends.subject.main
 
@@ -293,7 +293,7 @@ class StoryMiner:
 		
 			if story.ends.subject.phrase:
 				for token in story.ends.subject.phrase:
-					if token.dep_ == 'compound' and token.head == story.ends.subject.main:
+					if MinerUtility.is_compound(token) and token.head == story.ends.subject.main:
 						story.ends.subject.compound = [token, story.ends.subject.main]
 
 		pv = MinerUtility.get_phrasal_verb(story, story.ends.main_verb.main, 'ends.text')
@@ -310,12 +310,12 @@ class StoryMiner:
 		main_verb.append(story.means.main_verb.main)
 		main_verb.extend(story.means.main_verb.phrase)
 
-		# Get all parts of the direct object
-		direct_obj = []
-		direct_obj.append(story.means.direct_object.main)
-		direct_obj.extend(story.means.direct_object.phrase)		
+		# Get all parts of the main object
+		main_obj = []
+		main_obj.append(story.means.main_object.main)
+		main_obj.extend(story.means.main_object.phrase)		
 
-		means_not_ff = main_verb + direct_obj
+		means_not_ff = main_verb + main_obj
 
 		# Exclude these from the free form
 		for token in story.means.text:
@@ -329,7 +329,7 @@ class StoryMiner:
 		
 		# Extract useful information from free form
 		if story.means.free_form or story.has_ends:
-			self.get_ff_subj_dobj(story)
+			self.get_ff_subj_mobj(story)
 			self.get_ff_verbs(story)
 			self.get_ff_nouns(story)
 			if story.means.free_form:
@@ -343,12 +343,12 @@ class StoryMiner:
 
 		return story
 
-	def get_ff_subj_dobj(self, story):
+	def get_ff_subj_mobj(self, story):
 		story.means.nouns = MinerUtility.get_subj(story, story.means.free_form)
-		story.means.nouns = MinerUtility.get_subj(story, story.ends.free_form)
+		story.ends.nouns = MinerUtility.get_subj(story, story.ends.free_form)
 
-		story.means.nouns = MinerUtility.get_dobj(story, story.means.free_form)
-		story.means.nouns = MinerUtility.get_dobj(story, story.ends.free_form)
+		story.means.nouns = MinerUtility.get_mobj(story, story.means.free_form)
+		story.ends.nouns = MinerUtility.get_mobj(story, story.ends.free_form)
 
 		return story
 
@@ -415,23 +415,23 @@ class MinerUtility:
 		particles = TYPE_II_PARTICLES + TYPE_II_PARTICLES_MARGINAL
 		phrasal_verb = head
 		phrase = []
-		dobj_i = 1000
+		mobj_i = 1000
 		vtype = ""
 
 		if part == 'means.text' or part == 'ends.text':
 			for token in eval('story.' + str(part)):
 				if token.dep_ == 'dobj':
-					dobj_i = token.i
+					mobj_i = token.i
 					break
 
-		if str.lower(phrasal_verb.right_edge.text) in particles and phrasal_verb.right_edge.i < dobj_i:
+		if str.lower(phrasal_verb.right_edge.text) in particles and phrasal_verb.right_edge.i < mobj_i:
 			phrasal_verb = phrasal_verb.right_edge
 			phrase.append(phrasal_verb)
 			vtype = "II"
 		else:
 			for chunk in eval('story.' + str(part) + '.noun_chunks'):
 				for c in phrasal_verb.children:
-					if c == chunk.root.head and c.i < dobj_i:
+					if c == chunk.root.head and c.i < mobj_i:
 						if c.pos_ == 'PART':
 							phrase.append(c)
 							vtype = "I"
@@ -455,14 +455,14 @@ class MinerUtility:
 
 		return MinerUtility.get_span(story, subj)
 
-	def get_dobj(story, span):
-		dobj = []
+	def get_mobj(story, span):
+		mobj = []
 
 		for token in span:
 			if token.dep_ == "dobj":
-				dobj.append(token)
+				mobj.append(token)
 
-		return MinerUtility.get_span(story, dobj)
+		return MinerUtility.get_span(story, mobj)
 
 	def get_nouns(story, span):
 		nouns = []
@@ -488,11 +488,11 @@ class MinerUtility:
 
 		for token in nouns:
 			for child in token.children:
-				if child.dep_ == "compound" or (child.dep_ == "amod" and child.pos_ == "NOUN"): 
+				if MinerUtility.is_compound(child):
 					# Replace to take rightmost child
 					if child.idx < token.idx:
 						for compound in compounds:
-							if child in compounds or token in compound:
+							if child in compound or token in compound:
 								compounds.remove(compound)
 					compounds.append([child, token])
 		
@@ -530,3 +530,8 @@ class MinerUtility:
 			phrasal_verbs.append(MinerUtility.get_phrasal_verb(story, token)) 
 
 		return phrasal_verbs
+
+	def is_compound(token):
+		if token.dep_ == "compound" or (token.dep_ == "amod" and token.pos_ == "NOUN"): 
+			return True
+		return False

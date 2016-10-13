@@ -59,7 +59,7 @@ class Matrix:
 		rme_us = self.get_role_means_ends(rme_us, stories)	
 		###
 
-		colnames = ['Functional Role', 'Functional Role Compound', 'Man Object', 'Main Object Compound', 'Means Free Form Noun', 'Ends Free Form Noun']
+		colnames = ['Functional Role', 'Functional Role Compound', 'Main Object', 'Main Object Compound', 'Means Free Form Noun', 'Ends Free Form Noun']
 		stories_list = [[l, []] for l in list(w_us.index.values)]
 		count_matrix = pd.DataFrame(0, index=w_us.index, columns=colnames)
 		co = self.count_occurence(count_matrix, stories_list, stories)
