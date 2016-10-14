@@ -183,11 +183,13 @@ class StoryMiner:
 		simple = False
 		found_verb = False
 		found_obj = False
+		found_mv_phrase = False
 		subject = []
 		main_verb = []
 		main_object = []
+		mv_phrase = []
 
-		# Simple case if the subj and mobj are linked by a verb
+		# Simple case if the subj and dobj are linked by a verb
 		for token in eval('story.' + str(part) + '.text'):
 			if token.dep_[:5] == 'nsubj':
 				has_subj = True
@@ -203,6 +205,25 @@ class StoryMiner:
 		for token in eval('story.' + str(part) + '.text'):
 			if token.dep_ == 'dobj':
 				found_obj = True
+				if token.pos_ == "PRON": # If it is a pronoun, look for a preposition with a pobj
+					f = False
+					for child in token.head.children:
+						if child.dep_ == "prep" and child.right_edge.dep_ == "pobj" and not f:
+							token = child.right_edge
+							mv_phrase = [main_verb, child]
+							f = True
+							found_mv_phrase = True
+				elif token.pos_ == "ADJ" or token.pos_ == "ADV": # Set to right edge if there is an adj/adv as dobj, and possibly make a verb phrase
+					original_token = token
+					f = False
+					for child in token.children:
+						if child.dep_ == "prep" and not f:
+							for grandchild in child.children:
+								if grandchild.dep_ == "pobj":
+									mv_phrase = [main_verb, token, child]
+									token = grandchild
+									f = True
+									found_mv_phrase = True
 				if token.head == main_verb:
 					simple = True
 				main_object = token
@@ -238,19 +259,25 @@ class StoryMiner:
 		if part == 'means':
 			story.means.main_verb.main = main_verb
 			story.means.main_object.main = main_object
+			if found_mv_phrase:
+				story.means.main_verb.phrase = MinerUtility.get_span(story, mv_phrase, 'means.text')
+				story.means.main_verb.type = "II"				
 		else:
 			story.ends.subject.main = subject
 			story.ends.main_verb.main = main_verb
 			story.ends.main_object.main = main_object
+			if found_mv_phrase:
+				story.ends.main_verb.phrase = MinerUtility.get_span(story, mv_phrase, 'ends.text')
+				story.ends.main_verb.type = "II"
 
 		if main_object == story.system.main:
-			story = eval('self.get_' + str(part) + '_phrases(story, False)')
+			story = eval('self.get_' + str(part) + '_phrases(story, ' + str(found_mv_phrase) + ', False)')
 		else:
-			story = eval('self.get_' + str(part) + '_phrases(story)')
+			story = eval('self.get_' + str(part) + '_phrases(story, ' + str(found_mv_phrase) + ')')
 
 		return story
 
-	def get_means_phrases(self, story, assume=True):
+	def get_means_phrases(self, story, found_mv_phrase, assume=True):
 		if assume:
 			for np in story.means.text.noun_chunks:
 				if story.means.main_object.main in np:
@@ -264,13 +291,14 @@ class StoryMiner:
 						if MinerUtility.is_compound(token) and token.head == story.means.main_object.main:
 							story.means.main_object.compound = [token, story.means.main_object.main]
 
-		pv = MinerUtility.get_phrasal_verb(story, story.means.main_verb.main, 'means.text')
-		story.means.main_verb.phrase = MinerUtility.get_span(story, pv[0], 'means.text')
-		story.means.main_verb.type = pv[1]
+		if not found_mv_phrase:
+			pv = MinerUtility.get_phrasal_verb(story, story.means.main_verb.main, 'means.text')
+			story.means.main_verb.phrase = MinerUtility.get_span(story, pv[0], 'means.text')
+			story.means.main_verb.type = pv[1]
 
 		return story	
 
-	def get_ends_phrases(self, story, assume=True):
+	def get_ends_phrases(self, story, found_mv_phrase, assume=True):
 		if assume:
 			for np in story.ends.text.noun_chunks:
 				if story.ends.main_object.main in np:
@@ -296,9 +324,10 @@ class StoryMiner:
 					if MinerUtility.is_compound(token) and token.head == story.ends.subject.main:
 						story.ends.subject.compound = [token, story.ends.subject.main]
 
-		pv = MinerUtility.get_phrasal_verb(story, story.ends.main_verb.main, 'ends.text')
-		story.ends.main_verb.phrase = MinerUtility.get_span(story, pv[0], 'ends.text')
-		story.ends.main_verb.type = pv[1]
+		if not found_mv_phrase:
+			pv = MinerUtility.get_phrasal_verb(story, story.ends.main_verb.main, 'ends.text')
+			story.ends.main_verb.phrase = MinerUtility.get_span(story, pv[0], 'ends.text')
+			story.ends.main_verb.type = pv[1]
 
 		return story	
 
@@ -329,7 +358,7 @@ class StoryMiner:
 		
 		# Extract useful information from free form
 		if story.means.free_form or story.has_ends:
-			self.get_ff_subj_mobj(story)
+			self.get_ff_subj_dobj(story)
 			self.get_ff_verbs(story)
 			self.get_ff_nouns(story)
 			if story.means.free_form:
@@ -343,12 +372,12 @@ class StoryMiner:
 
 		return story
 
-	def get_ff_subj_mobj(self, story):
+	def get_ff_subj_dobj(self, story):
 		story.means.nouns = MinerUtility.get_subj(story, story.means.free_form)
 		story.ends.nouns = MinerUtility.get_subj(story, story.ends.free_form)
 
-		story.means.nouns = MinerUtility.get_mobj(story, story.means.free_form)
-		story.ends.nouns = MinerUtility.get_mobj(story, story.ends.free_form)
+		story.means.nouns = MinerUtility.get_dobj(story, story.means.free_form)
+		story.ends.nouns = MinerUtility.get_dobj(story, story.ends.free_form)
 
 		return story
 
@@ -455,14 +484,14 @@ class MinerUtility:
 
 		return MinerUtility.get_span(story, subj)
 
-	def get_mobj(story, span):
-		mobj = []
+	def get_dobj(story, span):
+		dobj = []
 
 		for token in span:
 			if token.dep_ == "dobj":
-				mobj.append(token)
+				dobj.append(token)
 
-		return MinerUtility.get_span(story, mobj)
+		return MinerUtility.get_span(story, dobj)
 
 	def get_nouns(story, span):
 		nouns = []
