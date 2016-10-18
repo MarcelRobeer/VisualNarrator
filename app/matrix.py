@@ -103,8 +103,11 @@ class Matrix:
 		if self.is_freeform('means', token, story) == 1:
 			weight += self.VAL_MEANS_NOUN
 
-		if self.is_freeform('ends', token, story) == 1:
-			weight += self.VAL_ENDS_NOUN	
+		if story.ends.free_form:
+			if self.is_phrasal('ends.main_object', token, story) > 0:
+				weight += self.VAL_ENDS_NOUN
+			elif self.is_freeform('ends', token, story) == 1:
+				weight += self.VAL_ENDS_NOUN
 
 		return weight
 
@@ -129,9 +132,10 @@ class Matrix:
 
 					if self.is_freeform('means', token, story) == 1:
 						cm = self.add(cm, c, 'Means Free Form Noun')
-
-					if self.is_freeform('ends', token, story) == 1:
-						cm = self.add(cm, c, 'Ends Free Form Noun')
+					
+					if story.ends.free_form:
+						if self.is_phrasal('ends.main_object', token, story) > 0 or self.is_freeform('ends', token, story) == 1:
+							cm = self.add(cm, c, 'Ends Free Form Noun')
 					
 		return cm, sl
 
@@ -197,6 +201,8 @@ class Matrix:
 		if eval(spart + '.free_form'):
 			if eval(spart + '.nouns'):
 				if token in eval(spart + '.nouns'):
+					return 1
+				elif eval(spart + '.compounds') and token in eval(spart + '.compounds'):
 					return 1
 		return -1
 
