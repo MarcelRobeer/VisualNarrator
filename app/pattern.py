@@ -228,36 +228,38 @@ class PatternFactory:
 		self.onto = onto
 		self.prolog = prolog
 		self.weighted_tokens = weighted_tokens
+		self.sysname = ""
 
 	def make_patterns(self, user_stories, threshold):
 		pi = PatternIdentifier(self.weighted_tokens)
-
+		self.sysname = str.lower(NLPUtility.case(user_stories[0].system.main))
+		
 		for story in user_stories:
 			pi.identify(story)
 
-		relationships = self.apply_threshold(pi.relationships, threshold, str.lower(user_stories[0].system.main.text))	
+		relationships = self.apply_threshold(pi.relationships, threshold)	
 
 		self.create(relationships, user_stories, threshold, pi.roles)
 
 		return self.onto
 
-	def apply_threshold(self, relationships, threshold, sysname):
+	def apply_threshold(self, relationships, threshold):
 		rel = []
 
 		for r in relationships:
-			if self.get_lowest_threshold(r, sysname) >= threshold:
+			if self.get_lowest_threshold(r) >= threshold:
 				rel.append(r)
 		
 		return rel
 
-	def get_lowest_threshold(self, relationship, sysname):
+	def get_lowest_threshold(self, relationship):
 		wt = self.get_weighted_tokens(relationship)
 		lt = 1000.0
 
 		if wt:		
 			lt = wt[0].weight
 			for w in wt:
-				if str.lower(NLPUtility.get_case(w)) != sysname and w.weight < lt: # Exclude system name object from filter
+				if str.lower(NLPUtility.get_case(w)) != self.sysname and w.weight < lt: # Exclude system name object from filter
 					lt = w.weight
 
 		return lt
