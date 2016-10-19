@@ -235,29 +235,29 @@ class PatternFactory:
 		for story in user_stories:
 			pi.identify(story)
 
-		relationships = self.apply_threshold(pi.relationships, threshold)	
+		relationships = self.apply_threshold(pi.relationships, threshold, str.lower(user_stories[0].system.main.text))	
 
 		self.create(relationships, user_stories, threshold, pi.roles)
 
 		return self.onto
 
-	def apply_threshold(self, relationships, threshold):
+	def apply_threshold(self, relationships, threshold, sysname):
 		rel = []
 
 		for r in relationships:
-			if self.get_lowest_threshold(r) >= threshold:
+			if self.get_lowest_threshold(r, sysname) >= threshold:
 				rel.append(r)
 		
 		return rel
 
-	def get_lowest_threshold(self, relationship):
+	def get_lowest_threshold(self, relationship, sysname):
 		wt = self.get_weighted_tokens(relationship)
 		lt = 1000.0
 
 		if wt:		
 			lt = wt[0].weight
 			for w in wt:
-				if w.weight < lt:
+				if str.lower(NLPUtility.get_case(w)) != sysname and w.weight < lt: # Exclude system name object from filter
 					lt = w.weight
 
 		return lt
@@ -327,7 +327,7 @@ class PatternFactory:
 	def find_story(self, w_token, stories):
 		nrs = []
 		for story in stories:
-			if w_token.case in [NLPUtility.case(t) for t in story.data if t.pos_ == 'NOUN']:
+			if w_token.case in [NLPUtility.case(t) for t in story.data]:
 				nrs.append(story.number)
 		return nrs
 
@@ -421,7 +421,7 @@ class PatternIdentifier:
 			do = eval('story.' + str(part) + '.main_object.compound')
 		else:
 			do = [eval('story.' + str(part) + '.main_object.main')]
-		
+
 		if type(do[0]) is not list:
 			w_fr = [self.getwt(x) for x in fr]
 			w_mv = [self.getwt(x) for x in mv]
