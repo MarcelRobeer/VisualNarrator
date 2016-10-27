@@ -446,9 +446,9 @@ class PatternIdentifier:
 		return fr
 
 	def get_subject(self, story):
-		if story.ends.subject.phrase:
-			subj = story.ends.subject.phrase
-		elif story.ends.subject.compound:
+		#if story.ends.subject.phrase:
+		#	subj = story.ends.subject.phrase
+		if story.ends.subject.compound:
 			subj = story.ends.subject.compound
 		else:
 			subj = [story.ends.subject.main]

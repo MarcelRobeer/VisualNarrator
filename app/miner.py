@@ -27,7 +27,7 @@ class StoryMiner:
 			raise ValueError('Could not find a main verb', 4)	
 		
 		if story.has_ends:
-			story = self.get_mobj_and_mv(story, 'ends')	
+			story = self.get_mobj_and_mv(story, 'ends')
 
 		story = self.get_free_form(story)
 
@@ -155,7 +155,7 @@ class StoryMiner:
 		else:		
 			compound = []
 			for token in potential_without_with:
-				if MinerUtility.is_compound(token):
+				if NLPUtility.is_compound(token):
 					compound.append([token, token.head])
 
 			if len(compound) == 1 and type(compound[0]) is list:
@@ -191,10 +191,10 @@ class StoryMiner:
 
 		# Simple case if the subj and dobj are linked by a verb
 		for token in eval('story.' + str(part) + '.text'):
-			if token.dep_[:5] == 'nsubj':
+			if NLPUtility.is_subject(token):
 				has_subj = True
 				subject = token
-				if token.head.pos_ == 'VERB':
+				if NLPUtility.is_verb(token.head):
 					found_verb = True
 					main_verb = token.head
 					break
@@ -203,8 +203,9 @@ class StoryMiner:
 			subject = eval('story.' + str(part) + '.text')[0]
 
 		for token in eval('story.' + str(part) + '.text'):
-			if token.dep_ == 'dobj':
+			if NLPUtility.is_dobj(token):
 				found_obj = True
+
 				if token.pos_ == "PRON": # If it is a pronoun, look for a preposition with a pobj
 					f = False
 					for child in token.head.children:
@@ -226,13 +227,15 @@ class StoryMiner:
 									found_mv_phrase = True
 				if token.head == main_verb:
 					simple = True
+
 				main_object = token
+
 				break
 	
 		# If the root of the sentence is a verb
 		if not simple:
 			for token in eval('story.' + str(part) + '.text'):
-				if token.dep_ == 'ROOT' and token.pos_ == 'VERB':
+				if token.dep_ == 'ROOT' and NLPUtility.is_verb(token):
 					found_verb = True
 					main_verb = token
 					break
@@ -284,11 +287,11 @@ class StoryMiner:
 					story.means.main_object.phrase = np
 			if story.means.main_object.phrase:
 				m = story.means.main_object.main
-				if m.i > 0 and MinerUtility.is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
+				if m.i > 0 and NLPUtility.is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
 					story.means.main_object.compound = [m.nbor(-1), m]
 				else:
 					for token in story.means.main_object.phrase:
-						if MinerUtility.is_compound(token) and token.head == story.means.main_object.main:
+						if NLPUtility.is_compound(token) and token.head == story.means.main_object.main:
 							story.means.main_object.compound = [token, story.means.main_object.main]
 
 		if not found_mv_phrase:
@@ -305,11 +308,11 @@ class StoryMiner:
 					story.ends.main_object.phrase = np
 			if story.ends.main_object.phrase:
 				m = story.ends.main_object.main
-				if m.i > 0 and MinerUtility.is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
+				if m.i > 0 and NLPUtility.is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
 					story.ends.main_object.compound = [m.nbor(-1), m]
 				else:
 					for token in story.ends.main_object.phrase:
-						if MinerUtility.is_compound(token) and token.head == story.ends.main_object.main:
+						if NLPUtility.is_compound(token) and token.head == story.ends.main_object.main:
 							story.ends.main_object.compound = [token, story.ends.main_object.main]
 
 		ends_subj = story.ends.subject.main
@@ -321,7 +324,7 @@ class StoryMiner:
 		
 			if story.ends.subject.phrase:
 				for token in story.ends.subject.phrase:
-					if MinerUtility.is_compound(token) and token.head == story.ends.subject.main:
+					if NLPUtility.is_compound(token) and token.head == story.ends.subject.main:
 						story.ends.subject.compound = [token, story.ends.subject.main]
 
 		if not found_mv_phrase:
@@ -497,7 +500,7 @@ class MinerUtility:
 		nouns = []
 
 		for token in span:
-			if token.pos_ == "NOUN":
+			if NLPUtility.is_noun(token):
 				nouns.append(token)
 
 		return nouns
@@ -517,7 +520,7 @@ class MinerUtility:
 
 		for token in nouns:
 			for child in token.children:
-				if MinerUtility.is_compound(child):
+				if NLPUtility.is_compound(child):
 					# Replace to take rightmost child
 					if child.idx < token.idx:
 						for compound in compounds:
@@ -547,7 +550,7 @@ class MinerUtility:
 		verbs = []
 
 		for token in span:
-			if token.pos_ == "VERB":
+			if NLPUtility.is_verb(token):
 				verbs.append(token)
 
 		return MinerUtility.get_span(story, verbs)
@@ -559,8 +562,3 @@ class MinerUtility:
 			phrasal_verbs.append(MinerUtility.get_phrasal_verb(story, token)) 
 
 		return phrasal_verbs
-
-	def is_compound(token):
-		if token.dep_ == "compound" or (token.dep_ == "amod" and token.pos_ == "NOUN"): 
-			return True
-		return False

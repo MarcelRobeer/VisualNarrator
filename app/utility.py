@@ -106,8 +106,32 @@ class NLPUtility:
 		return [t.i for t in tree]
 
 	def text_lower_tokens(a_list):
-		return Utility.text(NLPUtility.get_lower_tokens(a_list))	
+		return Utility.text(NLPUtility.get_lower_tokens(a_list))
 
+	def is_noun(token):
+		if token.pos_ == "NOUN" or token.pos_ == "PROPN":
+			return True
+		return False
+
+	def is_verb(token):
+		if token.pos_ == "VERB":
+			return True
+		return False
+
+	def is_compound(token):
+		if token.dep_ == "compound" or (token.dep_ == "amod" and NLPUtility.is_noun(token)): 
+			return True
+		return False
+
+	def is_subject(token):
+		if token.dep_[:5] == 'nsubj':
+			return True
+		return False
+
+	def is_dobj(token):
+		if token.dep_ == 'dobj':
+			return True
+		return False
 
 class Printer:
 	def print_head(text):
