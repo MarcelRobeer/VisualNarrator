@@ -46,6 +46,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 	# Keeps track of all succesfully created User Stories objects
 	us_instances = []  
 	failed_stories = []
+	success_stories = []
 
 	# Parse every user story (remove punctuation and mine)
 	for s in set:
@@ -53,7 +54,8 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 			user_story = parse(s, us_id, systemname, nlp, miner)
 			user_story = c.count(user_story)
 			success = success + 1
-			us_instances.append(user_story)	
+			us_instances.append(user_story)
+			success_stories.append(s)
 		except ValueError as err:
 			failed_stories.append([us_id, s, err.args])
 			errors += "\n[User Story " + str(us_id) + " ERROR] " + str(err.args[0]) + "! (\"" + " ".join(str.split(s)) + "\")"
@@ -71,7 +73,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 	start_matr_time = timeit.default_timer()
 
 	matrix = Matrix(base, weights)
-	matrices = matrix.generate(us_instances, ''.join(set), nlp)
+	matrices = matrix.generate(us_instances, ' '.join(success_stories), nlp)
 	m = matrices[0]
 	count_matrix = matrices[1]
 	stories_list = matrices[2]

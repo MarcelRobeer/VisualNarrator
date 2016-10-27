@@ -17,26 +17,27 @@ class Matrix:
 		tokens = nlp(set)
 
 		attr_ids = [attrs.LEMMA, attrs.IS_STOP, attrs.IS_PUNCT, attrs.IS_SPACE]
-		doc_array = tokens.to_array(attr_ids)
+		#doc_array = tokens.to_array(attr_ids)
 
 		namedict = self.get_namedict(tokens)
-		doc_array = self.unique(doc_array)
-		doc_array = self.remove_punct(doc_array)
+		#doc_array = self.unique(doc_array)
+		#doc_array = self.remove_punct(doc_array)
 
-		words = [namedict[row[0]] for row in doc_array]
+		words = list(namedict.values()) #[namedict[row[0]] for row in doc_array]
 		ids = [us.txtnr() for us in stories]
 
-		doc_array = self.replace_ids(doc_array, words)
+		#doc_array = self.replace_ids(doc_array, words)
 
 		w_us = pd.DataFrame(0.0, index=words, columns=ids)
 		w_us = w_us.iloc[np.unique(w_us.index, return_index=True)[1]]
 
-		# w_us = self.remove_stop_words(w_us, doc_array)
-		w_us = self.remove_indicators(w_us, stories, nlp)
-		w_us = self.remove_verbs(w_us, stories)
 		w_us = self.get_factor(w_us, stories)
 
 		w_us['sum'] = w_us.sum(axis=1)
+
+		# w_us = self.remove_stop_words(w_us, doc_array)
+		w_us = self.remove_indicators(w_us, stories, nlp)
+		w_us = self.remove_verbs(w_us, stories)
 
 		###
 		us_ids = []
@@ -228,9 +229,10 @@ class Matrix:
 
 			[indicators.append(i) for i in story.indicators]
 
-		# Something is off here...
-		# Remove if it is in the list of indicators AND its sum is 0...		
-		# matrix[(-matrix.index.isin(indicators)) & (matrix['sum'] != 0)]
+		for indicator in indicators:
+			if matrix.loc[indicator, 'sum'] > 0:
+				indicators.remove(indicator)
+
 		return matrix[(-matrix.index.isin(indicators))]
 
 	def remove_verbs(self, matrix, stories):
@@ -247,6 +249,10 @@ class Matrix:
 
 			if len(set(pos)) == 1 and NLPUtility.is_verb(pos[0]):
 				verbs.append(case)
+
+		for verb in verbs:
+			if matrix.loc[verb, 'sum'] > 0:
+				verbs.remove(verb)
 
 		return matrix[(-matrix.index.isin(verbs))]
 
