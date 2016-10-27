@@ -83,17 +83,22 @@ class Matrix:
 	def get_factor_part(self, matrix, story, part):
 		for token in eval('story.' + str(part) + '.text'):
 			if NLPUtility.case(token) in matrix.index.values:
-				matrix = self.add(matrix, NLPUtility.case(token), story.txtnr(), self.score(token, story))
+				matrix = self.add(matrix, NLPUtility.case(token), story.txtnr(), eval('self.score_' + str(part) + '(token, story)'))
 
 		return matrix
 
-	def score(self, token, story):
+	def score_role(self, token, story):
 		weight = 0
 
 		if self.is_phrasal('role.functional_role', token, story) == 1:
 			weight += self.VAL_FUNC_ROLE
 		elif self.is_phrasal('role.functional_role', token, story) == 2:
 			weight += self.VAL_FUNC_ROLE * self.VAL_COMPOUND
+
+		return weight
+
+	def score_means(self, token, story):
+		weight = 0
 
 		if self.is_phrasal('means.main_object', token, story) == 1:
 			weight += self.VAL_MAIN_OBJ
@@ -102,13 +107,18 @@ class Matrix:
 
 		if self.is_freeform('means', token, story) == 1:
 			weight += self.VAL_MEANS_NOUN
+		
+		return weight
 
+	def score_ends(self, token, story):
+		weight = 0
+		
 		if story.ends.free_form:
-			if self.is_phrasal('ends.main_object', token, story) > 0:
+			if self.is_phrasal('ends.main_object', token, story) == 1 or self.is_phrasal('ends.main_object', token, story) == 2:
 				weight += self.VAL_ENDS_NOUN
 			elif self.is_freeform('ends', token, story) == 1:
 				weight += self.VAL_ENDS_NOUN
-
+		
 		return weight
 
 	def count_occurence(self, cm, sl, stories):
@@ -233,9 +243,9 @@ class Matrix:
 			for story in stories:
 				for token in story.data:
 					if NLPUtility.case(token) == case:
-						pos.append(token.pos_)
+						pos.append(token)
 
-			if len(set(pos)) == 1 and pos[0] == 'VERB':
+			if len(set(pos)) == 1 and NLPUtility.is_verb(pos[0]):
 				verbs.append(case)
 
 		return matrix[(-matrix.index.isin(verbs))]
