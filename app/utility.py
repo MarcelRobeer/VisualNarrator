@@ -84,6 +84,8 @@ class NLPUtility:
 	def case(token):
 		if 'd' in token.shape_ or 'x' not in token.shape_ or token.shape_[:2] == 'xX':			
 			return token.text
+		elif token.text[-1] == 's' and 'x' not in token.shape_[:-1]:
+			return token.text[:-1]
 		return string.capwords(token.lemma_)
 
 	def get_case(concept):
