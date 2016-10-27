@@ -200,12 +200,12 @@
 					{% if is_i(story.ends.subject.main) %}
 						Found <kbd>{{ text(story.ends.subject.main) }}</kbd>, so it was replaced with the functional role
 					{% else %}
-						{% if text(story.ends.main_object.compound) == "" %}
+						{% if text(story.ends.subject.compound) == "" %}
 							<kbd>{{ text(story.ends.subject.main) }}</kbd>
 						{% else %}
 						<kbd>{{ text(story.ends.subject.compound) }}</kbd> (compound)
 						{% endif %}
-						{% if text(story.ends.main_object.phrase) != "" %}
+						{% if text(story.ends.subject.phrase) != "" %}
 						with phrase <kbd>{{ text(story.ends.subject.phrase) }}</kbd>
 						{% endif %}
 					{% endif %}
