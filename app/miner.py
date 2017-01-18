@@ -116,7 +116,8 @@ class StoryMiner:
 			if str.lower(story.ends.t[:1]) == 'i':
 				#BC if str.lower(story.ends.t[:5]) == 'i can':
 				#BC	story.ends.simplified = 'I ' + story.ends.t[6:]
-				elif str.lower(story.ends.t[:12]) == 'i am able to':
+				#BC elif str.lower(story.ends.t[:12]) == 'i am able to':
+				if str.lower(story.ends.t[:12]) == 'i am able to':
 					#BC story.ends.simplified = 'I ' + story.ends.t[13:]
 					story.ends.simplified = 'I can' + story.ends.t[13:]
 				else:
