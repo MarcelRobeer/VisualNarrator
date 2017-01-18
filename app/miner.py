@@ -109,14 +109,16 @@ class StoryMiner:
 		else:
 			story.means.t = story.sentence[len(story.means.indicator) + story.means.indicator_i + 1:]
 
-		story.means.simplified = 'I' + story.means.t
+		#BC: story.means.simplified = 'I' + story.means.t
+		story.means.simplified = 'I can' + story.means.t
 
 		if story.has_ends and story.ends.indicator_i > story.means.indicator_i:
 			if str.lower(story.ends.t[:1]) == 'i':
-				if str.lower(story.ends.t[:5]) == 'i can':
-					story.ends.simplified = 'I ' + story.ends.t[6:]
+				#BC if str.lower(story.ends.t[:5]) == 'i can':
+				#BC	story.ends.simplified = 'I ' + story.ends.t[6:]
 				elif str.lower(story.ends.t[:12]) == 'i am able to':
-					story.ends.simplified = 'I ' + story.ends.t[13:]
+					#BC story.ends.simplified = 'I ' + story.ends.t[13:]
+					story.ends.simplified = 'I can' + story.ends.t[13:]
 				else:
 					story.ends.simplified = story.ends.t
 			else:
@@ -194,7 +196,8 @@ class StoryMiner:
 			if NLPUtility.is_subject(token):
 				has_subj = True
 				subject = token
-				if NLPUtility.is_verb(token.head):
+				#BC if NLPUtility.is_verb(token.head):
+				if NLPUtility.is_verb(token.head) and str.lower(token.head.text) != 'can':
 					found_verb = True
 					main_verb = token.head
 					break
@@ -243,8 +246,8 @@ class StoryMiner:
 		# If no main verb could be found it is the second word (directly after 'I')
 		# Possibly a NLP error...
 		if not found_verb:
-			main_verb = eval('story.' + str(part) + '.text')[1]
-
+		#BC 	main_verb = eval('story.' + str(part) + '.text')[1]
+			main_verb = eval('story.' + str(part) + '.text')[2]
 
 		# If the sentence contains no dobj it must be another obj
 		if not found_obj:
@@ -550,7 +553,7 @@ class MinerUtility:
 		verbs = []
 
 		for token in span:
-			if NLPUtility.is_verb(token):
+			if NLPUtility.is_verb(token) and str.lower(token.text) != 'can':
 				verbs.append(token)
 
 		return MinerUtility.get_span(story, verbs)
