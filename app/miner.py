@@ -248,7 +248,10 @@ class StoryMiner:
 		# Possibly a NLP error...
 		if not found_verb:
 		#BC 	main_verb = eval('story.' + str(part) + '.text')[1]
-			main_verb = eval('story.' + str(part) + '.text')[2]
+			if str(part) == 'means' or str.lower(eval('story.' + str(part) + '.text')[1].text) == 'can':
+				main_verb = eval('story.' + str(part) + '.text')[2]
+			else:
+				main_verb = eval('story.' + str(part) + '.text')[1]
 
 		# If the sentence contains no dobj it must be another obj
 		if not found_obj:
