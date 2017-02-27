@@ -277,7 +277,7 @@ class StoryMiner:
 				story.ends.main_verb.phrase = MinerUtility.get_span(story, mv_phrase, 'ends.text')
 				story.ends.main_verb.type = "II"
 
-		if type(main_object) is list or main_object == story.system.main:
+		if main_object == story.system.main:
 			story = eval('self.get_' + str(part) + '_phrases(story, ' + str(found_mv_phrase) + ', False)')
 		else:
 			story = eval('self.get_' + str(part) + '_phrases(story, ' + str(found_mv_phrase) + ')')

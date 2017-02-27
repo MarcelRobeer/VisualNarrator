@@ -236,7 +236,7 @@ class PatternFactory:
 		
 		for story in user_stories:
 			pi.identify(story)
-			
+
 		relationships = self.apply_threshold(pi.relationships, threshold)	
 
 		self.create(relationships, user_stories, threshold, pi.roles)
@@ -423,7 +423,7 @@ class PatternIdentifier:
 			do = eval('story.' + str(part) + '.main_object.compound')
 		else:
 			do = [eval('story.' + str(part) + '.main_object.main')]
-		
+
 		if type(do[0]) is not list:
 			w_fr = [self.getwt(x) for x in fr]
 			w_mv = [self.getwt(x) for x in mv]
@@ -483,7 +483,7 @@ class PatternIdentifier:
 
 	def getwt(self, token):
 		for wt in self.weighted_tokens:
-			if str.lower(token.text) == str.lower(wt.token.text):
+			if token == wt.token:
 				return wt
 		self.weighted_tokens.append(WeightedToken(token, 0.0))
 		return self.getwt(token)
