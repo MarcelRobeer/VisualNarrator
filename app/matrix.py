@@ -199,7 +199,9 @@ class Matrix:
 
 	def is_phrasal(self, part, token, story):
 		spart = 'story.' + part
-		if token == eval(spart + '.main'):
+		if type(eval(spart + '.main')) is list:
+			return -1
+		elif token == eval(spart + '.main'):
 			return 1
 		elif token in eval(spart + '.compound'):
 			return 2
