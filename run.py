@@ -190,8 +190,6 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 			print(str(file[0]) + " file succesfully created at: \"" + str(file[1]) + "\"")
 
     if visualize:
-        # data_returner(us_instances, output_ontobj, output_prologobj, m)
-
         return {'us_instances': us_instances, 'output_ontobj': output_ontobj, 'output_prologobj': output_prologobj,
                 'matrix': m}
 
@@ -240,7 +238,6 @@ def generate_report(report_dict):
 
 	return template.render(report_dict)
 
-
 def program(*args):
 	p = ArgumentParser(
 		usage='''run.py <INPUT FILE> [<args>]
@@ -283,23 +280,24 @@ This program has multiple functionalities:
 	w_p.add_argument("-wdo", dest="weight_main_obj", help="weight of main object (FLOAT, default = 1.0)", type=float, default=1)
 	w_p.add_argument("-wffm", dest="weight_ff_means", help="weight of noun in free form means (FLOAT, default = 0.7)", type=float, default=0.7)
 	w_p.add_argument("-wffe", dest="weight_ff_ends", help="weight of noun in free form ends (FLOAT, default = 0.5)", type=float, default=0.5)		
-	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)		
-	
-	args = p.parse_args()
+	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)
+
+    args = p.parse_args(args)
 
 	weights = [args.weight_func_role, args.weight_main_obj, args.weight_ff_means, args.weight_ff_ends, args.weight_compound]
 
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-    main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog,
-         args.per_role, args.threshold, args.base_weight,
-         weights, args.visualize)
-
-    # return the needed objects for the Visual Part
-    vis_objects = main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link,
-                       args.prolog,
-                       args.per_role, args.threshold, args.base_weight, weights, args.visualize)
-    return (vis_objects)
+    if not args.visualize:
+        main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog,
+             args.per_role, args.threshold, args.base_weight,
+             weights)
+    else:
+        # return the needed objects for the Visual Part
+        vis_objects = main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link,
+                           args.prolog,
+                           args.per_role, args.threshold, args.base_weight, weights, args.visualize)
+        return vis_objects
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
