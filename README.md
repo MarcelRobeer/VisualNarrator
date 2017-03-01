@@ -4,10 +4,10 @@
 
 This program turns user stories into a conceptual model containing entities and relationships.
 
-### Input
+#### Input
 * __Text file__ (.txt, .csv, etc.) containing _one user story per line_
 
-### Output
+#### Output
 * __Report__ of user story parsing, and conceptual model creation
 * __Manchester Ontology__ (.omn) describing the conceptual model
 * (Optional) __Prolog__ (.pl) arguments
