@@ -187,7 +187,10 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 	for file in files:
 		if str(file[1]) != "":
 			print(str(file[0]) + " file succesfully created at: \"" + str(file[1]) + "\"")
-		
+	
+	# Return objects so that they can be used as input for other tools
+	return {'us_instances': us_instances, 'output_ontobj': output_ontobj, 'output_prologobj': output_prologobj, 'matrix': m}
+
 
 def parse(text, id, systemname, nlp, miner):
 	"""Create a new user story object and mines it to map all data in the user story text to a predefined model
@@ -248,7 +251,7 @@ This program has multiple functionalities:
     (4) Get statistics for a user story set
 ''',
 		epilog='''{*} Utrecht University.
-			M.J. Robeer, 2015-2016''')
+			M.J. Robeer, 2015-2017''')
 
 	p.add_argument("filename",
                     help="input file with user stories", metavar="INPUT FILE",
@@ -281,7 +284,7 @@ This program has multiple functionalities:
 
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-	main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.per_role, args.threshold, args.base_weight, weights)
+	return main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.per_role, args.threshold, args.base_weight, weights)
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
