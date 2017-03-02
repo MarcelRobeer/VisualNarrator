@@ -278,7 +278,10 @@ This program has multiple functionalities:
 	w_p.add_argument("-wffe", dest="weight_ff_ends", help="weight of noun in free form ends (FLOAT, default = 0.5)", type=float, default=0.5)		
 	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)		
 	
-	args = p.parse_args(args)
+	if (len(args) < 1):
+		args = p.parse_args()
+	else:
+		args = p.parse_args(args)
 
 	weights = [args.weight_func_role, args.weight_main_obj, args.weight_ff_means, args.weight_ff_ends, args.weight_compound]
 
