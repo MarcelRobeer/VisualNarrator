@@ -2,9 +2,17 @@
 
 > Tells Your User Story Graphically
 
-This program reads a text file (.txt, .csv, etc.) containing User Stories and outputs a Manchester Ontology file. As of yet, each line may only contain a single User Story.
+This program turns user stories into a conceptual model containing entities and relationships.
 
-Optionally, statistics about the User Story set can be output.
+#### Input
+* __Text file__ (.txt, .csv, etc.) containing _one user story per line_
+
+#### Output
+* __Report__ of user story parsing, and conceptual model creation
+* __Manchester Ontology__ (.omn) describing the conceptual model
+* (Optional) __Prolog__ (.pl) arguments
+* (Optional) __Statistics__ about the user stories
+* Returns the mined user stories, ontology, prolog and matrix of weights, which can be used by other tools
 
 ## Dependencies
 The main dependency for the program is its Natural Language Processor (NLP) [spaCy](http://spacy.io/). To run the program, you need:

@@ -19,8 +19,7 @@ from app.pattern import Constructor
 from app.statistics import Statistics, Counter
 
 
-def main(filename, systemname, print_us, print_ont, statistics, link, prolog, per_role, threshold, base, weights,
-         visualize):
+def main(filename, systemname, print_us, print_ont, statistics, link, prolog, per_role, threshold, base, weights):
 	"""General class to run the entire program
 	"""
 
@@ -188,10 +187,9 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 	for file in files:
 		if str(file[1]) != "":
 			print(str(file[0]) + " file succesfully created at: \"" + str(file[1]) + "\"")
-
-    if visualize:
-        return {'us_instances': us_instances, 'output_ontobj': output_ontobj, 'output_prologobj': output_prologobj,
-                'matrix': m}
+	
+	# Return objects so that they can be used as input for other tools
+	return {'us_instances': us_instances, 'output_ontobj': output_ontobj, 'output_prologobj': output_prologobj, 'matrix': m}
 
 
 def parse(text, id, systemname, nlp, miner):
@@ -238,7 +236,7 @@ def generate_report(report_dict):
 
 	return template.render(report_dict)
 
-def program(*args):
+def program():
 	p = ArgumentParser(
 		usage='''run.py <INPUT FILE> [<args>]
 
@@ -253,7 +251,7 @@ This program has multiple functionalities:
     (4) Get statistics for a user story set
 ''',
 		epilog='''{*} Utrecht University.
-			M.J. Robeer, 2015-2016''')
+			M.J. Robeer, 2015-2017''')
 
 	p.add_argument("filename",
                     help="input file with user stories", metavar="INPUT FILE",
@@ -266,8 +264,6 @@ This program has multiple functionalities:
 	g_p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology in the console", action="store_true", default=False)
 	g_p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
 	g_p.add_argument("--prolog", dest="prolog", help="generate prolog output (.pl)", action="store_true", default=False)
-    g_p.add_argument("-vis", dest="visualize", help="generate a network diagram from the users stories",
-                     action="store_true", default=False)
 
 	s_p = p.add_argument_group("statistics arguments (optional)")
 	s_p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
@@ -280,24 +276,15 @@ This program has multiple functionalities:
 	w_p.add_argument("-wdo", dest="weight_main_obj", help="weight of main object (FLOAT, default = 1.0)", type=float, default=1)
 	w_p.add_argument("-wffm", dest="weight_ff_means", help="weight of noun in free form means (FLOAT, default = 0.7)", type=float, default=0.7)
 	w_p.add_argument("-wffe", dest="weight_ff_ends", help="weight of noun in free form ends (FLOAT, default = 0.5)", type=float, default=0.5)		
-	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)
-
-    args = p.parse_args(args)
+	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)		
+	
+	args = p.parse_args()
 
 	weights = [args.weight_func_role, args.weight_main_obj, args.weight_ff_means, args.weight_ff_ends, args.weight_compound]
 
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-    if not args.visualize:
-        main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog,
-             args.per_role, args.threshold, args.base_weight,
-             weights)
-    else:
-        # return the needed objects for the Visual Part
-        vis_objects = main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link,
-                           args.prolog,
-                           args.per_role, args.threshold, args.base_weight, weights, args.visualize)
-        return vis_objects
+	return main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.per_role, args.threshold, args.base_weight, weights)
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
