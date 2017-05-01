@@ -3,8 +3,8 @@ import numpy as np
 import pandas
 from enum import Enum
 
-from app.generator import Generator, Ontology
-from app.utility import NLPUtility, Utility, Printer
+from vn.generator import Generator, Ontology
+from vn.utility import NLPUtility, Utility, Printer
 
 class Constructor:
 	def __init__(self, nlp, user_stories, matrix):

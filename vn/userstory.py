@@ -1,4 +1,4 @@
-from app.statistics import UserStoryStatistics
+from vn.statistics import UserStoryStatistics
 
 class UserStory(object):
 	def __init__(self, nr, text, no_punct):

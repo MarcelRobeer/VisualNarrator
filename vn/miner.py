@@ -1,4 +1,4 @@
-from app.utility import Utility, NLPUtility
+from vn.utility import Utility, NLPUtility
 from lang.en.indicators import *
 
 class StoryMiner:

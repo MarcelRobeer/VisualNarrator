@@ -10,13 +10,13 @@ from argparse import ArgumentParser
 from spacy.en import English
 from jinja2 import FileSystemLoader, Environment, PackageLoader
 
-from app.io import Reader, Writer
-from app.miner import StoryMiner
-from app.matrix import Matrix
-from app.userstory import UserStory
-from app.utility import Utility, Printer
-from app.pattern import Constructor
-from app.statistics import Statistics, Counter
+from vn.io import Reader, Writer
+from vn.miner import StoryMiner
+from vn.matrix import Matrix
+from vn.userstory import UserStory
+from vn.utility import Utility, Printer
+from vn.pattern import Constructor
+from vn.statistics import Statistics, Counter
 
 
 def main(filename, systemname, print_us, print_ont, statistics, link, prolog, per_role, threshold, base, weights):

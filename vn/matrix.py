@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from spacy import attrs
-from app.utility import NLPUtility
+from vn.utility import NLPUtility
 
 
 class Matrix:
