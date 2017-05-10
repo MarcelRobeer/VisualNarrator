@@ -1,0 +1,148 @@
+# Generated with Visual Narrator
+Prefix: : <http://fakesite.org/system.owl#>
+Prefix: owl: <http://www.w3.org/2002/07/owl#>
+Prefix: rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+Prefix: rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+Prefix: xsd: <http://www.w3.org/2001/XMLSchema#>
+Prefix: dc: <http://purl.org/dc/elements/1.1/>
+Prefix: onto: <http://fakesite.org/system.owl#>
+
+Ontology: <:>
+
+Annotations:
+	dc:title "System",
+	dc:creator "Visual Narrator",
+	rdfs:comment "Generated with Visual Narrator"
+
+AnnotationProperty: dc:creator
+
+AnnotationProperty: dc:title
+
+
+# Relationships
+ObjectProperty: :canReceive
+	Domain: :Visitor
+	Range: :Ticket
+
+ObjectProperty: :canLogIn
+	Domain: :Visitor
+	Range: :System
+
+ObjectProperty: :hasType
+	Domain: :Event
+	Range: :EventType
+
+ObjectProperty: :canBook
+	Domain: :Visitor
+	Range: :Ticket
+
+ObjectProperty: :canRename
+	Domain: :Visitor
+	Range: :Account
+
+ObjectProperty: :hasPrice
+	Domain: :Ticket
+	Range: :TicketPrice
+
+ObjectProperty: :canLogOut
+	Domain: :Visitor
+	Range: :System
+
+ObjectProperty: :canSearchFor
+	Domain: :Visitor
+	Range: :Event
+
+ObjectProperty: :canPurchase
+	Domain: :Visitor
+	Range: :Ticket
+
+ObjectProperty: :canCreate
+	Domain: :Visitor
+	Range: :Account
+
+ObjectProperty: :canBuy
+	Domain: :Visitor
+	Range: :Ticket
+
+ObjectProperty: :canChange
+	Domain: :Visitor
+	Range: :AccountPassword
+
+ObjectProperty: :canProvide
+	Domain: :Visitor
+	Range: :Detail
+
+ObjectProperty: :canChoose1
+	Domain: :Visitor
+	Range: :Event
+
+ObjectProperty: :canChoose2
+	Domain: :Visitor
+	Range: :Type
+
+ObjectProperty: :canFilterOn
+	Domain: :Visitor
+	Range: :EventType
+
+ObjectProperty: :hasPassword
+	Domain: :Account
+	Range: :AccountPassword
+
+ObjectProperty: :canSee1
+	Domain: :Visitor
+	Range: :Event
+
+ObjectProperty: :canSee2
+	Domain: :Visitor
+	Range: :TicketPrice
+
+# Classes
+Class: :Visitor
+	Annotations:
+		rdfs:comment "Functional Role"
+
+Class: :Account
+
+
+Class: :System
+
+
+Class: :Event
+
+
+Class: :Ticket
+
+
+Class: :EventType
+	SubClassOf: :Type
+	Annotations:
+		rdfs:label "Event Type"
+
+Class: :Type
+
+
+Class: :AccountPassword
+	SubClassOf: :Password
+	Annotations:
+		rdfs:label "Account Password"
+
+Class: :Password
+
+
+Class: :TicketPrice
+	SubClassOf: :Price
+	Annotations:
+		rdfs:label "Ticket Price"
+
+Class: :Price
+
+
+Class: :Detail
+
+
+Class: :I
+
+
+Class: :Method
+
+
