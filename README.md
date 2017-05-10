@@ -17,11 +17,11 @@ This program turns user stories into a conceptual model containing entities and 
 ## Dependencies
 The main dependency for the program is its Natural Language Processor (NLP) [spaCy](http://spacy.io/). To run the program, you need:
 
-* _Python_ >= 3.4
-* _spaCy_ >= 1.1.0 (currently under development using v1.6.0)
-* _NumPy_ >= 1.7
-* _Pandas_ >= 0.17.1
-* _Jinja2_ >= 2.8
+* _Python_ >= 3.4 (under development using 3.6)
+* _spaCy_ >= 1.8.2 (language model 'en_core_web_md')
+* _NumPy_ >= 1.12.1
+* _Pandas_ >= 0.19.2
+* _Jinja2_ >= 2.9.5
 
 ## Running the Project
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:

@@ -7,7 +7,8 @@ import timeit
 import pkg_resources
 
 from argparse import ArgumentParser
-from spacy.en import English
+import spacy
+import en_core_web_md
 from jinja2 import FileSystemLoader, Environment, PackageLoader
 
 from vn.io import Reader, Writer
@@ -26,7 +27,9 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 	# Initialize spaCy just once (this takes most of the time...)
 	print("Initializing Natural Language Processor . . .")
 	start_nlp_time = timeit.default_timer()
-	nlp = English()
+	#nlp = English()
+	nlp = en_core_web_md.load()
+	#nlp = spacy.load('en')
 	nlp_time = timeit.default_timer() - start_nlp_time
 
 	start_parse_time = timeit.default_timer()
