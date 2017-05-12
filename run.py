@@ -20,7 +20,7 @@ from vn.pattern import Constructor
 from vn.statistics import Statistics, Counter
 
 
-def main(filename, systemname, print_us, print_ont, statistics, link, prolog, per_role, threshold, base, weights):
+def main(filename, systemname, print_us, print_ont, statistics, link, prolog, json, per_role, threshold, base, weights):
 	"""General class to run the entire program
 	"""
 
@@ -139,20 +139,18 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 	matrixcsv = ""
 
 	if statistics:
-		outputcsv = w.make_file(stats_folder, str(systemname), "csv", statsarr[0])
-		matrixcsv = w.make_file(stats_folder, str(systemname) + "-term_by_US_matrix", "csv", m)
-		sent_outputcsv = w.make_file(stats_folder, str(systemname) + "-sentences", "csv", statsarr[1])
-		files.append(["General statistics", outputcsv])
-		files.append(["Term-by-User Story matrix", matrixcsv])
-		files.append(["Sentence statistics", sent_outputcsv])
-	if prolog:
-		outputpl = w.make_file(folder + "/prolog", str(systemname), "pl", output_prolog)
-		files.append(["Prolog", outputpl])
+		files.append(["General statistics", w.make_file(stats_folder, str(systemname), "csv", statsarr[0])])
+		files.append(["Term-by-User Story matrix", w.make_file(stats_folder, str(systemname) + "-term_by_US_matrix", "csv", m)])
+		files.append(["Sentence statistics", w.make_file(stats_folder, str(systemname) + "-sentences", "csv", statsarr[1])])
+	if prolog: 
+		files.append(["Prolog", w.make_file(folder + "/prolog", str(systemname), "pl", output_prolog)])
+	if json:
+		output_json_li = [str(us.toJSON()) for us in us_instances]
+		output_json = "\n".join(output_json_li)
+		files.append(["JSON", w.make_file(folder + "/json", str(systemname) + "-user_stories", "json", output_json)])
 	if per_role:
 		for o in onto_per_role:
-			name = str(systemname) + "-" + str(o[0])
-			pont = w.make_file(folder + "/ontology", name, "omn", o[1])
-			files.append(["Individual Ontology for '" + str(o[0]) + "'", pont])
+			files.append(["Individual Ontology for '" + str(o[0]) + "'", w.make_file(folder + "/ontology", str(systemname) + "-" + str(o[0]), "omn", o[1])])
 
 	# Print the used ontology generation settings
 	Printer.print_gen_settings(matrix, base, threshold)
@@ -267,6 +265,7 @@ This program has multiple functionalities:
 	g_p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology in the console", action="store_true", default=False)
 	g_p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
 	g_p.add_argument("--prolog", dest="prolog", help="generate prolog output (.pl)", action="store_true", default=False)
+	g_p.add_argument("--json", dest="json", help="export user stories as json (.json)", action="store_true", default=False)
 
 	s_p = p.add_argument_group("statistics arguments (optional)")
 	s_p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
@@ -290,7 +289,7 @@ This program has multiple functionalities:
 
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-	return main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.per_role, args.threshold, args.base_weight, weights)
+	return main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.json, args.per_role, args.threshold, args.base_weight, weights)
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):

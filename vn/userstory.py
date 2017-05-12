@@ -1,3 +1,4 @@
+import json
 from vn.statistics import UserStoryStatistics
 
 class UserStory(object):
@@ -15,6 +16,11 @@ class UserStory(object):
 		self.has_ends = False
 		self.stats = UserStoryStatistics()
 
+	def toJSON(self):
+		if self.has_ends:
+			{"number": self.number, "text": self.text, "iloc": self.iloc, "role": self.role.toJSON(), "means": self.means.toJSON(), "ends": self.ends.toJSON()}
+		return {"number": self.number, "text": self.text, "iloc": self.iloc, "role": self.role.toJSON(), "means": self.means.toJSON()}
+
 	def txtnr(self):
 		return "US" + str(self.number)
 
@@ -31,6 +37,9 @@ class UserStoryPart(object):
 		self.indicator_t = ""
 		self.indicator_i = -1
 		self.simplified = ""
+
+	def toJSON(self):
+		return {"text": str(self.text), "indicator": str(self.indicator)}
 
 class FreeFormUSPart(UserStoryPart):
 	def __init__(self):

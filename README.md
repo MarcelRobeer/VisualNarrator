@@ -50,6 +50,7 @@ Argument | Description
 `-u`, `--print_us` | Print additional information per User Story
 `-o`, `--print_ont` | Print the output ontology in the terminal
 `--prolog` | Output prolog arguments to a _.pl_ file. Combine with `--link` to reason about user stories
+`--json` | Output mined user stories to a _.json_ file.
 `--version` | Display the program's version number and exit
 
 ###### Statistics
