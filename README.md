@@ -14,6 +14,11 @@ This program turns user stories into a conceptual model containing entities and 
 * (Optional) __Statistics__ about the user stories
 * Returns the mined user stories, ontology, prolog and matrix of weights, which can be used by other tools
 
+## Publications
+Two scientific papers were published on Visual Narrator:
+* M. Robeer, G. Lucassen, J. M. E. M. Van Der Werf, F. Dalpiaz, and S. Brinkkemper, 'Automated Extraction of Conceptual Models from User Stories via NLP', _2016 IEEE 24th International Requirements Engineering Conference_ (_RE'16_), 2016. \[[pdf](https://www.staff.science.uu.nl/~dalpi001/papers/robe-luca-werf-dalp-brin-16-re.pdf)\]
+* (_coming soon_)
+
 ## Dependencies
 The main dependency for the program is its Natural Language Processor (NLP) [spaCy](http://spacy.io/). To run the program, you need:
 
