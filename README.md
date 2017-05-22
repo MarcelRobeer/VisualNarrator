@@ -16,7 +16,7 @@ This program turns user stories into a conceptual model containing entities and 
 
 ## Publications
 Two scientific papers were published on Visual Narrator:
-* M. Robeer, G. Lucassen, J. M. E. M. van Der Werf, F. Dalpiaz, and S. Brinkkemper (2016). Automated Extraction of Conceptual Models from User Stories via NLP. In _2016 IEEE 24th International Requirements Engineering Conference_ (_RE'16_). IEEE. \[[pdf](https://www.staff.science.uu.nl/~dalpi001/papers/robe-luca-werf-dalp-brin-16-re.pdf)\]
+* M. Robeer, G. Lucassen, J. M. E. M. van Der Werf, F. Dalpiaz, and S. Brinkkemper (2016). Automated Extraction of Conceptual Models from User Stories via NLP. In _2016 IEEE 24th International Requirements Engineering (_RE_) Conference_ (pp. 196-205). IEEE. \[[pdf](https://www.staff.science.uu.nl/~dalpi001/papers/robe-luca-werf-dalp-brin-16-re.pdf)\]
 * G. Lucassen, M. Robeer, F. Dalpiaz, J. M. E. M. van der Werf, and S. Brinkkemper (2017). Extracting conceptual models from user stories with Visual Narrator. _Requirements Engineering_. \[[url](https://link.springer.com/article/10.1007/s00766-017-0270-1)\]
 
 ## Dependencies
