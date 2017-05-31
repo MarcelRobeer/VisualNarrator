@@ -15,7 +15,7 @@ from vn.io import Reader, Writer
 from vn.miner import StoryMiner
 from vn.matrix import Matrix
 from vn.userstory import UserStory
-from vn.utility import Utility, Printer
+from vn.utility import Printer, multiline, remove_punct, t, is_i, tab, is_comment, occurence_list, is_us
 from vn.pattern import Constructor
 from vn.statistics import Statistics, Counter
 
@@ -177,7 +177,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, js
 		"classes": output_ontobj.classes,
 		"relationships": output_prologobj.relationships,
 		"types": list(count_matrix.columns.values),
-		"ontology": Utility.multiline(output_ontology)
+		"ontology": multiline(output_ontology)
 	}
 
 	# Finally, generate a report
@@ -203,7 +203,7 @@ def parse(text, id, systemname, nlp, miner):
 	:param miner: instance of class Miner
 	:returns: A new user story object
 	"""
-	no_punct = Utility.remove_punct(text)
+	no_punct = remove_punct(text)
 	no_double_space = ' '.join(no_punct.split())
 	doc = nlp(no_double_space)
 	user_story = UserStory(id, text, no_double_space)
@@ -227,12 +227,12 @@ def generate_report(report_dict):
 
 	loader = FileSystemLoader( searchpath=str(CURR_DIR) + "/templates/" )
 	env = Environment( loader=loader, trim_blocks=True, lstrip_blocks=True )
-	env.globals['text'] = Utility.t
-	env.globals['is_i'] = Utility.is_i
-	env.globals['apply_tab'] = Utility.tab
-	env.globals['is_comment'] = Utility.is_comment
-	env.globals['occurence_list'] = Utility.occurence_list
-	env.tests['is_us'] = Utility.is_us
+	env.globals['text'] = t
+	env.globals['is_i'] = is_i
+	env.globals['apply_tab'] = tab
+	env.globals['is_comment'] = is_comment
+	env.globals['occurence_list'] = occurence_list
+	env.tests['is_us'] = is_us
 	template = env.get_template("report.html")
 
 	return template.render(report_dict)
@@ -242,7 +242,7 @@ def program(*args):
 		usage='''run.py <INPUT FILE> [<args>]
 
 ///////////////////////////////////////////
-//              PROGRAM_NAME             //
+//              Visual Narrator          //
 ///////////////////////////////////////////
 
 This program has multiple functionalities:
@@ -257,7 +257,7 @@ This program has multiple functionalities:
 	p.add_argument("filename",
                     help="input file with user stories", metavar="INPUT FILE",
                     type=lambda x: is_valid_file(p, x))
-	p.add_argument('--version', action='version', version='PROGRAM_NAME v0.9 BETA by M.J. Robeer')
+	p.add_argument('--version', action='version', version='Visual Narrator v0.9 BETA by M.J. Robeer')
 
 	g_p = p.add_argument_group("general arguments (optional)")
 	g_p.add_argument("-n", "--name", dest="system_name", help="your system name, as used in ontology and output file(s) generation", required=False)

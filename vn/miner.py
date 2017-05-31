@@ -1,4 +1,4 @@
-from vn.utility import Utility, NLPUtility
+from vn.utility import *
 from lang.en.indicators import *
 
 class StoryMiner:
@@ -158,7 +158,7 @@ class StoryMiner:
 		else:		
 			compound = []
 			for token in potential_without_with:
-				if NLPUtility.is_compound(token):
+				if is_compound(token):
 					compound.append([token, token.head])
 
 			if len(compound) == 1 and type(compound[0]) is list:
@@ -194,11 +194,11 @@ class StoryMiner:
 
 		# Simple case if the subj and dobj are linked by a verb
 		for token in eval('story.' + str(part) + '.text'):
-			if NLPUtility.is_subject(token):
+			if is_subject(token):
 				has_subj = True
 				subject = token
-				#BC if NLPUtility.is_verb(token.head):
-				if NLPUtility.is_verb(token.head) and str.lower(token.head.text) != 'can':
+				#BC if is_verb(token.head):
+				if is_verb(token.head) and str.lower(token.head.text) != 'can':
 					found_verb = True
 					main_verb = token.head
 					break
@@ -207,7 +207,7 @@ class StoryMiner:
 			subject = eval('story.' + str(part) + '.text')[0]
 
 		for token in eval('story.' + str(part) + '.text'):
-			if NLPUtility.is_dobj(token):
+			if is_dobj(token):
 				found_obj = True
 
 				if token.pos_ == "PRON": # If it is a pronoun, look for a preposition with a pobj
@@ -239,7 +239,7 @@ class StoryMiner:
 		# If the root of the sentence is a verb
 		if not simple:
 			for token in eval('story.' + str(part) + '.text'):
-				if token.dep_ == 'ROOT' and NLPUtility.is_verb(token):
+				if token.dep_ == 'ROOT' and is_verb(token):
 					found_verb = True
 					main_verb = token
 					break
@@ -294,11 +294,11 @@ class StoryMiner:
 					story.means.main_object.phrase = np
 			if story.means.main_object.phrase:
 				m = story.means.main_object.main
-				if m.i > 0 and NLPUtility.is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
+				if m.i > 0 and is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
 					story.means.main_object.compound = [m.nbor(-1), m]
 				else:
 					for token in story.means.main_object.phrase:
-						if NLPUtility.is_compound(token) and token.head == story.means.main_object.main:
+						if is_compound(token) and token.head == story.means.main_object.main:
 							story.means.main_object.compound = [token, story.means.main_object.main]
 
 		if not found_mv_phrase:
@@ -315,11 +315,11 @@ class StoryMiner:
 					story.ends.main_object.phrase = np
 			if story.ends.main_object.phrase:
 				m = story.ends.main_object.main
-				if m.i > 0 and NLPUtility.is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
+				if m.i > 0 and is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
 					story.ends.main_object.compound = [m.nbor(-1), m]
 				else:
 					for token in story.ends.main_object.phrase:
-						if NLPUtility.is_compound(token) and token.head == story.ends.main_object.main:
+						if is_compound(token) and token.head == story.ends.main_object.main:
 							story.ends.main_object.compound = [token, story.ends.main_object.main]
 
 		ends_subj = story.ends.subject.main
@@ -331,7 +331,7 @@ class StoryMiner:
 		
 			if story.ends.subject.phrase:
 				for token in story.ends.subject.phrase:
-					if NLPUtility.is_compound(token) and token.head == story.ends.subject.main:
+					if is_compound(token) and token.head == story.ends.subject.main:
 						story.ends.subject.compound = [token, story.ends.subject.main]
 
 		if not found_mv_phrase:
@@ -417,7 +417,7 @@ class MinerUtility:
 	# Fixes that spaCy dependencies are not spans, but temporary objects that get deleted when loaded into memory
 	def get_span(story, li, part='data'):
 		ret = []
-		idxlist = NLPUtility.get_idx(li)
+		idxlist = get_idx(li)
 		for i in idxlist:
 			ret.append(eval('story.' + str(part))[i])
 		return ret
@@ -507,7 +507,7 @@ class MinerUtility:
 		nouns = []
 
 		for token in span:
-			if NLPUtility.is_noun(token):
+			if is_noun(token):
 				nouns.append(token)
 
 		return nouns
@@ -527,7 +527,7 @@ class MinerUtility:
 
 		for token in nouns:
 			for child in token.children:
-				if NLPUtility.is_compound(child):
+				if is_compound(child):
 					# Replace to take rightmost child
 					if child.idx < token.idx:
 						for compound in compounds:
@@ -538,7 +538,7 @@ class MinerUtility:
 		for c in compounds:
 			c = MinerUtility.get_span(story, c)
 
-		if compounds and type(compounds[0]) is list:
+		if compounds and len(compounds) == 0 and type(compounds[0]) is list:
 			compounds = compounds[0]
 
 		return compounds
@@ -548,7 +548,7 @@ class MinerUtility:
 		
 		for chunk in eval('story.' + str(part) + '.noun_chunks'):
 			chunk = MinerUtility.get_span(story, chunk)
-			if Utility.is_sublist(chunk, span):
+			if is_sublist(chunk, span):
 				phrases.append(MinerUtility.get_span(story, chunk))
 
 		return phrases
@@ -557,7 +557,7 @@ class MinerUtility:
 		verbs = []
 
 		for token in span:
-			if NLPUtility.is_verb(token) and str.lower(token.text) != 'can':
+			if is_verb(token) and str.lower(token.text) != 'can':
 				verbs.append(token)
 
 		return MinerUtility.get_span(story, verbs)
