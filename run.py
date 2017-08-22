@@ -19,14 +19,19 @@ from app.pattern import Constructor
 from app.statistics import Statistics, Counter
 
 
-def main(filename, systemname, print_us, print_ont, statistics, link, prolog, per_role, threshold, base, weights):
+def initialize_nlp():
+	print("Initializing Natural Language Processor . . .")
+	nlp = English()
+	return nlp
+
+def main(filename, systemname, print_us, print_ont, statistics, link, prolog, per_role, threshold, base, weights, spacy_nlp):
 	"""General class to run the entire program
 	"""
 
 	# Initialize spaCy just once (this takes most of the time...)
-	print("Initializing Natural Language Processor . . .")
 	start_nlp_time = timeit.default_timer()
-	nlp = English()
+
+	nlp = spacy_nlp
 	nlp_time = timeit.default_timer() - start_nlp_time
 
 	start_parse_time = timeit.default_timer()
@@ -236,6 +241,14 @@ def generate_report(report_dict):
 
 	return template.render(report_dict)
 
+def call(filename, spacy_nlp):
+	args2 = program("--return-args")
+	weights = [args2.weight_func_role, args2.weight_main_obj, args2.weight_ff_means, args2.weight_ff_ends,
+			   args2.weight_compound]
+	filename = open(filename)
+	return main(filename, args2.system_name, args2.print_us, args2.print_ont, args2.statistics, args2.link, args2.prolog,
+				args2.per_role, args2.threshold, args2.base_weight, weights, spacy_nlp)
+
 def program(*args):
 	p = ArgumentParser(
 		usage='''run.py <INPUT FILE> [<args>]
@@ -253,9 +266,10 @@ This program has multiple functionalities:
 		epilog='''{*} Utrecht University.
 			M.J. Robeer, 2015-2017''')
 
-	p.add_argument("filename",
-                    help="input file with user stories", metavar="INPUT FILE",
-                    type=lambda x: is_valid_file(p, x))
+	if "--return-args" not in args:
+		p.add_argument("filename",
+                     help="input file with user stories", metavar="INPUT FILE",
+                     type=lambda x: is_valid_file(p, x))
 	p.add_argument('--version', action='version', version='PROGRAM_NAME v0.9 BETA by M.J. Robeer')
 
 	g_p = p.add_argument_group("general arguments (optional)")
@@ -264,7 +278,7 @@ This program has multiple functionalities:
 	g_p.add_argument("-o", "--print_ont", dest="print_ont", help="print ontology in the console", action="store_true", default=False)
 	g_p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
 	g_p.add_argument("--prolog", dest="prolog", help="generate prolog output (.pl)", action="store_true", default=False)
-
+	g_p.add_argument("--return-args", dest="return_args", help="return arguments instead of call VN", action="store_true", default=False)
 	s_p = p.add_argument_group("statistics arguments (optional)")
 	s_p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
 
@@ -277,7 +291,7 @@ This program has multiple functionalities:
 	w_p.add_argument("-wffm", dest="weight_ff_means", help="weight of noun in free form means (FLOAT, default = 0.7)", type=float, default=0.7)
 	w_p.add_argument("-wffe", dest="weight_ff_ends", help="weight of noun in free form ends (FLOAT, default = 0.5)", type=float, default=0.5)		
 	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)		
-	
+
 	if (len(args) < 1):
 		args = p.parse_args()
 	else:
@@ -287,7 +301,11 @@ This program has multiple functionalities:
 
 	if not args.system_name or args.system_name == '':
 		args.system_name = "System"
-	return main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.per_role, args.threshold, args.base_weight, weights)
+	if not args.return_args:
+		spacy_nlp = initialize_nlp()
+		return main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.per_role, args.threshold, args.base_weight, weights, spacy_nlp)
+	else:
+		return args
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
