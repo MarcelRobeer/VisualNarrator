@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from spacy import attrs
-from app.utility import NLPUtility
+from vn.utility import *
 
 
 class Matrix:
@@ -83,8 +83,8 @@ class Matrix:
 
 	def get_factor_part(self, matrix, story, part):
 		for token in eval('story.' + str(part) + '.text'):
-			if NLPUtility.case(token) in matrix.index.values:
-				matrix = self.add(matrix, NLPUtility.case(token), story.txtnr(), eval('self.score_' + str(part) + '(token, story)'))
+			if get_case(token) in matrix.index.values:
+				matrix = self.add(matrix, get_case(token), story.txtnr(), eval('self.score_' + str(part) + '(token, story)'))
 
 		return matrix
 
@@ -125,7 +125,7 @@ class Matrix:
 	def count_occurence(self, cm, sl, stories):
 		for story in stories:
 			for token in story.data:
-				c = NLPUtility.case(token)
+				c = get_case(token)
 				if c in cm.index.values:
 					for s in sl:
 						if s[0] == c:
@@ -156,13 +156,13 @@ class Matrix:
 		for case in cases:
 			for story in stories:
 				if story.role.indicator:
-					if case in [NLPUtility.case(token) for token in story.role.text]:
+					if case in [get_case(token) for token in story.role.text]:
 						matrix.set_value(case, (story.txtnr(), 'Role'), 1)
 				if story.means.indicator:
-					if case in [NLPUtility.case(token) for token in story.means.text]:
+					if case in [get_case(token) for token in story.means.text]:
 						matrix.set_value(case, (story.txtnr(), 'Means'), 1)
 				if story.ends.indicator:
-					if case in [NLPUtility.case(token) for token in story.ends.text]:
+					if case in [get_case(token) for token in story.ends.text]:
 						matrix.set_value(case, (story.txtnr(), 'Ends'), 1)
 								
 		return matrix
@@ -183,7 +183,7 @@ class Matrix:
 		namedict = {}
 
 		for token in tokens:
-			namedict[token.lemma] = NLPUtility.case(token)
+			namedict[token.lemma] = get_case(token)
 
 		return namedict
 
@@ -215,7 +215,7 @@ class Matrix:
 			if eval(spart + '.nouns'):
 				if token in eval(spart + '.nouns'):
 					return 1
-				elif eval(spart + '.compounds') and token in eval(spart + '.compounds'):
+				elif eval(spart + '.compounds') and token in flatten(eval(spart + '.compounds')):
 					return 1
 		return -1
 
@@ -227,7 +227,7 @@ class Matrix:
 			if story.has_ends:
 				ind += " " + story.ends.indicator
 
-			[indicators.append(NLPUtility.case(t)) for t in nlp(ind)]
+			[indicators.append(get_case(t)) for t in nlp(ind)]
 
 			[indicators.append(i) for i in story.indicators]
 
@@ -246,10 +246,10 @@ class Matrix:
 
 			for story in stories:
 				for token in story.data:
-					if NLPUtility.case(token) == case:
+					if get_case(token) == case:
 						pos.append(token)
 
-			if len(set(pos)) == 1 and NLPUtility.is_verb(pos[0]):
+			if len(set(pos)) == 1 and is_verb(pos[0]):
 				verbs.append(case)
 
 		for verb in verbs:

@@ -14,14 +14,19 @@ This program turns user stories into a conceptual model containing entities and 
 * (Optional) __Statistics__ about the user stories
 * Returns the mined user stories, ontology, prolog and matrix of weights, which can be used by other tools
 
+## Publications
+Two scientific papers were published on Visual Narrator:
+* M. Robeer, G. Lucassen, J. M. E. M. van Der Werf, F. Dalpiaz, and S. Brinkkemper (2016). Automated Extraction of Conceptual Models from User Stories via NLP. In _2016 IEEE 24th International Requirements Engineering (_RE_) Conference_ (pp. 196-205). IEEE. \[[pdf](https://www.staff.science.uu.nl/~dalpi001/papers/robe-luca-werf-dalp-brin-16-re.pdf)\]
+* G. Lucassen, M. Robeer, F. Dalpiaz, J. M. E. M. van der Werf, and S. Brinkkemper (2017). Extracting conceptual models from user stories with Visual Narrator. _Requirements Engineering_. \[[url](https://link.springer.com/article/10.1007/s00766-017-0270-1)\]
+
 ## Dependencies
 The main dependency for the program is its Natural Language Processor (NLP) [spaCy](http://spacy.io/). To run the program, you need:
 
-* _Python_ >= 3.4
-* _spaCy_ >= 1.1.0 (currently under development using v1.6.0)
-* _NumPy_ >= 1.7
-* _Pandas_ >= 0.17.1
-* _Jinja2_ >= 2.8
+* _Python_ >= 3.4 (under development using 3.6)
+* _spaCy_ >= 1.8.2 (language model 'en_core_web_md')
+* _NumPy_ >= 1.12.1
+* _Pandas_ >= 0.19.2
+* _Jinja2_ >= 2.9.5
 
 ## Running the Project
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:
@@ -50,6 +55,7 @@ Argument | Description
 `-u`, `--print_us` | Print additional information per User Story
 `-o`, `--print_ont` | Print the output ontology in the terminal
 `--prolog` | Output prolog arguments to a _.pl_ file. Combine with `--link` to reason about user stories
+`--json` | Output mined user stories to a _.json_ file.
 `--version` | Display the program's version number and exit
 
 ###### Statistics

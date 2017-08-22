@@ -7,31 +7,36 @@ import timeit
 import pkg_resources
 
 from argparse import ArgumentParser
-from spacy.en import English
+import spacy
+import en_core_web_md
 from jinja2 import FileSystemLoader, Environment, PackageLoader
 
-from app.io import Reader, Writer
-from app.miner import StoryMiner
-from app.matrix import Matrix
-from app.userstory import UserStory
-from app.utility import Utility, Printer
-from app.pattern import Constructor
-from app.statistics import Statistics, Counter
+from vn.io import Reader, Writer
+from vn.miner import StoryMiner
+from vn.matrix import Matrix
+from vn.userstory import UserStory
+from vn.utility import Printer, multiline, remove_punct, t, is_i, tab, is_comment, occurence_list, is_us
+from vn.pattern import Constructor
+from vn.statistics import Statistics, Counter
 
 
 def initialize_nlp():
 	print("Initializing Natural Language Processor . . .")
-	nlp = English()
+	nlp = en_core_web_md.load()
 	return nlp
 
-def main(filename, systemname, print_us, print_ont, statistics, link, prolog, per_role, threshold, base, weights, spacy_nlp):
+def main(filename, systemname, print_us, print_ont, statistics, link, prolog, json, per_role, threshold, base, weights, spacy_nlp):
+
 	"""General class to run the entire program
 	"""
 
 	# Initialize spaCy just once (this takes most of the time...)
+	print("Initializing Natural Language Processor . . .")
 	start_nlp_time = timeit.default_timer()
-
-	nlp = spacy_nlp
+	#nlp = English()
+	# nlp = en_core_web_md.load()
+	#nlp = spacy.load('en')
+	nlp =spacy_nlp
 	nlp_time = timeit.default_timer() - start_nlp_time
 
 	start_parse_time = timeit.default_timer()
@@ -141,20 +146,18 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 	matrixcsv = ""
 
 	if statistics:
-		outputcsv = w.make_file(stats_folder, str(systemname), "csv", statsarr[0])
-		matrixcsv = w.make_file(stats_folder, str(systemname) + "-term_by_US_matrix", "csv", m)
-		sent_outputcsv = w.make_file(stats_folder, str(systemname) + "-sentences", "csv", statsarr[1])
-		files.append(["General statistics", outputcsv])
-		files.append(["Term-by-User Story matrix", matrixcsv])
-		files.append(["Sentence statistics", sent_outputcsv])
+		files.append(["General statistics", w.make_file(stats_folder, str(systemname), "csv", statsarr[0])])
+		files.append(["Term-by-User Story matrix", w.make_file(stats_folder, str(systemname) + "-term_by_US_matrix", "csv", m)])
+		files.append(["Sentence statistics", w.make_file(stats_folder, str(systemname) + "-sentences", "csv", statsarr[1])])
 	if prolog:
-		outputpl = w.make_file(folder + "/prolog", str(systemname), "pl", output_prolog)
-		files.append(["Prolog", outputpl])
+		files.append(["Prolog", w.make_file(folder + "/prolog", str(systemname), "pl", output_prolog)])
+	if json:
+		output_json_li = [str(us.toJSON()) for us in us_instances]
+		output_json = "\n".join(output_json_li)
+		files.append(["JSON", w.make_file(folder + "/json", str(systemname) + "-user_stories", "json", output_json)])
 	if per_role:
 		for o in onto_per_role:
-			name = str(systemname) + "-" + str(o[0])
-			pont = w.make_file(folder + "/ontology", name, "omn", o[1])
-			files.append(["Individual Ontology for '" + str(o[0]) + "'", pont])
+			files.append(["Individual Ontology for '" + str(o[0]) + "'", w.make_file(folder + "/ontology", str(systemname) + "-" + str(o[0]), "omn", o[1])])
 
 	# Print the used ontology generation settings
 	Printer.print_gen_settings(matrix, base, threshold)
@@ -181,7 +184,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, pe
 		"classes": output_ontobj.classes,
 		"relationships": output_prologobj.relationships,
 		"types": list(count_matrix.columns.values),
-		"ontology": Utility.multiline(output_ontology)
+		"ontology": multiline(output_ontology)
 	}
 
 	# Finally, generate a report
@@ -207,7 +210,7 @@ def parse(text, id, systemname, nlp, miner):
 	:param miner: instance of class Miner
 	:returns: A new user story object
 	"""
-	no_punct = Utility.remove_punct(text)
+	no_punct = remove_punct(text)
 	no_double_space = ' '.join(no_punct.split())
 	doc = nlp(no_double_space)
 	user_story = UserStory(id, text, no_double_space)
@@ -231,30 +234,22 @@ def generate_report(report_dict):
 
 	loader = FileSystemLoader( searchpath=str(CURR_DIR) + "/templates/" )
 	env = Environment( loader=loader, trim_blocks=True, lstrip_blocks=True )
-	env.globals['text'] = Utility.t
-	env.globals['is_i'] = Utility.is_i
-	env.globals['apply_tab'] = Utility.tab
-	env.globals['is_comment'] = Utility.is_comment
-	env.globals['occurence_list'] = Utility.occurence_list
-	env.tests['is_us'] = Utility.is_us
+	env.globals['text'] = t
+	env.globals['is_i'] = is_i
+	env.globals['apply_tab'] = tab
+	env.globals['is_comment'] = is_comment
+	env.globals['occurence_list'] = occurence_list
+	env.tests['is_us'] = is_us
 	template = env.get_template("report.html")
 
 	return template.render(report_dict)
-
-def call(filename, spacy_nlp):
-	args2 = program("--return-args")
-	weights = [args2.weight_func_role, args2.weight_main_obj, args2.weight_ff_means, args2.weight_ff_ends,
-			   args2.weight_compound]
-	filename = open(filename)
-	return main(filename, args2.system_name, args2.print_us, args2.print_ont, args2.statistics, args2.link, args2.prolog,
-				args2.per_role, args2.threshold, args2.base_weight, weights, spacy_nlp)
 
 def program(*args):
 	p = ArgumentParser(
 		usage='''run.py <INPUT FILE> [<args>]
 
 ///////////////////////////////////////////
-//              PROGRAM_NAME             //
+//              Visual Narrator          //
 ///////////////////////////////////////////
 
 This program has multiple functionalities:
@@ -270,7 +265,7 @@ This program has multiple functionalities:
 		p.add_argument("filename",
                      help="input file with user stories", metavar="INPUT FILE",
                      type=lambda x: is_valid_file(p, x))
-	p.add_argument('--version', action='version', version='PROGRAM_NAME v0.9 BETA by M.J. Robeer')
+	p.add_argument('--version', action='version', version='Visual Narrator v0.9 BETA by M.J. Robeer')
 
 	g_p = p.add_argument_group("general arguments (optional)")
 	g_p.add_argument("-n", "--name", dest="system_name", help="your system name, as used in ontology and output file(s) generation", required=False)
@@ -279,6 +274,8 @@ This program has multiple functionalities:
 	g_p.add_argument("-l", "--link", dest="link", help="link ontology classes to user story they originate from", action="store_true", default=False)
 	g_p.add_argument("--prolog", dest="prolog", help="generate prolog output (.pl)", action="store_true", default=False)
 	g_p.add_argument("--return-args", dest="return_args", help="return arguments instead of call VN", action="store_true", default=False)
+	g_p.add_argument("--json", dest="json", help="export user stories as json (.json)", action="store_true", default=False)
+
 	s_p = p.add_argument_group("statistics arguments (optional)")
 	s_p.add_argument("-s", "--statistics", dest="statistics", help="show user story set statistics and output these to a .csv file", action="store_true", default=False)
 
@@ -291,7 +288,7 @@ This program has multiple functionalities:
 	w_p.add_argument("-wffm", dest="weight_ff_means", help="weight of noun in free form means (FLOAT, default = 0.7)", type=float, default=0.7)
 	w_p.add_argument("-wffe", dest="weight_ff_ends", help="weight of noun in free form ends (FLOAT, default = 0.5)", type=float, default=0.5)		
 	w_p.add_argument("-wcompound", dest="weight_compound", help="weight of nouns in compound compared to head (FLOAT, default = 0.66)", type=float, default=0.66)		
-
+	
 	if (len(args) < 1):
 		args = p.parse_args()
 	else:
@@ -303,7 +300,7 @@ This program has multiple functionalities:
 		args.system_name = "System"
 	if not args.return_args:
 		spacy_nlp = initialize_nlp()
-		return main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.per_role, args.threshold, args.base_weight, weights, spacy_nlp)
+		return main(args.filename, args.system_name, args.print_us, args.print_ont, args.statistics, args.link, args.prolog, args.json, args.per_role, args.threshold, args.base_weight, weights, spacy_nlp)
 	else:
 		return args
 

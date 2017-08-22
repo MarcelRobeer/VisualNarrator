@@ -1,4 +1,4 @@
-from app.utility import Utility, NLPUtility
+from vn.utility import *
 
 class Statistics:
 	def to_stats_array(stories):
@@ -12,8 +12,28 @@ class Statistics:
 			sent_stats.append(sent_header)
 
 		for us in stories:
-			stats.append([us.number, us.text, us.stats.words, us.stats.verbs, us.stats.nouns, us.stats.noun_phrases, us.stats.indicators.role, us.stats.indicators.means, us.stats.indicators.ends, us.stats.fr_type, us.stats.mv_type, us.stats.do_type])
-			sent_stats.append([us.number, Utility.text(us.stats.role.nps), Utility.text(us.stats.role.general), Utility.text(us.stats.role.detail), Utility.text(us.stats.means.nps), Utility.text(us.stats.means.general), Utility.text(us.stats.means.detail), Utility.text(us.stats.means.nps), Utility.text(us.stats.means.general), Utility.text(us.stats.means.detail)])
+			stats.append([us.number, 
+						  us.text, 
+						  us.stats.words, 
+						  us.stats.verbs, 
+						  us.stats.nouns,
+						   us.stats.noun_phrases, 
+						   us.stats.indicators.role, 
+						   us.stats.indicators.means, 
+						   us.stats.indicators.ends, 
+						   us.stats.fr_type, 
+						   us.stats.mv_type, 
+						   us.stats.do_type])
+			sent_stats.append([us.number, 
+								text(us.stats.role.nps), 
+								text(us.stats.role.general), 
+								text(us.stats.role.detail), 
+								text(us.stats.means.nps), 
+								text(us.stats.means.general), 
+								text(us.stats.means.detail), 
+								text(us.stats.means.nps), 
+								text(us.stats.means.general), 
+								text(us.stats.means.detail)])
 
 		return stats, sent_stats
 

@@ -3,8 +3,8 @@ import numpy as np
 import pandas
 from enum import Enum
 
-from app.generator import Generator, Ontology
-from app.utility import NLPUtility, Utility, Printer
+from vn.generator import Generator, Ontology
+from vn.utility import Printer, WeightedToken, get_case, is_sublist
 
 class Constructor:
 	def __init__(self, nlp, user_stories, matrix):
@@ -140,19 +140,11 @@ class Constructor:
 
 		means_compounds = []
 		means_compounds.append(story.means.main_object.compound)
-		ends_compounds = story.ends.compounds
+		ends_compounds = flatten(story.ends.compounds)
 
 		if story.means.free_form:
 			if len(story.means.compounds) > 0:
-				if type(story.means.compounds[0]) is list:
-					mc = [item for item in sublist for sublist in story.means.compounds]
-				else:
-					mc = story.means.compounds
-				means_compounds.extend(mc)
-			
-		if len(ends_compounds) > 0:
-			if type(ends_compounds[0]) is list:
-				ends_compounds = [item for item in sublist for sublist in story.ends.compounds]
+				means_compounds.extend(flatten(story.means.compounds))
 
 		role = []
 		means = []
@@ -162,40 +154,33 @@ class Constructor:
 		for token in story.data:
 			if token in story.role.text:
 				if len(case) != 1:
-					role.append(NLPUtility.case(token))
+					role.append(get_case(token))
 				elif token not in story.role.functional_role.compound:
-					role.append(NLPUtility.case(token))
+					role.append(get_case(token))
 			if token in story.means.text:
 				if len(case) != 1:
-					means.append(NLPUtility.case(token))
+					means.append(get_case(token))
 				elif token not in means_compounds:
-					means.append(NLPUtility.case(token))
+					means.append(get_case(token))
 			if story.has_ends:
 				if token in story.ends.text:
 					if len(case) != 1:
-						ends.append(NLPUtility.case(token))
+						ends.append(get_case(token))
 					elif token not in ends_compounds:
-						ends.append(NLPUtility.case(token))
+						ends.append(get_case(token))
 
-		if Utility.is_sublist(case, role):
+		if is_sublist(case, role):
 			rme.append('Role')
 
-		if Utility.is_sublist(case, means):
+		if is_sublist(case, means):
 			rme.append('Means')
 
-		if Utility.is_sublist(case, ends):
+		if is_sublist(case, ends):
 			rme.append('Ends')
 
 		return rme
 			
 					
-
-class WeightedToken(object):
-	def __init__(self, token, weight):
-		self.token = token
-		self.case = NLPUtility.case(token)
-		self.weight = weight
-
 class WeightAttacher:
 	def make(stories, weights):
 		weighted_tokens = []
@@ -211,7 +196,7 @@ class WeightAttacher:
 
 			for part in parts:
 				for token in eval('story.' + str(part) + '.text'):
-					c = NLPUtility.case(token)
+					c = get_case(token)
 					if c in indices:
 						for weight in weights:
 							if weight[0] == c:
@@ -232,12 +217,12 @@ class PatternFactory:
 
 	def make_patterns(self, user_stories, threshold):
 		pi = PatternIdentifier(self.weighted_tokens)
-		self.sysname = str.lower(NLPUtility.case(user_stories[0].system.main))
+		self.sysname = str.lower(get_case(user_stories[0].system.main))
 		
 		for story in user_stories:
 			pi.identify(story)
-			
-		relationships = self.apply_threshold(pi.relationships, threshold)	
+		
+		relationships = self.apply_threshold(pi.relationships, threshold)
 
 		self.create(relationships, user_stories, threshold, pi.roles)
 
@@ -259,7 +244,7 @@ class PatternFactory:
 		if wt:		
 			lt = wt[0].weight
 			for w in wt:
-				if str.lower(NLPUtility.get_case(w)) != self.sysname and w.weight < lt: # Exclude system name object from filter
+				if str.lower(get_case(w)) != self.sysname and w.weight < lt: # Exclude system name object from filter
 					lt = w.weight
 
 		return lt
@@ -282,15 +267,15 @@ class PatternFactory:
 		used = []
 
 		for r in relationships:
-			pre = NLPUtility.get_case(r[1])
-			post = NLPUtility.get_case(r[3])
+			pre = get_case(r[1])
+			post = get_case(r[3])
 
 			if r[2] == Pattern.parent:
 				self.onto.get_class_by_name(r[0], pre, post)
 				self.prolog.new_relationship(r[0], pre, 'isa', post)
 
 			if r[2] != Pattern.parent:
-				rel = NLPUtility.get_case(r[4])
+				rel = get_case(r[4])
 
 			if r[2] == Pattern.subj_dobj or r[2] == Pattern.compound_has:
 				self.onto.get_class_by_name(r[0], pre)
@@ -315,7 +300,7 @@ class PatternFactory:
 					self.onto.get_class_by_name(in_story, wo.case)
 
 		for r in roles:
-			self.onto.get_class_by_name(r[0], NLPUtility.get_case(r[1]), '', True)
+			self.onto.get_class_by_name(r[0], get_case(r[1]), '', True)
 
 	def make_can_relationship(self, story, pre, rel, post):
 		self.make_relationship(story, pre, rel, post, 'can')
@@ -329,7 +314,7 @@ class PatternFactory:
 	def find_story(self, w_token, stories):
 		nrs = []
 		for story in stories:
-			if w_token.case in [NLPUtility.case(t) for t in story.data]:
+			if w_token.case in [get_case(t) for t in story.data]:
 				nrs.append(story.number)
 		return nrs
 
@@ -370,7 +355,7 @@ class PatternIdentifier:
 			## C5
 			for c in compounds:
 				self.relationships.append([story.number, [self.getwt(c[0]), self.getwt(c[1])], Pattern.parent, self.getwt(c[1])])
-				
+
 				## R4
 				if c[0].head == c[1]:
 					self.relationships.append([story.number, self.getwt(c[0]), Pattern.compound_has, [self.getwt(c[0]), self.getwt(c[1])], self.getwt(c[1])])
