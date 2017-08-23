@@ -36,7 +36,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, js
 	#nlp = English()
 	# nlp = en_core_web_md.load()
 	#nlp = spacy.load('en')
-	nlp =spacy_nlp
+	nlp = spacy_nlp
 	nlp_time = timeit.default_timer() - start_nlp_time
 
 	start_parse_time = timeit.default_timer()
@@ -243,6 +243,16 @@ def generate_report(report_dict):
 	template = env.get_template("report.html")
 
 	return template.render(report_dict)
+
+
+def call(filename, spacy_nlp):
+	args2 = program("--return-args")
+	weights = [args2.weight_func_role, args2.weight_main_obj, args2.weight_ff_means, args2.weight_ff_ends,
+			   args2.weight_compound]
+	filename = open(filename)
+	return main(filename, args2.system_name, args2.print_us, args2.print_ont, args2.statistics, args2.link, args2.prolog,
+				args2.json, args2.per_role, args2.threshold, args2.base_weight, weights, spacy_nlp)
+
 
 def program(*args):
 	p = ArgumentParser(
