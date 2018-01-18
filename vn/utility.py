@@ -83,6 +83,8 @@ def is_us(cl):
 ### NLP
 def get_case(t):
 	if type(t) is Token:
+		if str.lower(t.text) == "i":  # quickfix for https://github.com/explosion/spaCy/issues/962
+			return "I"
 		if 'd' in t.shape_ or 'x' not in t.shape_ or t.shape_[:2] == 'xX':			
 			return t.text
 		elif t.text[-1] == 's' and 'x' not in t.shape_[:-1]:

@@ -76,11 +76,8 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, js
 	start_matr_time = timeit.default_timer()
 
 	matrix = Matrix(base, weights)
-	matrices = matrix.generate(us_instances, ' '.join(success_stories), nlp)
-	m = matrices[0]
-	count_matrix = matrices[1]
-	stories_list = matrices[2]
-	rme = matrices[3]
+	matrices = matrix.generate(us_instances, ' '.join([u.sentence for u in us_instances]), nlp)
+	m, count_matrix, stories_list, rme = matrices
 
 	matr_time = timeit.default_timer() - start_matr_time
 
@@ -95,11 +92,7 @@ def main(filename, systemname, print_us, print_ont, statistics, link, prolog, js
 	
 	patterns = Constructor(nlp, us_instances, m)
 	out = patterns.make(systemname, threshold, link)
-	output_ontology = out[0]
-	output_prolog = out[1]
-	output_ontobj = out[2]
-	output_prologobj = out[3]
-	onto_per_role = out[4]
+	output_ontology, output_prolog, output_ontobj, output_prologobj, onto_per_role = out
 
 	# Print out the ontology in the terminal, if argument '-o'/'--print_ont' is chosen
 	if print_ont:

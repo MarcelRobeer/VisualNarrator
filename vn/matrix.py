@@ -12,9 +12,9 @@ class Matrix:
 		self.VAL_ENDS_NOUN = base * weight[3]
 		self.VAL_COMPOUND = weight[4]
 
-	def generate(self, stories, set, nlp):
-		set = ' '.join(set.split())
-		tokens = nlp(set)
+	def generate(self, stories, all_words, nlp):
+		all_words = ' '.join(all_words.split())
+		tokens = nlp(all_words)
 
 		attr_ids = [attrs.LEMMA, attrs.IS_STOP, attrs.IS_PUNCT, attrs.IS_SPACE]
 		#doc_array = tokens.to_array(attr_ids)
@@ -23,7 +23,7 @@ class Matrix:
 		#doc_array = self.unique(doc_array)
 		#doc_array = self.remove_punct(doc_array)
 
-		words = list(namedict.values()) #[namedict[row[0]] for row in doc_array]
+		words = list(namedict.values())  #[namedict[row[0]] for row in doc_array]
 		ids = [us.txtnr() for us in stories]
 
 		#doc_array = self.replace_ids(doc_array, words)
@@ -63,9 +63,7 @@ class Matrix:
 		colnames = ['Functional Role', 'Functional Role Compound', 'Main Object', 'Main Object Compound', 'Means Free Form Noun', 'Ends Free Form Noun']
 		stories_list = [[l, []] for l in list(w_us.index.values)]
 		count_matrix = pd.DataFrame(0, index=w_us.index, columns=colnames)
-		co = self.count_occurence(count_matrix, stories_list, stories)
-		count_matrix = co[0]
-		stories_list = co[1]
+		count_matrix, stories_list = self.count_occurence(count_matrix, stories_list, stories)
 
 		return w_us, count_matrix, stories_list, rme_us
 		
@@ -219,6 +217,13 @@ class Matrix:
 					return 1
 		return -1
 
+	def _remove_from(self, matrix, to_drop):
+		for d in to_drop:
+			if d in matrix.index.values and matrix.loc[d, 'sum'] > 0:
+				to_drop.remove(d)
+
+		return matrix[~matrix.index.isin(to_drop)]
+
 	def remove_indicators(self, matrix, stories, nlp):
 		indicators = []
 
@@ -231,11 +236,7 @@ class Matrix:
 
 			[indicators.append(i) for i in story.indicators]
 
-		for indicator in indicators:
-			if matrix.loc[indicator, 'sum'] > 0:
-				indicators.remove(indicator)
-
-		return matrix[(-matrix.index.isin(indicators))]
+		return self._remove_from(matrix, indicators)
 
 	def remove_verbs(self, matrix, stories):
 		verbs = []
@@ -252,11 +253,7 @@ class Matrix:
 			if len(set(pos)) == 1 and is_verb(pos[0]):
 				verbs.append(case)
 
-		for verb in verbs:
-			if matrix.loc[verb, 'sum'] > 0:
-				verbs.remove(verb)
-
-		return matrix[(-matrix.index.isin(verbs))]
+		return self._remove_from(matrix, verbs)
 
 	def remove_stop_words(self, matrix, stopwords):
 		result = pd.merge(matrix, stopwords, left_index=True, right_index=True, how='inner')
