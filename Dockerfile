@@ -7,8 +7,7 @@ LABEL maintainer "mosser@i3s.unice.fr"
 # To publish the image:
 # 
 # To use the image:
-# docker run -it --rm -v "$PWD":/usr/src/app/output \
-             acedesign/visualnarrator:latest output/example_stories.txt
+# docker run -it --rm -v "$PWD":/usr/src/app/output acedesign/visualnarrator:latest output/example_stories.txt
 ######
 
 # Installing Visual Narrator
