@@ -1,16 +1,16 @@
 import numpy as np
 import pandas as pd
 from spacy import attrs
-from vn.utils.utility import *
+from vn.utils.utility import flatten, get_case, is_verb
 
 
 class Matrix:
 	def __init__(self, base, weight):
-		self.VAL_FUNC_ROLE = base * weight[0]
-		self.VAL_MAIN_OBJ = base * weight[1]
-		self.VAL_MEANS_NOUN = base * weight[2]
-		self.VAL_ENDS_NOUN = base * weight[3]
-		self.VAL_COMPOUND = weight[4]
+		self.VAL_FUNC_ROLE = base * weight['func_role']
+		self.VAL_MAIN_OBJ = base * weight['main_obj']
+		self.VAL_MEANS_NOUN = base * weight['ff_means']
+		self.VAL_ENDS_NOUN = base * weight['ff_ends']
+		self.VAL_COMPOUND = weight['compound']
 
 	def generate(self, stories, all_words, nlp):
 		all_words = ' '.join(all_words.split())
@@ -60,7 +60,9 @@ class Matrix:
 		rme_us = self.get_role_means_ends(rme_us, stories)	
 		###
 
-		colnames = ['Functional Role', 'Functional Role Compound', 'Main Object', 'Main Object Compound', 'Means Free Form Noun', 'Ends Free Form Noun']
+		colnames = ['Functional Role', 'Functional Role Compound',
+		            'Main Object', 'Main Object Compound',
+					'Means Free Form Noun', 'Ends Free Form Noun']
 		stories_list = [[l, []] for l in list(w_us.index.values)]
 		count_matrix = pd.DataFrame(0, index=w_us.index, columns=colnames)
 		count_matrix, stories_list = self.count_occurence(count_matrix, stories_list, stories)

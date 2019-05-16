@@ -1,10 +1,12 @@
 import string
 import timeit
 import os.path
+import spacy
 import pkg_resources
 
 from jinja2 import FileSystemLoader, Environment, PackageLoader
 
+from vn.config import default_threshold, default_base, default_weights
 from vn.io import Reader, Writer, Printer
 from vn.miner import StoryMiner
 from vn.matrix import Matrix
@@ -13,8 +15,55 @@ from vn.pattern import Constructor
 from vn.statistics import Statistics, Counter
 from vn.utils.utility import multiline, remove_punct, t, is_i, tab, is_comment, occurence_list, is_us
 
-def run_vn(filename, systemname, print_us, print_ont, statistics, link, prolog, json, per_role, threshold, base, weights, spacy_nlp, stories=None):
-	"""General class to run the entire program
+
+def initialize_nlp():
+	# Initialize spaCy just once (this takes most of the time...)
+	print("Initializing Natural Language Processor. . .")
+	return spacy.load('en_core_web_md')
+
+
+def run_vn(filename,
+		   systemname,
+		   threshold = default_threshold,
+		   base = default_base,
+		   weights = default_weights,
+		   spacy_nlp = initialize_nlp(),
+		   print_us = False,
+		   print_ont = False,
+		   statistics = False,
+		   link = False,
+		   prolog = False,
+		   json = False,
+		   per_role = False,
+		   stories = None):
+	"""General class to run Visual Narrator
+
+	POSITIONAL ARGUMENTS
+		:param filename: File name to read
+		:param systemname: Name of System (for output and in model)
+	
+	OPTIONAL ARGUMENTS
+		:param threshold:  (float)
+		:param base: (int)
+		:param weights: weights for type of objects (dict)
+
+		:param spacy_nlp: spacy NLP using spacy.load('en_core_web_md')
+
+		:param print_us: print data per user story in the console (bool)
+		:param print_ont: print ontology in the console (bool)
+
+		:param statistics: show user story set statistics and output these to a .csv file (bool)
+		:param link: link ontology classes to user story they originate from  (bool)
+		:param per_role: create an additional conceptual model per role (bool)
+
+		:param prolog: generate Prolog output (.pl) (bool)
+		:param json: export user stories as JSON (.json) (bool)		
+
+		:param stories: list of preprocessed stories (from filename)
+
+	RETURNS
+		:returns: dictionary with US objects, Ontology + Prolog + JSON objects, matrix
+		:rtype: dict
 	"""
 	if stories is None:
 		stories = Reader.parse(filename)
@@ -47,7 +96,7 @@ def run_vn(filename, systemname, print_us, print_ont, statistics, link, prolog, 
 			success_stories.append(s)
 		except ValueError as err:
 			failed_stories.append([us_id, s, err.args])
-			errors += "\n[User Story " + str(us_id) + " ERROR] " + str(err.args[0]) + "! (\"" + " ".join(str.split(s)) + "\")"
+			errors += "\n[User Story {} ERROR] {}! (\"{}\")".format(us_id, err.args[0], " ".join(str.split(s)))
 		us_id += 1
 
 	# Print errors (if found)
@@ -167,7 +216,11 @@ def run_vn(filename, systemname, print_us, print_ont, statistics, link, prolog, 
 			print(f"{file[0]} file succesfully created at: \"{file[1]}\"")
 	
 	# Return objects so that they can be used as input for other tools
-	return {'us_instances': us_instances, 'output_ontobj': output_ontobj, 'output_prologobj': output_prologobj, 'matrix': m}
+	return {'us_instances': us_instances,
+	        'output_ontobj': output_ontobj,
+			'output_prologobj': output_prologobj,
+			'output_json': output_json if json else None,
+			'matrix': m}
 
 
 def parse(text, id, systemname, nlp, miner):

@@ -29,11 +29,24 @@ The main dependency for the program is its Natural Language Processor (NLP) [spa
 * _Jinja2_ >= 2.10
 
 ## Running the Project
-Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:
+Running the program can be done in two ways: (1) from the command line, (2) using method `run_py()`.
+
+### Command line
+With the program main directory as current directory, run the program by executing:
 
 ```
 python run.py <INPUT FILE> [<arguments>]
 ```
+
+### Method run.py
+Import the `run_py` method from `vn.run_py` and run:
+
+```python
+from vn.run_py import run_py
+run_vn(<INPUT FILE>, <SYSTEM_NAME>)
+```
+
+In addition, more arguments may be supplied to `run_py()`, execute `print(run_py.__doc__)` to see all (optional) arguments.
 
 #### Arguments
 The most important arguments is `INPUT FILE` to specify the location of the text input file. The table below provides an overview of the currently implemented arguments.

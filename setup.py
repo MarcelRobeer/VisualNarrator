@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from vn.vn import __version__, author, description
+from vn.config import __version__, author, description
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
