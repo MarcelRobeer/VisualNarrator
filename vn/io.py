@@ -6,6 +6,8 @@ import datetime as d
 from vn.utils.utility import get_tokens, get_case
 
 class Reader:
+	"""Reading from files"""
+
 	@staticmethod
 	def parse(fname):
 		"""Parses a previously open file
@@ -24,6 +26,8 @@ class Reader:
 			return lines
 
 class Writer:
+	"""Writing to files"""
+
 	@staticmethod
 	def make_file(dirname, filename, filetype, content):
 		"""Makes a file and writes to it
@@ -83,35 +87,46 @@ class Writer:
 				writer.writerows(li)
 
 class Printer:
+	"""Printing to terminal"""
+
 	@staticmethod
-	def print_head(text):
+	def _print_head(text):
+		"""Format and print head"""
 		print("\n\n////////////////////////////////////////////////")
 		print("/////", '{:^36}'.format(text) ,"/////")
 		print("////////////////////////////////////////////////")
 
 	@staticmethod
-	def print_subhead(text):
+	def _print_subhead(text):
+		"""Format and print subhead"""
 		print("<----------", '{:^9}'.format(text) ,"---------->")
 
 	@staticmethod
+	def _print_rel(rel):
+		"""Print noun phrases to terminal"""
+		print(get_case(rel[1]), "--", rel[2], "->", get_case(rel[3]))
+
+	@staticmethod
 	def print_us_data(story):
+		"""Print user story data to terminal"""
 		phrasetext = ""
 		if story.means.main_verb.phrase:
 			phrasetext = "( w/ Type " + story.means.main_verb.type + " phrase " + str(get_tokens(story.means.main_verb.phrase)) + " )"
 
 		print("\n\n")
-		Printer.print_subhead("BEGIN U S")
+		Printer._print_subhead("BEGIN U S")
 		print("User Story", story.number, ":", story.text)
 		print(" >> INDICATORS\n  Role:", story.role.indicator, "\n    Means:", story.means.indicator, "\n    Ends:", story.ends.indicator)
 		print(" >> ROLE\n  Functional role:", story.role.functional_role.main, "( w/ compound", get_tokens(story.role.functional_role.compound), ")")
 		print(" >> MEANS\n  Main verb:", story.means.main_verb.main, phrasetext, "\n  Main object:", story.means.main_object.main, "( w/ noun phrase", get_tokens(story.means.main_object.phrase), "w/ compound", get_tokens(story.means.main_object.compound), ")")
-		Printer.print_free_form(story, "means")
-		Printer.print_free_form(story, "ends")
+		Printer._print_free_form(story, "means")
+		Printer._print_free_form(story, "ends")
 
-		Printer.print_subhead("END U S")
+		Printer._print_subhead("END U S")
 
 	@staticmethod
-	def print_free_form(story, part):
+	def _print_free_form(story, part):
+		"""Print free form user story part to terminal"""
 		p = 'story.' + part + '.'
 		if eval(p + 'free_form'):
 			print("  Free form:", get_tokens(eval(p + 'free_form')))
@@ -131,25 +146,36 @@ class Printer:
 
 	@staticmethod
 	def print_details(fail, success, nlp_time, parse_time, matr_time, gen_time, stats_time):
+		"""Print run details to terminal
+		
+		Args:
+			fail (int): number of failed user stories
+			success (int): number of successfully parsed user stories
+			nlp_time (seconds): time for NLP to instantiate
+			parse_time (seconds): time to mine user stories
+			matr_time (seconds): time to create matrix
+			gen_time (seconds): time to generate ontology/prolog files
+			stats_time (seconds): time to generate statistics"""
 		total = success + fail
 		if success is not 0:
 			frate = fail/(success + fail)
 		else:
 			frate = 1
 
-		Printer.print_head("RUN DETAILS")
+		Printer._print_head("RUN DETAILS")
 		print("User Stories:\n  # Total parsed:\t\t ", total,"\n    [+] Success:\t\t ", success, "\n    [-] Failed:\t\t\t ", fail, "\n  Failure rate:\t\t\t ", frate, "(", round(frate * 100, 2), "% )")
 		print("Time elapsed:")
 		print("  NLP instantiate:\t\t ", round(nlp_time, 5), "s")
 		print("  Mining User Stories:\t\t ", round(parse_time, 5), "s")
 		print("  Creating factor matrix:\t ", round(matr_time, 5), "s")
-		print("  Generating Manchester Ontology:", round(gen_time, 5), "s")
+		print("  Generating Manchester Ontology / Prolog:", round(gen_time, 5), "s")
 		if stats_time > 0:
 			print("  Generating statistics:\t ", round(stats_time, 5), "s")
 		print("")
 
 	@staticmethod
 	def print_dependencies(story):
+		"""Print user story dependencies to terminal"""
 		print("---------- U S", story.number, "----------")
 		for token in story.data:
 			print(token.i, "-> ", token.text, " [", token.pos_, " (", token.tag_ ,")", "dep:", token.dep_, " at ", token.idx, "]")
@@ -168,6 +194,7 @@ class Printer:
 
 	@staticmethod
 	def print_noun_phrases(story):
+		"""Print noun phrases to terminal"""
 		print("NOUN PHRASES > US " + str(story.number) + ": " + str(story.text))
 		for chunk in story.data.noun_chunks:
 			print(chunk.root.head.text, " <-- ", chunk.text)
@@ -175,9 +202,10 @@ class Printer:
 
 	@staticmethod
 	def print_stats(stats, detail):
+		"""Print user story statistics to terminal"""
 		if detail:
 			print("\n")
-			Printer.print_subhead("DETAILS")
+			Printer._print_subhead("DETAILS")
 			for r in stats:
 				outline = ""
 				for s in r:
@@ -185,11 +213,12 @@ class Printer:
 				print(outline)
 
 		print("\n")		
-		Printer.print_subhead("SUMMARY")
+		Printer._print_subhead("SUMMARY")
 
 	@staticmethod
 	def print_gen_settings(matrix, base, threshold):
-		Printer.print_head("ONTOLOGY GENERATOR SETTINGS")
+		"""Print settings to terminal"""
+		Printer._print_head("ONTOLOGY GENERATOR SETTINGS")
 		print("Threshold:\t\t\t", threshold)
 		print("Absolute Weights ( base =", base ,"):")
 		print("  Functional role:\t\t", matrix.VAL_FUNC_ROLE)
@@ -198,7 +227,3 @@ class Printer:
 		print("  Noun in free form ends:\t", matrix.VAL_ENDS_NOUN)
 		print("Relative Weights:")
 		print("  Compound (compared to parent):", matrix.VAL_COMPOUND)
-
-	@staticmethod
-	def print_rel(rel):
-		print(get_case(rel[1]), "--", rel[2], "->", get_case(rel[3]))

@@ -17,7 +17,7 @@ from vn.utils.utility import multiline, remove_punct, t, is_i, tab, is_comment, 
 
 
 def initialize_nlp():
-	# Initialize spaCy just once (this takes most of the time...)
+	"""Initialize spaCy just once (this takes most of the time...)"""
 	print("Initializing Natural Language Processor. . .")
 	return spacy.load('en_core_web_md')
 
@@ -38,11 +38,10 @@ def run_vn(filename,
 		   stories = None):
 	"""General class to run Visual Narrator
 
-	Positional Args:
+	Args:
 		filename (str): File name to read
 		systemname (str): Name of System (for output and in model)
 	
-	Optional Args:
 		threshold (float): threshold for which classes to select
 		base (int): base weight (multiplier for all weights)
 		weights (dict): weights for type of objects
@@ -225,12 +224,15 @@ def run_vn(filename,
 def parse(text, id, systemname, nlp, miner):
 	"""Create a new user story object and mines it to map all data in the user story text to a predefined model
 	
-	text: The user story text
-	id: The user story ID, which can later be used to identify the user story
-	systemname: Name of the system this user story belongs to
-	nlp: Natural Language Processor (spaCy)
-	miner: instance of class Miner
-	:returns: A new user story object
+	Args:
+		text: The user story text
+		id: The user story ID, which can later be used to identify the user story
+		systemname: Name of the system this user story belongs to
+		nlp: Natural Language Processor (spaCy)
+		miner: instance of class Miner
+
+	Returns:
+		vn.userstory.UserStory: A new user story object
 	"""
 	no_punct = remove_punct(text)
 	no_double_space = ' '.join(no_punct.split())
@@ -249,8 +251,11 @@ def parse(text, id, systemname, nlp, miner):
 def generate_report(report_dict):
 	"""Generates a report using Jinja2
 	
-	report_dict: Dictionary containing all variables used in the report
-	:returns: HTML page
+	Args:
+		report_dict: Dictionary containing all variables used in the report
+	
+	Returns:
+		str: HTML page
 	"""
 	CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
