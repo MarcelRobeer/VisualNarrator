@@ -83,11 +83,11 @@ Argument | Parameter | Description | Type | Default
 `-l`, `--link` |  |  Link all ontology classes to their respective User Story for usage in the set analysis | _N/A_
 `-t THRESHOLD` | `threshold` | Set the threshold for the selected classes | _FLOAT_ | 1.0
 `-b BASE_WEIGHT` | `base_weight` | Set the base weight | _INT_ | 1
-`-wfr WEIGHT_FUNC_ROLE` | `weight` (`weight['func_role']` |  Weight of functional role | _FLOAT_ | 1.0
-`-wmo WEIGHT_MAIN_OBJ` |  `weight` (`weight['main_obj']` |  Weight of main object | _FLOAT_ | 1.0
-`-wffm WEIGHT_FF_MEANS` |  `weight` (`weight['ff_means']` |  Weight of noun in free form means | _FLOAT_ | 0.7
-`-wffe WEIGHT_FF_ENDS` |  `weight` (`weight['ff_ends']`  | Weight of noun in free form ends | _FLOAT_ | 0.5
-`-wcompound WEIGHT_COMPOUND` |  `weight` (`weight['compound']` | Weight of nouns in compound compared to head | _FLOAT_ | 0.66
+`-wfr WEIGHT_FUNC_ROLE` | `weight` (`weight['func_role']`) |  Weight of functional role | _FLOAT_ | 1.0
+`-wmo WEIGHT_MAIN_OBJ` |  `weight` (`weight['main_obj']`) |  Weight of main object | _FLOAT_ | 1.0
+`-wffm WEIGHT_FF_MEANS` |  `weight` (`weight['ff_means']`) |  Weight of noun in free form means | _FLOAT_ | 0.7
+`-wffe WEIGHT_FF_ENDS` |  `weight` (`weight['ff_ends']`)  | Weight of noun in free form ends | _FLOAT_ | 0.5
+`-wcompound WEIGHT_COMPOUND` |  `weight` (`weight['compound']`) | Weight of nouns in compound compared to head | _FLOAT_ | 0.66
 
 ### Example usage
 
