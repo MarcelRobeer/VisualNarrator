@@ -31,14 +31,14 @@ The main dependency for the program is its Natural Language Processor (NLP) [spa
 ## Running the Project
 Running the program can be done in two ways: (1) from the command line, (2) using method `run_py()`.
 
-### Command line
+### (1) Command line
 With the program main directory as current directory, run the program by executing:
 
-```
+```bash
 python run.py <INPUT FILE> [<arguments>]
 ```
 
-### Method run.py
+### (2) Method run.py
 Import the `run_py` method from `vn.run_py` and run:
 
 ```python
@@ -48,7 +48,7 @@ run_vn(<INPUT FILE>, <SYSTEM_NAME>)
 
 In addition, more arguments may be supplied to `run_py()`, execute `print(run_py.__doc__)` to see all (optional) arguments.
 
-#### Arguments
+##### Arguments
 The most important arguments is `INPUT FILE` to specify the location of the text input file. The table below provides an overview of the currently implemented arguments.
 
 ##### Positional arguments
@@ -61,15 +61,15 @@ Argument | Required? | Description
 
 ###### General
 
-Argument | Description
---------|------------
-`-h`, `--help` | Show a help message and exit
-`-n SYSTEM_NAME`, `--name SYSTEM_NAME` | Specify a name for your system
-`-u`, `--print_us` | Print additional information per User Story
-`-o`, `--print_ont` | Print the output ontology in the terminal
-`--prolog` | Output prolog arguments to a _.pl_ file. Combine with `--link` to reason about user stories
-`--json` | Output mined user stories to a _.json_ file.
-`--version` | Display the program's version number and exit
+Argument | Parameter | Description
+--------|--| ------------
+`-h`, `--help` | | Show a help message and exit
+`-n SYSTEM_NAME`, `--name SYSTEM_NAME` | `systemname` | Specify a name for your system
+`-u`, `--print_us` | `print_us` | Print additional information per User Story
+`-o`, `--print_ont` | `print_ont` | Print the output ontology in the terminal
+`--prolog` | `prolog` | Output prolog arguments to a _.pl_ file. Combine with `--link` to reason about user stories
+`--json` | `json` | Output mined user stories to a _.json_ file.
+`--version` | | Display the program's version number and exit
 
 ###### Statistics
 Argument | Description
@@ -77,22 +77,29 @@ Argument | Description
 `-s`, `--statistics` | Show statistics for the User Story set and output these in .csv files
 
 ###### Ontology generation tuning
-Argument | Description | Type | Default
---------|-----------|------------|--------
-`-p`, `--per_role` | Create an additional conceptual model per role | _N/A_
-`-l`, `--link` | Link all ontology classes to their respective User Story for usage in the set analysis | _N/A_
-`-t THRESHOLD` | Set the threshold for the selected classes | _FLOAT_ | 1.0
-`-b BASE_WEIGHT` | Set the base weight | _INT_ | 1
-`-wfr WEIGHT_FUNC_ROLE` | Weight of functional role | _FLOAT_ | 1.0
-`-wmo WEIGHT_MAIN_OBJ` | Weight of main object | _FLOAT_ | 1.0
-`-wffm WEIGHT_FF_MEANS` | Weight of noun in free form means | _FLOAT_ | 0.7
-`-wffe WEIGHT_FF_ENDS` | Weight of noun in free form ends | _FLOAT_ | 0.5
-`-wcompound WEIGHT_COMPOUND` | Weight of nouns in compound compared to head | _FLOAT_ | 0.66
+Argument | Parameter | Description | Type | Default
+--------|--|-----------|------------|--------
+`-p`, `--per_role` | `per_role` | Create an additional conceptual model per role | _N/A_
+`-l`, `--link` |  |  Link all ontology classes to their respective User Story for usage in the set analysis | _N/A_
+`-t THRESHOLD` | `threshold` | Set the threshold for the selected classes | _FLOAT_ | 1.0
+`-b BASE_WEIGHT` | `base_weight` | Set the base weight | _INT_ | 1
+`-wfr WEIGHT_FUNC_ROLE` | `weight` (`weight['func_role']` |  Weight of functional role | _FLOAT_ | 1.0
+`-wmo WEIGHT_MAIN_OBJ` |  `weight` (`weight['main_obj']` |  Weight of main object | _FLOAT_ | 1.0
+`-wffm WEIGHT_FF_MEANS` |  `weight` (`weight['ff_means']` |  Weight of noun in free form means | _FLOAT_ | 0.7
+`-wffe WEIGHT_FF_ENDS` |  `weight` (`weight['ff_ends']`  | Weight of noun in free form ends | _FLOAT_ | 0.5
+`-wcompound WEIGHT_COMPOUND` |  `weight` (`weight['compound']` | Weight of nouns in compound compared to head | _FLOAT_ | 0.66
 
 ### Example usage
 
-```
+Command line:
+```bash
 python run.py example_stories.txt -n "TicketSystem" -u
+```
+
+From method:
+```python
+from vn.run_vn import run_vn
+run_vn('example_stories.txt', 'System')
 ```
 
 ## Conceptual Model
