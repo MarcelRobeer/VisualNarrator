@@ -18,7 +18,7 @@ class UserStory(object):
 
 	def toJSON(self):
 		if self.has_ends:
-			{"number": self.number, "text": self.text, "iloc": self.iloc, "role": self.role.toJSON(), "means": self.means.toJSON(), "ends": self.ends.toJSON()}
+			return {"number": self.number, "text": self.text, "iloc": self.iloc, "role": self.role.toJSON(), "means": self.means.toJSON(), "ends": self.ends.toJSON()}
 		return {"number": self.number, "text": self.text, "iloc": self.iloc, "role": self.role.toJSON(), "means": self.means.toJSON()}
 
 	def txtnr(self):
@@ -39,7 +39,11 @@ class UserStoryPart(object):
 		self.simplified = ""
 
 	def toJSON(self):
-		return {"text": str(self.text), "indicator": str(self.indicator)}
+		txt = str(self.text)
+		if type(self) is Means:
+			rem = 'I can '
+			txt = txt[txt.startswith(rem) and len(rem):]
+		return {"text": txt, "indicator": str(self.indicator)}
 
 class FreeFormUSPart(UserStoryPart):
 	def __init__(self):
