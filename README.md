@@ -11,6 +11,7 @@ This program turns user stories into a conceptual model containing entities and 
 * __Report__ of user story parsing, and conceptual model creation
 * __Manchester Ontology__ (.omn) describing the conceptual model
 * (Optional) __Prolog__ (.pl) arguments
+* (Optional) __JSON__ (.json) of the user stories parts' information
 * (Optional) __Statistics__ about the user stories
 * Returns the mined user stories, ontology, prolog and matrix of weights, which can be used by other tools
 
