@@ -99,7 +99,7 @@ python run.py example_stories.txt -n "TicketSystem" -u
 From method:
 ```python
 from vn.run_vn import run_vn
-run_vn('example_stories.txt', 'System')
+run_vn("example_stories.txt", "TicketSystem", print_us = True)
 ```
 
 ## Conceptual Model
