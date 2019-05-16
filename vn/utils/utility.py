@@ -108,6 +108,11 @@ def get_idx(tree):
 def text_lower_tokens(a_list):
 	return text(get_lower_tokens(a_list))
 
+def get_head(tree):
+	for t in tree:
+		if t is t.head:
+			return t
+
 def is_noun(token):
 	if token.pos_ == "NOUN" or token.pos_ == "PROPN":
 		return True

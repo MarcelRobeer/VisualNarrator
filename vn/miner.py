@@ -1,5 +1,5 @@
 from vn.utils.minerutility import MinerUtility as mu
-from vn.utils.utility import is_compound, is_dobj, is_verb, is_subject
+from vn.utils.utility import is_compound, is_dobj, is_verb, is_subject, get_head
 from lang.en.indicators import ROLE_INDICATORS, MEANS_INDICATORS, ENDS_INDICATORS
 
 class StoryMiner:
@@ -88,29 +88,31 @@ class StoryMiner:
 		return story
 
 	def get_part_text(self, story):
-		story.role.t = story.sentence[len(story.role.indicator) + 1 : story.means.indicator_i]
+		r, m, e = (story.role, story.means, story.ends)
 
-		if story.has_ends and story.ends.indicator_i > story.means.indicator_i:
-			story.means.t = story.sentence[len(story.means.indicator) + story.means.indicator_i + 1: story.ends.indicator_i]
-			story.ends.t = story.sentence[len(story.ends.indicator) + story.ends.indicator_i + 2:]
+		r.t = story.sentence[len(r.indicator) + 1 : m.indicator_i]
+
+		if story.has_ends and e.indicator_i > m.indicator_i:
+			m.t = story.sentence[len(m.indicator) + m.indicator_i + 1: e.indicator_i]
+			e.t = story.sentence[len(e.indicator) + e.indicator_i + 2:]
 		else:
-			story.means.t = story.sentence[len(story.means.indicator) + story.means.indicator_i + 1:]
+			m.t = story.sentence[len(m.indicator) + m.indicator_i + 1:]
 
-		story.means.simplified = 'I can' + story.means.t
+		m.simplified = 'I can' + m.t
 
-		if story.has_ends and story.ends.indicator_i > story.means.indicator_i:
-			if str.lower(story.ends.t[:1]) == 'i':
-				if str.lower(story.ends.t[:12]) == 'i am able to':
-					story.ends.simplified = 'I can' + story.ends.t[13:]
+		if story.has_ends and e.indicator_i > m.indicator_i:
+			if str.lower(e.t).startswith('i'):
+				if str.lower(e.t).startswith('i am able to'):
+					e.simplified = 'I can' + e.t[13:]
 				else:
-					story.ends.simplified = story.ends.t
+					e.simplified = e.t
 			else:
-				story.ends.simplified = story.ends.t
+				e.simplified = e.t
 
-		if story.has_ends and story.ends.indicator_i <= story.means.indicator_i:
+		if story.has_ends and e.indicator_i <= m.indicator_i:
 			story.has_ends = False
-			story.ends.indicator_i = -1
-			story.ends.indicator = ""
+			e.indicator_i = -1
+			e.indicator = ""
 
 		return story
 
@@ -123,25 +125,21 @@ class StoryMiner:
 		return story
 
 	def get_functional_role(self, story):
+		r = story.role
+
 		potential_without_with = []
 
 		with_i = -1
-		for token in story.role.text:
+		for token in r.text:
 			if mu.lower(token.text) == 'with' or mu.lower(token.text) == 'w/':
 				with_i = token.i
-		if with_i > 0:
-			potential_without_with = story.role.text[0:with_i]
-		else:
-			potential_without_with = story.role.text
+		potential_without_with = r.text[0:with_i] if with_i > 0 else r.text
 		
 		# If there is just one word
-		if len(story.role.text) == 1:
-			story.role.functional_role.main = story.role.text[0]
+		if len(r.text) == 1:
+			r.functional_role.main = r.text[0]
 		else:		
-			compound = []
-			for token in potential_without_with:
-				if is_compound(token):
-					compound.append([token, token.head])
+			compound = [[token, token.head] for token in potential_without_with if is_compound(token)]
 
 			if len(compound) == 1 and type(compound[0]) is list:
 				compound = compound[0]
@@ -149,17 +147,15 @@ class StoryMiner:
 			elif len(compound) > 1 and type(compound[-1]) is list:
 				compound = compound[-1]
 
-			story.role.functional_role.compound = compound
+			r.functional_role.compound = compound
 
 			# If it is a compound
-			if story.role.functional_role.compound:
-				story.role.functional_role.main = story.role.functional_role.compound[-1]
+			if r.functional_role.compound:
+				r.functional_role.main = r.functional_role.compound[-1]
 
 			# Get head of tree
 			else:
-				for token in story.role.text:
-					if token is token.head:
-						story.role.functional_role.main = token
+				r.functional_role.main = get_head(r.text)
 
 		return story
 
@@ -170,8 +166,10 @@ class StoryMiner:
 		main_object = None
 		mv_phrase = None
 
+		s = eval(f'story.{part}')
+
 		# Simple case if the subj and dobj are linked by a verb
-		for token in eval('story.' + str(part) + '.text'):
+		for token in s.text:
 			if is_subject(token):
 				subject = token
 				if is_verb(token.head) and str.lower(token.head.text) != 'can':
@@ -179,9 +177,9 @@ class StoryMiner:
 					break
 
 		if subject is None:
-			subject = eval('story.' + str(part) + '.text')[0]
+			subject = s.text[0]
 
-		for token in eval('story.' + str(part) + '.text'):
+		for token in s.text:
 			if is_dobj(token):
 				if token.pos_ == "PRON": # If it is a pronoun, look for a preposition with a pobj
 					f = False
@@ -208,7 +206,7 @@ class StoryMiner:
 	
 		# If the root of the sentence is a verb
 		if not simple:
-			for token in eval('story.' + str(part) + '.text'):
+			for token in s.text:
 				if token.dep_ == 'ROOT' and is_verb(token):
 					main_verb = token
 					break
@@ -216,14 +214,11 @@ class StoryMiner:
 		# If no main verb could be found it is the second word (directly after 'I')
 		# Possibly a NLP error...
 		if main_verb is None:
-			if str(part) == 'means' or str.lower(eval('story.' + str(part) + '.text')[1].text) == 'can':
-				main_verb = eval('story.' + str(part) + '.text')[2]
-			else:
-				main_verb = eval('story.' + str(part) + '.text')[1]
+			main_verb = s.text[2] if part == 'means' or str.lower(s.text[1].text) == 'can' else s.text[2]
 
 		# If the sentence contains no dobj it must be another obj
 		if main_object is None:
-			for token in eval('story.' + str(part) + '.text'):
+			for token in s.text:
 				if token.dep_[1:] == 'obj':
 					main_object = token
 					break
@@ -233,7 +228,6 @@ class StoryMiner:
 		if main_object is None and part == 'means':
 			main_object = story.system.main
 
-		s = story.means if part == 'means' else story.ends	
 		s.main_verb.main = main_verb
 		s.main_object.main = main_object
 		if mv_phrase is not None:
@@ -243,113 +237,82 @@ class StoryMiner:
 			s.subject.main = subject		
 
 
-		if type(main_object) is list or main_object == story.system.main:
-			story = eval('self.get_' + str(part) + '_phrases(story, ' + str(mv_phrase is not None) + ', False)')
-		else:
-			story = eval('self.get_' + str(part) + '_phrases(story, ' + str(mv_phrase is not None) + ')')
+		assume = False if (type(main_object) is list or main_object == story.system.main) else True
+		story = eval(f'self.get_phrases(story, {mv_phrase is not None}, s, part, {assume})')
+	
+		return story
+
+	def get_phrases(self, story, found_mv_phrase, s, part='means', assume=True):
+		so = s.main_object
+
+		if assume:
+			for np in s.text.noun_chunks:
+				if so.main in np:
+					so.phrase = np
+			if so.phrase:
+				m = so.main
+				if m.i > 0 and is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
+					so.compound = [m.nbor(-1), m]
+				else:
+					for token in so.phrase:
+						if is_compound(token) and token.head == m:
+							so.compound = [token, m]
+
+		if part == 'ends':	
+			if str.lower(s.subject.main.text) != '' and str.lower(s.subject.main.text) != 'i':
+				for np in s.text.noun_chunks:
+					if s.subject.main in np:
+						s.subject.phrase = np
+				
+					if s.subject.phrase:
+						for token in s.subject.phrase:
+							if is_compound(token) and token.head == s.subject.main:
+								s.subject.compound = [token, s.subject.main]
+
+		if not found_mv_phrase:
+			pv = mu.get_phrasal_verb(story, s.main_verb.main, f'{part}.text')
+			s.main_verb.phrase = mu.get_span(story, pv[0], f'{part}.text')
+			s.main_verb.type = pv[1]
 
 		return story
 
-	def get_means_phrases(self, story, found_mv_phrase, assume=True):
-		sm = story.means
-		smo = sm.main_object
-
-		if assume:
-			for np in sm.text.noun_chunks:
-				if smo.main in np:
-					smo.phrase = np
-			if smo.phrase:
-				m = smo.main
-				if m.i > 0 and is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
-					smo.compound = [m.nbor(-1), m]
-				else:
-					for token in smo.phrase:
-						if is_compound(token) and token.head == smo.main:
-							smo.compound = [token, smo.main]
-
-		if not found_mv_phrase:
-			pv = mu.get_phrasal_verb(story, sm.main_verb.main, 'means.text')
-			sm.main_verb.phrase = mu.get_span(story, pv[0], 'means.text')
-			sm.main_verb.type = pv[1]
-
-		return story	
-
-	def get_ends_phrases(self, story, found_mv_phrase, assume=True):
-		se = story.ends
-		seo = se.main_object
-		if assume:
-			for np in se.text.noun_chunks:
-				if seo.main in np:
-					seo.phrase = np
-			if seo.phrase:
-				m = seo.main
-				if m.i > 0 and is_compound(m.nbor(-1)) and m.nbor(-1).head == m:
-					seo.compound = [m.nbor(-1), m]
-				else:
-					for token in seo.phrase:
-						if is_compound(token) and token.head == seo.main:
-							seo.compound = [token, seo.main]
-
-		if str.lower(se.subject.main.text) != '' and str.lower(se.subject.main.text) != 'i':
-			for np in se.text.noun_chunks:
-				if se.subject.main in np:
-					se.subject.phrase = np
-		
-			if se.subject.phrase:
-				for token in se.subject.phrase:
-					if is_compound(token) and token.head == se.subject.main:
-						se.subject.compound = [token, se.subject.main]
-
-		if not found_mv_phrase:
-			pv = mu.get_phrasal_verb(story, se.main_verb.main, 'ends.text')
-			se.main_verb.phrase = mu.get_span(story, pv[0], 'ends.text')
-			se.main_verb.type = pv[1]
-
-		return story	
-
 	def get_free_form(self, story):
+		m, e = (story.means, story.ends)
 		means_free_form = []
 
 		# Get all parts of the main verb
-		main_verb = list([story.means.main_verb.main])
-		main_verb += story.means.main_verb.phrase
+		main_verb = list([m.main_verb.main])
+		main_verb += m.main_verb.phrase
 
 		# Get all parts of the main object
-		main_obj = list([story.means.main_object.main])
-		main_obj += story.means.main_object.phrase
+		main_obj = list([m.main_object.main])
+		main_obj += m.main_object.phrase
 
 		# Exclude these from the free form
-		for token in story.means.text:
-			if token not in (main_verb + main_obj) and token.i > 1: 
-				means_free_form.append(token)
-		
-		story.means.free_form = mu.get_span(story, means_free_form, 'means.text')		
+		means_free_form = [token for token in m.text if token not in (main_verb + main_obj) and token.i > 1]
+		m.free_form = mu.get_span(story, means_free_form, 'means.text')		
 	
 		if story.has_ends:
-			story.ends.free_form = story.ends.text
+			e.free_form = e.text
 		
 		# Extract useful information from free form
-		if story.means.free_form or story.has_ends:
-			self.get_ff(story, story.means)
-			self.get_ff(story, story.ends)
-
-			if story.means.free_form:
-				self.second_phase(story, story.means)
-			if story.has_ends:
-				self.second_phase(story, story.ends)
+		if m.free_form:
+			self.get_ff(story, m)
+		if story.has_ends:
+			self.get_ff(story, e)
 		
 		return story
 
 	def get_ff(self, story, s):
+		# First phase
 		s.nouns = mu.get_subj(story, s.free_form)
 		s.nouns = mu.get_dobj(story, s.free_form)
 		s.nouns = mu.get_nouns(story, s.free_form)
 		s.verbs = mu.get_verbs(story, s.free_form)
 		if s.verbs:
 			s.phrasal_verbs = mu.get_phrasal_verbs(story, s.verbs)
-		return story
-	
-	def second_phase(self, story, s):
+		
+		# Second phase
 		s.proper_nouns = mu.get_proper_nouns(story, s.nouns)
 		s.noun_phrases = mu.get_noun_phrases(story, s.free_form)
 		s.compounds    = mu.get_compound_nouns(story, s.free_form)
