@@ -39,11 +39,11 @@ With the program main directory as current directory, run the program by executi
 python run.py <INPUT FILE> [<arguments>]
 ```
 
-### (2) Method run.py
-Import the `run_py` method from `vn.run_py` and run:
+### (2) Method run_vn
+Import the `run_vn` method from `vn.run_vn` and run:
 
 ```python
-from vn.run_py import run_py
+from vn.run_vn import run_vn
 run_vn(<INPUT FILE>, <SYSTEM_NAME>)
 ```
 
