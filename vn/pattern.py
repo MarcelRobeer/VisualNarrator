@@ -4,7 +4,8 @@ import pandas
 from enum import Enum
 
 from vn.generator import Generator, Ontology
-from vn.utility import Printer, WeightedToken, get_case, is_sublist
+from vn.io import Printer
+from vn.utils.utility import WeightedToken, get_case, is_sublist, flatten
 
 class Constructor:
 	def __init__(self, nlp, user_stories, matrix):
@@ -182,6 +183,7 @@ class Constructor:
 			
 					
 class WeightAttacher:
+	@staticmethod
 	def make(stories, weights):
 		weighted_tokens = []
 		indices = [weight[0] for weight in weights]

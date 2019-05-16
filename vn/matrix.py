@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from spacy import attrs
-from vn.utility import *
+from vn.utils.utility import *
 
 
 class Matrix:
@@ -82,7 +82,7 @@ class Matrix:
 	def get_factor_part(self, matrix, story, part):
 		for token in eval('story.' + str(part) + '.text'):
 			if get_case(token) in matrix.index.values:
-				matrix = self.add(matrix, get_case(token), story.txtnr(), eval('self.score_' + str(part) + '(token, story)'))
+				matrix.at[get_case(token), story.txtnr()] += eval('self.score_' + str(part) + '(token, story)')
 
 		return matrix
 
@@ -130,21 +130,21 @@ class Matrix:
 							s[1].append(story.number)					
 
 					if self.is_phrasal('role.functional_role', token, story) == 1:
-						cm = self.add(cm, c, 'Functional Role')
+						cm.at[c, 'Functional Role'] += 1
 					elif self.is_phrasal('role.functional_role', token, story) == 2:
-						cm = self.add(cm, c, 'Functional Role Compound')
+						cm.at[c, 'Functional Role Compound'] += 1
 
 					if self.is_phrasal('means.main_object', token, story) == 1:
-						cm = self.add(cm, c, 'Main Object')
+						cm.at[c, 'Main Object'] += 1
 					elif self.is_phrasal('means.main_object', token, story) == 2:
-						cm = self.add(cm, c, 'Main Object Compound')
+						cm.at[c, 'Main Object Compound'] += 1
 
 					if self.is_freeform('means', token, story) == 1:
-						cm = self.add(cm, c, 'Means Free Form Noun')
+						cm.at[c, 'Means Free Form Noun'] += 1
 					
 					if story.ends.free_form:
 						if self.is_phrasal('ends.main_object', token, story) > 0 or self.is_freeform('ends', token, story) == 1:
-							cm = self.add(cm, c, 'Ends Free Form Noun')
+							cm.at[c, 'Ends Free Form Noun'] += 1
 					
 		return cm, sl
 
@@ -155,18 +155,15 @@ class Matrix:
 			for story in stories:
 				if story.role.indicator:
 					if case in [get_case(token) for token in story.role.text]:
-						matrix.set_value(case, (story.txtnr(), 'Role'), 1)
+						matrix.at[case, (story.txtnr(), 'Role')] = 1
 				if story.means.indicator:
 					if case in [get_case(token) for token in story.means.text]:
-						matrix.set_value(case, (story.txtnr(), 'Means'), 1)
+						matrix.at[case, (story.txtnr(), 'Means')] = 1
 				if story.ends.indicator:
 					if case in [get_case(token) for token in story.ends.text]:
-						matrix.set_value(case, (story.txtnr(), 'Ends'), 1)
+						matrix.at[case, (story.txtnr(), 'Ends')] = 1
 								
 		return matrix
-
-	def add(self, matrix, index, column, by=1):
-		return matrix.set_value(index, column, matrix.at[index,column]+by)
 
 	def unique(self, arr):
 		arr = np.ascontiguousarray(arr)

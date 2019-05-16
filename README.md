@@ -22,11 +22,11 @@ Two scientific papers were published on Visual Narrator:
 ## Dependencies
 The main dependency for the program is its Natural Language Processor (NLP) [spaCy](http://spacy.io/). To run the program, you need:
 
-* _Python_ >= 3.4 (under development using 3.6)
-* _spaCy_ >= 1.8.2 (language model 'en_core_web_md')
-* _NumPy_ >= 1.12.1
-* _Pandas_ >= 0.19.2
-* _Jinja2_ >= 2.9.5
+* _Python_ >= 3.6 (under development using 3.7.3)
+* _spaCy_ >= 2.1.2 (under development using 2.1.4; language model 'en_core_web_md')
+* _NumPy_ >= 1.16.2
+* _Pandas_ >= 0.24.2
+* _Jinja2_ >= 2.10
 
 ## Running the Project
 Running the program can only be done from the command line. With the program main directory as current directory, run the program by executing:

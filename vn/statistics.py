@@ -1,5 +1,3 @@
-from vn.utility import *
-
 class Statistics:
 	def to_stats_array(stories):
 		stats = []

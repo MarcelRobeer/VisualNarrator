@@ -1,5 +1,8 @@
-numpy==1.12.1
-pandas==0.19.2
-spacy==1.8.2
-Django==1.9
-Jinja2==2.9.5
+numpy>=1.16.2
+
+pandas>=0.24.2
+spacy>=2.1.2
+
+Django>=1.9
+
+Jinja2>=2.9.5
