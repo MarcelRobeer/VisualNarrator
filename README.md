@@ -83,11 +83,11 @@ Argument | Parameter | Description | Type | Default
 `-l`, `--link` |  |  Link all ontology classes to their respective User Story for usage in the set analysis | _N/A_
 `-t THRESHOLD` | `threshold` | Set the threshold for the selected classes | _FLOAT_ | 1.0
 `-b BASE_WEIGHT` | `base_weight` | Set the base weight | _INT_ | 1
-`-wfr WEIGHT_FUNC_ROLE` | `weight` (`weight['func_role']` |  Weight of functional role | _FLOAT_ | 1.0
-`-wmo WEIGHT_MAIN_OBJ` |  `weight` (`weight['main_obj']` |  Weight of main object | _FLOAT_ | 1.0
-`-wffm WEIGHT_FF_MEANS` |  `weight` (`weight['ff_means']` |  Weight of noun in free form means | _FLOAT_ | 0.7
-`-wffe WEIGHT_FF_ENDS` |  `weight` (`weight['ff_ends']`  | Weight of noun in free form ends | _FLOAT_ | 0.5
-`-wcompound WEIGHT_COMPOUND` |  `weight` (`weight['compound']` | Weight of nouns in compound compared to head | _FLOAT_ | 0.66
+`-wfr WEIGHT_FUNC_ROLE` | `weight` (`weight['func_role']`) |  Weight of functional role | _FLOAT_ | 1.0
+`-wmo WEIGHT_MAIN_OBJ` |  `weight` (`weight['main_obj']`) |  Weight of main object | _FLOAT_ | 1.0
+`-wffm WEIGHT_FF_MEANS` |  `weight` (`weight['ff_means']`) |  Weight of noun in free form means | _FLOAT_ | 0.7
+`-wffe WEIGHT_FF_ENDS` |  `weight` (`weight['ff_ends']`)  | Weight of noun in free form ends | _FLOAT_ | 0.5
+`-wcompound WEIGHT_COMPOUND` |  `weight` (`weight['compound']`) | Weight of nouns in compound compared to head | _FLOAT_ | 0.66
 
 ### Example usage
 
@@ -99,7 +99,7 @@ python run.py example_stories.txt -n "TicketSystem" -u
 From method:
 ```python
 from vn.run_vn import run_vn
-run_vn('example_stories.txt', 'System')
+run_vn("example_stories.txt", "TicketSystem", print_us = True)
 ```
 
 ## Conceptual Model
@@ -108,3 +108,7 @@ The classes in the program are based on the following conceptual model:
 ![conceptual_model](https://cloud.githubusercontent.com/assets/1345476/12152551/a6b7dca0-b4b5-11e5-8cee-80f463588df2.png)
 
 The `Reader` starts by reading the input file line by line and generates a list of sentences. These sentences are then enriched using Natural Language Processing, adding Part-of-Speech tags, dependencies, named entity recognition, etc. Subsequently, the `StoryMiner` uses these enriched sentences to create _UserStory_ objects. The User Story objects contain all the information that could be mined from the sentence. These are then used to attach weight to each term in the User Story, creating _Term-by-US Matrix_ in the `Matrix` class. The `Constructor` then constructs patterns out of each user story, using the _Term-by-US Matrix_ to attach a weight to each token. The Constructor forms a model for an ontology, which is then used by the `Generator` to generate a Manchester Ontology file (.omn) and optionally a Prolog file (.pl). Finally, these files are printed to an actual file by the `Writer` in the '/ontologies' and '/prolog' folders respectively.
+
+## Visual Narrator is part of the _GRIMM_ method, also see
+- AQUSA ([http://aqusa.nl/](http://aqusa.nl/))
+- Interactive Narrator ([https://interactivenarrator.science.uu.nl/](https://interactivenarrator.science.uu.nl/))
