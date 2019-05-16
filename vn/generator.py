@@ -13,18 +13,10 @@ class Generator:
 
 		if not self.onto:
 			return self.gen_prolog_from_onto()
-
-		if self.long is None:
-			li = self.gen_ontology(onto)
-		else:
-			li = self.gen_ontology(onto)
-
-		return li	
+		return self.gen_ontology(onto)	
 		
 	def gen_ontology(self, onto):
 		ontologytext = ''
-		rellist = []
-		clist = []		
 		ontologytext += onto.gen_head(onto.get_prefixes()).prt() + "\n"
 
 		if self.relationships:
@@ -50,7 +42,6 @@ class Generator:
 		for rn in rel_names:
 			rels_of_name = []
 			pairs = []
-			cnt = 1
 
 			for r in self.relationships:
 				if r.name == rn:
@@ -59,12 +50,10 @@ class Generator:
 						pairs.append([r.domain, r.range])
 
 			if len(rels_of_name) > 1:
-				for ron in rels_of_name:
-					new_relationship = OntProperty(ron.ontobj, "Object", ron.name + str(cnt), ron.domain, ron.range)
+				for i, ron in enumerate(rels_of_name, start=1):
+					new_relationship = OntProperty(ron.ontobj, "Object", ron.name + str(i), ron.domain, ron.range)
 					new_relationship.stories = ron.stories
 					new_rels.append(new_relationship)
-					cnt += 1
-
 			else:
 				for r in self.relationships:
 					if r.name == rn:
@@ -92,11 +81,11 @@ class Generator:
 
 			if str.lower(r.name) in diffrel:
 				if str.lower(r.name) in linkrel:
-					prologtext.append(str.lower(r.name) + "(" + d_concept + ",'" + r.range + "')")				
+					prologtext.append(f"{str.lower(r.name)}({d_concept},'{r.range}')")				
 				else:
-					prologtext.append(str.lower(r.name) + "(" + d_concept + "," + r_concept + ")")
+					prologtext.append(f"{str.lower(r.name)}({d_concept},{r_concept})")
 			else:
-				rel = "rel(" + d_concept + ",'" + r.name + "'," + r_concept + ")"
+				rel = f"rel({d_concept},'{r.name}',{r_concept})"
 				prologtext.append(rel)
 				for s in r.stories:
 					if self.get_found(rel, s):
@@ -107,11 +96,11 @@ class Generator:
 		return '.\n'.join(prologtext)
 
 	def get_concept(self, text):
-		return "concept('" + str(text) + "')"
+		return f"concept('{str(text)}')"
 
 	def get_found(self, text, story):
 		if story >= 0:
-			return "found(" + text + ",'US" + str(story) + "')"
+			return f"found({text},'US{str(story)}')"
 		return False
 
 
@@ -121,31 +110,31 @@ class GenHelp:
 		self.option = option
 
 	def make_prefix(self, indicator, link):
-		return "Prefix: " + indicator + ": <" + link + ">\n" 
+		return f"Prefix: {indicator}: <{link}>\n" 
 	
 	def make_obj(self, name, prefix='', isname=None):
 		if not self.option:
-			return prefix + ":" + name + "\n"	
+			return f"{prefix}:{name}\n"	
 		else:
 			if prefix is '':
 				prefix = self.ontology
 			else:
 				prefix = PREFIX_DICT[prefix]
-			return "<" + prefix + name + ">\n"
+			return f"<{prefix}{name}>\n"
 
 	def make_part(self, left, right):
-		return "\t" + left + ": " + right
+		return f"\t{left}: {right}"
 
 	def space(self):
 		return ""
 
 	def comment(self, com):
-		return "# " + com + "\n"
+		return f"# {com}\n"
 
 class Ontology:
 	def __init__(self, sysname, stories, option=None):
 		self.sys_name = sysname
-		self.ontology = "http://fakesite.org/" + "_".join(str(sysname).lower().split()) + ".owl#"
+		self.ontology = "http://fakesite.org/{}.owl#".format("_".join(str(sysname).lower().split()))
 		self.ontology_name = "onto"
 		self.option = option
 		self.gh = GenHelp(self.ontology, option)
@@ -174,12 +163,8 @@ class Ontology:
 
 		if self.classes:
 			for c in self.classes:
-				if str.lower(name) == str.lower(c.name) and (str.lower(parent) == str.lower(c.parent) or (self.is_empty(parent) and self.is_empty(c.parent))):
-					if is_role:
-						c.is_role = True
-					c.stories.append(story)
-					return c
-				if str.lower(name) == str.lower(c.name) and not self.is_empty(c.parent) and self.is_empty(parent):
+				if ((str.lower(name) == str.lower(c.name) and (str.lower(parent) == str.lower(c.parent) or (self.is_empty(parent) and self.is_empty(c.parent)))) or 
+				    	(str.lower(name) == str.lower(c.name) and not self.is_empty(c.parent) and self.is_empty(parent))):
 					if is_role:
 						c.is_role = True
 					c.stories.append(story)
@@ -293,5 +278,3 @@ class Header:
 		returnstr += "AnnotationProperty: dc:creator\n\n"
 		returnstr += "AnnotationProperty: dc:title\n\n"
 		return returnstr	
-
-	
