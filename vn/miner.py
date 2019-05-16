@@ -2,6 +2,7 @@ from vn.utils.minerutility import MinerUtility as mu
 from vn.utils.utility import is_compound, is_dobj, is_verb, is_subject, get_head
 from lang.en.indicators import ROLE_INDICATORS, MEANS_INDICATORS, ENDS_INDICATORS
 
+
 class StoryMiner:
 	def structure(self, story):
 		story = self.get_indicators(story)

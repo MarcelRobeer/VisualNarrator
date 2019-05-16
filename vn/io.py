@@ -10,8 +10,11 @@ class Reader:
 	def parse(fname):
 		"""Parses a previously open file
 
-		:param fname: File name
-		:returns: List of non-empty lines
+		Args:
+			fname (str): File name
+		
+		Returns:
+			list: non-empty lines
 		"""
 		with open(fname, 'r') as open_file:
 			lines = []
@@ -25,11 +28,14 @@ class Writer:
 	def make_file(dirname, filename, filetype, content):
 		"""Makes a file and writes to it
 
-		:param dirname: Name of the target directory
-		:param filename: File name (without extension)
-		:param filetype: Type of file
-		:param content: Content to write to file
-		:returns: Name and location of the file
+		Args:
+		    dirname (str): Name of the target directory
+		    filename (str): File name (without extension)
+		    filetype (str): Type of file
+		    content (str): Content to write to file
+		
+		Returns:
+			str: Name and location of the file
 		"""
 		if not os.path.exists(dirname):
 	    		os.makedirs(dirname)
@@ -53,8 +59,9 @@ class Writer:
 	def write(outputname, text):
 		"""Writes text to a file
 
-		:param outputname: Name and location of the output file
-		:param text: Text to write to the file
+		Args:
+		    outputname: Name and location of the output file
+		    text: Text to write to the file
 		"""
 		with open(outputname, 'w') as f:
 			f.write(text)
@@ -64,8 +71,9 @@ class Writer:
 	def writecsv(outputname, li):
 		"""Writes a list/array/Pandas DataFrame to a CSV file
 
-		:param outputname: Name and location of the output file
-		:param li: List/array/DataFrame
+		Args:
+		    outputname: Name and location of the output file
+		    li: List/array/DataFrame
 		"""
 		with open(outputname, 'wt') as f:
 			if isinstance(li, pandas.core.frame.DataFrame):

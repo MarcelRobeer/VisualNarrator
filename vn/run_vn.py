@@ -38,32 +38,31 @@ def run_vn(filename,
 		   stories = None):
 	"""General class to run Visual Narrator
 
-	POSITIONAL ARGUMENTS
-		:param filename: File name to read
-		:param systemname: Name of System (for output and in model)
+	Positional Args:
+		filename (str): File name to read
+		systemname (str): Name of System (for output and in model)
 	
-	OPTIONAL ARGUMENTS
-		:param threshold:  (float)
-		:param base: (int)
-		:param weights: weights for type of objects (dict)
+	Optional Args:
+		threshold (float): threshold for which classes to select
+		base (int): base weight (multiplier for all weights)
+		weights (dict): weights for type of objects
 
-		:param spacy_nlp: spacy NLP using spacy.load('en_core_web_md')
+		spacy_nlp (spacy.load object): spacy NLP using spacy.load('en_core_web_md')
 
-		:param print_us: print data per user story in the console (bool)
-		:param print_ont: print ontology in the console (bool)
+		print_us (bool): print data per user story in the console
+		print_ont (bool): print ontology in the console
 
-		:param statistics: show user story set statistics and output these to a .csv file (bool)
-		:param link: link ontology classes to user story they originate from  (bool)
-		:param per_role: create an additional conceptual model per role (bool)
+		statistics (bool): show user story set statistics and output these to a .csv file
+		link (bool): link ontology classes to user story they originate from
+		per_role (bool): create an additional conceptual model per role
 
-		:param prolog: generate Prolog output (.pl) (bool)
-		:param json: export user stories as JSON (.json) (bool)		
+		prolog (bool): generate Prolog output (.pl)
+		json (bool): export user stories as JSON (.json)	
 
-		:param stories: list of preprocessed stories (from filename)
+		stories (list): preprocessed stories (from filename)
 
-	RETURNS
-		:returns: dictionary with US objects, Ontology + Prolog + JSON objects, matrix
-		:rtype: dict
+	Returns:
+		dict: dictionary with US objects, Ontology + Prolog + JSON objects, matrix
 	"""
 	if stories is None:
 		stories = Reader.parse(filename)
@@ -226,11 +225,11 @@ def run_vn(filename,
 def parse(text, id, systemname, nlp, miner):
 	"""Create a new user story object and mines it to map all data in the user story text to a predefined model
 	
-	:param text: The user story text
-	:param id: The user story ID, which can later be used to identify the user story
-	:param systemname: Name of the system this user story belongs to
-	:param nlp: Natural Language Processor (spaCy)
-	:param miner: instance of class Miner
+	text: The user story text
+	id: The user story ID, which can later be used to identify the user story
+	systemname: Name of the system this user story belongs to
+	nlp: Natural Language Processor (spaCy)
+	miner: instance of class Miner
 	:returns: A new user story object
 	"""
 	no_punct = remove_punct(text)
@@ -250,7 +249,7 @@ def parse(text, id, systemname, nlp, miner):
 def generate_report(report_dict):
 	"""Generates a report using Jinja2
 	
-	:param report_dict: Dictionary containing all variables used in the report
+	report_dict: Dictionary containing all variables used in the report
 	:returns: HTML page
 	"""
 	CURR_DIR = os.path.dirname(os.path.abspath(__file__))
