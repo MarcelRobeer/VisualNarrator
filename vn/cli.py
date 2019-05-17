@@ -8,15 +8,6 @@ from vn.vn import VisualNarrator
 from vn.io import Reader
 
 
-def call(filename, spacy_nlp):
-	args2 = main("--return-args")
-	weights = [args2.weight_func_role, args2.weight_main_obj, args2.weight_ff_means, args2.weight_ff_ends,
-			   args2.weight_compound]
-	filename = open(filename)
-	return main(filename, args2.system_name, args2.print_us, args2.print_ont, args2.statistics, args2.link, args2.prolog,
-				args2.json, args2.per_role, args2.threshold, args2.base_weight, weights, spacy_nlp)
-
-
 def main(*args):
 	p = ArgumentParser(
 			usage=f'''python -m vn.py <INPUT FILE> [<args>]
