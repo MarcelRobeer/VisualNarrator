@@ -1,5 +1,5 @@
 ## Arguments
-The most important arguments is `INPUT FILE` to specify the location of the text input file. The table below provides an overview of the currently implemented arguments.
+The most important arguments is `INPUT FILE` to specify the location of the text input file. The table below provides an overview of the currently implemented arguments. The _Argument_ column corresponds to the CLI (`python run.py <INPUT FILE> [ARGUMENTS]`) invocation of Visual Narrator, while column _Parameter_ describes the corresponding parameter assignment when using method `VisualNarrator().run()`. In addition, this column shows whether to define the _Parameter_ at the class `VisualNarrator()` or in the method `.run()`.
 
 ### Positional arguments
 Argument | Required? | Description
@@ -12,13 +12,13 @@ Argument | Required? | Description
 ##### General
 
 Argument | Parameter | Description
---------|--| ------------
+:-------|:-|:-----------
 `-h`, `--help` | | Show a help message and exit
-`-n SYSTEM_NAME`, `--name SYSTEM_NAME` | `systemname` | Specify a name for your system
-`-u`, `--print_us` | `print_us` | Print additional information per User Story
-`-o`, `--print_ont` | `print_ont` | Print the output ontology in the terminal
-`--prolog` | `prolog` | Output prolog arguments to a _.pl_ file. Combine with `--link` to reason about user stories
-`--json` | `json` | Output mined user stories to a _.json_ file.
+`-n SYSTEM_NAME`, `--name SYSTEM_NAME` | `systemname` (.run()) | Specify a name for your system
+`-u`, `--print_us` | `print_us` (.run()) | Print additional information per User Story
+`-o`, `--print_ont` | `print_ont` (.run()) | Print the output ontology in the terminal
+`--prolog` | `prolog` (VisualNarrator) | Output prolog arguments to a _.pl_ file. Combine with `--link` to reason about user stories
+`--json` | `json` (VisualNarrator) | Output mined user stories to a _.json_ file.
 `--version` | | Display the program's version number and exit
 
 ##### Statistics
@@ -27,10 +27,10 @@ Argument | Description
 `-s`, `--statistics` | Show statistics for the User Story set and output these in .csv files
 
 ##### Ontology generation tuning
-Argument | Parameter | Description | Type | Default
---------|--|-----------|------------|--------
+Argument | Parameter (VisualNarrator) | Description | Type | Default
+:-------|:-|:----------|------------|--------
 `-p`, `--per_role` | `per_role` | Create an additional conceptual model per role | _N/A_
-`-l`, `--link` |  |  Link all ontology classes to their respective User Story for usage in the set analysis | _N/A_
+`-l`, `--link` | `link` |  Link all ontology classes to their respective User Story for usage in the set analysis | _N/A_
 `-t THRESHOLD` | `threshold` | Set the threshold for the selected classes | _FLOAT_ | 1.0
 `-b BASE_WEIGHT` | `base_weight` | Set the base weight | _INT_ | 1
 `-wfr WEIGHT_FUNC_ROLE` | `weight` (`weight['func_role']`) |  Weight of functional role | _FLOAT_ | 1.0
