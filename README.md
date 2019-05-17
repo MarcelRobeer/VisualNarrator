@@ -58,14 +58,14 @@ For details on arguments, see our [documentation here](vn/documentation.md).
 
 Command line:
 ```bash
-python run.py example_stories.txt -n "TicketSystem" -u
+python run.py example_stories.txt -n "TicketSystem" -u --json
 ```
 
 From method:
 ```python
 from vn.vn import VisualNarrator
 
-visualnarrator = VisualNarrator()
+visualnarrator = VisualNarrator(json = True)
 visualnarrator.run("example_stories.txt", "TicketSystem", print_us = True)
 ```
 
