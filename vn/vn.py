@@ -162,7 +162,7 @@ class VisualNarrator:
 		w = Writer
 		output_json = "\n".join([str(us.toJSON()) for us in us_instances]).replace('\'', '\"')
 		files, reports_folder = self.write_files(w, systemname, output_ontology, output_prolog, output_json,
-	                                             statsarr, m, us_instances, onto_per_role)
+	                                             statsarr, m, onto_per_role)
 
 		# Print the used ontology generation settings
 		Printer.print_gen_settings(self.matrix, self.base, self.threshold)
@@ -245,14 +245,24 @@ class VisualNarrator:
 		return user_story
 	
 	def write_files(self, w, systemname, output_ontology, output_prolog, output_json,
-	                statsarr, m, us_instances, onto_per_role):
+	                statsarr, m, onto_per_role):
 		"""Writes Ontology / Prolog / JSON to files
 		
 		Args:
 			w (vn.io.Writer): Writer object for I/O
 			systemname (str): System name
-			output_ontology (str): """
+			output_ontology (str): Manchester Ontology text
+			output_prolog (str): Prolog text
+			output_json (str): JSON text
+			statsarr (list): User story statistics
+			m (DataFrame): Term-by-UserStory matrix 
+			onto_per_role (list): List of ontologies, one per functional role
+		
+		Returns:
+			list: Files created
+			str: Folder the reports were created in"""
 		s = str(systemname)
+		print(type(m))
 
 		folder = "output/" + s
 		reports_folder = folder + "/reports"
