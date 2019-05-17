@@ -30,7 +30,7 @@ The main dependency for the program is its Natural Language Processor (NLP) [spa
 * _Jinja2_ >= 2.10
 
 ## Running the Project
-Running the program can be done in two ways: (1) from the command line, (2) using method `run_py()`.
+Running the program can be done in two ways: (1) from the command line, (2) using method `VisualNarrator().run()`.
 
 ### (1) Command line
 With the program main directory as current directory, run the program by executing:
@@ -39,15 +39,17 @@ With the program main directory as current directory, run the program by executi
 python run.py <INPUT FILE> [<arguments>]
 ```
 
-### (2) Method run.py
-Import the `run_py` method from `vn.run_py` and run:
+### (2) Method VisualNarrator().run()
+Import the `VisualNarrator` class from `vn.vn` and run `VisualNarrator().run()`:
 
 ```python
-from vn.run_py import run_py
-run_vn(<INPUT FILE>, <SYSTEM_NAME>)
+from vn.vn import VisualNarrator
+
+visualnarrator = VisualNarrator(<ARGUMENTS>)
+visualnarrator.run(<INPUT FILE>, <SYSTEM_NAME>)
 ```
 
-In addition, more arguments may be supplied to `run_py()`, execute `print(run_py.__doc__)` to see all (optional) arguments.
+Arguments may be supplied to `VisualNarrator(**args)` to re-use and for a single run to `run(*args, **kwargs)`. Execute `print(VisualNarrator.__doc__)` and `print(run.__doc__)` and to see all (optional) arguments.
 
 #### Arguments
 For details on arguments, see our [documentation here](vn/documentation.md).
@@ -61,8 +63,10 @@ python run.py example_stories.txt -n "TicketSystem" -u
 
 From method:
 ```python
-from vn.run_vn import run_vn
-run_vn("example_stories.txt", "TicketSystem", print_us = True)
+from vn.vn import VisualNarrator
+
+visualnarrator = VisualNarrator()
+visualnarrator.run("example_stories.txt", "TicketSystem", print_us = True)
 ```
 
 ## Conceptual Model

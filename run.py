@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from vn.vn import main
+from vn.cli import main
 
 if __name__ == "__main__":
     main()
