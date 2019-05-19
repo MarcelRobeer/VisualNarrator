@@ -2,10 +2,10 @@
 
 import string
 import numpy as np
-import pandas
+import copy
 from enum import Enum
 
-from vn.generator import Generator, Ontology
+from vn.generator import Ontology, OntologyGenerator, PrologGenerator
 from vn.io import Printer
 from vn.utils.utility import is_sublist, flatten
 from vn.utils.nlputility import WeightedToken, get_case
@@ -29,16 +29,15 @@ class Constructor:
 		if link:
 			self.link_to_story(self.onto.classes, self.user_stories)
 
-		g = Generator(self.onto.classes, self.onto.relationships)
-		g_prolog = Generator(self.prolog.classes, self.prolog.relationships, False)
-
 		per_role_out = []
 		per_role_onto = self.get_per_role(self.user_stories, link)
 
 		for p in per_role_onto:
-			per_role_out.append([p[0].replace('/','_'), p[1].prt(self.onto)])
+			per_role_out.append([p[0].replace('/','_'), str(p[1])])
 
-		return g.prt(self.onto), g_prolog.prt(self.prolog), self.onto, self.prolog, per_role_out
+		return (OntologyGenerator(self.onto),
+				PrologGenerator(self.prolog),
+				per_role_out)
 
 	def link_to_story(self, classes, stories):	
 		used_stories = []
@@ -131,7 +130,9 @@ class Constructor:
 				if cl.name == 'UserStory':
 					role_classes.append(cl)
 
-		return Generator(role_classes, role_relationships)
+		onto = copy.copy(self.onto)
+		onto.classes, onto.relationships = role_classes, role_relationships
+		return OntologyGenerator(onto)
 
 	def get_story(self, nr, stories):
 		for story in stories:

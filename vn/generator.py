@@ -3,47 +3,16 @@
 from lang.owlprefix import PREFIX_DICT
 
 class Generator:
-	"""Generate text conceptual models from a list of classes and a list of relationships"""
-	def __init__(self, classes, relationships, onto=True, is_long=None):
+	"""Generate text conceptual models from a list of classes and a list of relationships (in `Ontology` object)"""
+	def __init__(self, onto, is_long=None):
 		"""
 		Args:
-			classes (list): classes to construct
-			relationships (list): relationships between classes
-			onto (bool): whether to create an Ontology (True) or Prolog (False)
+			onto (`Ontology`): ontology object
 		"""
-		self.classes = classes
-		self.relationships = relationships
-		self.long = is_long
 		self.onto = onto
-
-	def prt(self, onto): 
-		for c in self.classes:
-			c.stories.sort()
-
-		if not self.onto:
-			return self.gen_prolog_from_onto()
-		return self.gen_ontology(onto)	
-		
-	def gen_ontology(self, onto):
-		"""Generate Ontology text from `Ontology` object"""
-		ontologytext = ''
-		ontologytext += onto.gen_head(onto.get_prefixes()).prt() + "\n"
-
-		if self.relationships:
-			ontologytext += onto.gh.comment("Relationships")
-
-		unique_rels = self._make_unique_relationships()
-
-		for r in unique_rels:	
-			ontologytext += r.prt() + "\n"
-
-		if self.classes:
-			ontologytext += onto.gh.comment("Classes")
-
-		for c in self.classes:
-			ontologytext += c.prt() + "\n"
-
-		return ontologytext
+		self.classes = onto.classes
+		self.relationships = onto.relationships
+		self.long = is_long
 
 	def _make_unique_relationships(self):
 		rel_names = set([r.name for r in self.relationships])
@@ -71,8 +40,38 @@ class Generator:
 
 		return new_rels
 
-	def gen_prolog_from_onto(self):
-		"""Generate Prolog from `Ontology` object"""
+
+class OntologyGenerator(Generator):
+	"""Generate Manchester-style ontology from an `Ontology` object"""
+	
+	def __str__(self):
+		for c in self.classes:
+			c.stories.sort()
+		
+		ontologytext = ''
+		ontologytext += self.onto.gen_head(self.onto.get_prefixes()).prt() + "\n"
+
+		if self.relationships:
+			ontologytext += self.onto._comment("Relationships")
+
+		unique_rels = self._make_unique_relationships()
+
+		for r in unique_rels:	
+			ontologytext += r.prt() + "\n"
+
+		if self.classes:
+			ontologytext += self.onto._comment("Classes")
+
+		for c in self.classes:
+			ontologytext += c.prt() + "\n"
+
+		return ontologytext
+
+
+class PrologGenerator(Generator):
+	"""Generate Prolog from `Ontology` object"""
+
+	def __str__(self):
 		prologtext = []
 		concept = ""
 
@@ -104,7 +103,7 @@ class Generator:
 
 		prologtext.sort()
 
-		return '.\n'.join(prologtext)
+		return '.\n'.join(prologtext) + '.'
 
 	def _get_concept(self, text):
 		return f"concept('{str(text)}')"
@@ -113,36 +112,7 @@ class Generator:
 		if story >= 0:
 			return f"found({text},'US{str(story)}')"
 		return False
-
-
-class GenHelp:
-	"""Helper class for creating a text ontology from an `Ontology` object"""
-
-	def __init__(self, ontology, option=None):
-		self.ontology = ontology
-		self.option = option
-
-	def make_prefix(self, indicator, link):
-		return f"Prefix: {indicator}: <{link}>\n" 
 	
-	def make_obj(self, name, prefix='', isname=None):
-		if not self.option:
-			return f"{prefix}:{name}\n"	
-		else:
-			if prefix is '':
-				prefix = self.ontology
-			else:
-				prefix = PREFIX_DICT[prefix]
-			return f"<{prefix}{name}>\n"
-
-	def make_part(self, left, right):
-		return f"\t{left}: {right}"
-
-	def space(self):
-		return ""
-
-	def comment(self, com):
-		return f"# {com}\n"
 
 class Ontology:
 	"""Holds information on the ontology to construct"""
@@ -152,7 +122,6 @@ class Ontology:
 		self.ontology = "http://fakesite.org/{}.owl#".format("_".join(str(sysname).lower().split()))
 		self.ontology_name = "onto"
 		self.option = option
-		self.gh = GenHelp(self.ontology, option)
 		self.stories = stories
 		self.classes = []
 		self.relationships = []
@@ -167,8 +136,7 @@ class Ontology:
 		return OntClass(self, name, parent, prefix)
 	
 	def make_relationship(self, name, domain, range):
-		new_property = OntProperty(self, "Object", name, domain, range)
-		return new_property
+		return OntProperty(self, "Object", name, domain, range)
 
 	def get_class_by_name(self, story, name, parent='', is_role=False):		
 		if self.is_empty(name):
@@ -216,6 +184,28 @@ class Ontology:
 		new_rel.stories.append(story)
 		self.relationships.append(new_rel)
 		return new_rel
+	
+	def _make_prefix(self, indicator, link):
+		return f"Prefix: {indicator}: <{link}>\n" 
+	
+	def _make_obj(self, name, prefix='', isname=None):
+		if not self.option:
+			return f"{prefix}:{name}\n"	
+		else:
+			if prefix is '':
+				prefix = self.ontology
+			else:
+				prefix = PREFIX_DICT[prefix]
+			return f"<{prefix}{name}>\n"
+
+	def _make_part(self, left, right):
+		return f"\t{left}: {right}"
+
+	def _space(self):
+		return ""
+
+	def _comment(self, com):
+		return f"# {com}\n"
 
 
 class OntClass(object):
@@ -232,11 +222,11 @@ class OntClass(object):
 		parent = ''.join(self.parent.split())
 
 		returnstr = ""
-		returnstr += "Class: " + self.ontobj.gh.make_obj(name)
+		returnstr += "Class: " + self.ontobj._make_obj(name)
 		if self.parent == "Thing" or self.parent == '':
 			pass			
 		else:
-			returnstr += self.ontobj.gh.make_part("SubClassOf", self.ontobj.gh.make_obj(parent, self.prefix))
+			returnstr += self.ontobj._make_part("SubClassOf", self.ontobj._make_obj(parent, self.prefix))
 
 		if self.name != name or self.is_role:
 			returnstr += "\tAnnotations:"
@@ -268,9 +258,9 @@ class OntProperty(object):
 		range = ''.join(self.range.split())
 
 		returnstr = ""
-		returnstr += self.type + "Property: " + self.ontobj.gh.make_obj(name)
-		returnstr += self.ontobj.gh.make_part("Domain", self.ontobj.gh.make_obj(domain))
-		returnstr += self.ontobj.gh.make_part("Range", self.ontobj.gh.make_obj(range))
+		returnstr += self.type + "Property: " + self.ontobj._make_obj(name)
+		returnstr += self.ontobj._make_part("Domain", self.ontobj._make_obj(domain))
+		returnstr += self.ontobj._make_part("Range", self.ontobj._make_obj(range))
 		return returnstr
 
 class Header:
@@ -281,13 +271,13 @@ class Header:
 
 	def prt(self):
 		returnstr = ""
-		returnstr += self.ontobj.gh.comment("Generated with Visual Narrator")
-		returnstr += self.ontobj.gh.make_prefix('', self.ontobj.ontology)
+		returnstr += self.ontobj._comment("Generated with Visual Narrator")
+		returnstr += self.ontobj._make_prefix('', self.ontobj.ontology)
 		for prefix in self.used_prefixes:
 			if prefix is not '':
 				link = str(PREFIX_DICT[prefix])
-				returnstr += self.ontobj.gh.make_prefix(prefix, link)
-		returnstr += self.ontobj.gh.make_prefix(self.ontobj.ontology_name, self.ontobj.ontology)	
+				returnstr += self.ontobj._make_prefix(prefix, link)
+		returnstr += self.ontobj._make_prefix(self.ontobj.ontology_name, self.ontobj.ontology)	
 		returnstr += "\nOntology: <:>\n\n"
 		returnstr += "Annotations:\n\tdc:title \"" + str(self.ontobj.sys_name) + "\",\n\tdc:creator \"Visual Narrator\",\n\trdfs:comment \"Generated with Visual Narrator\"\n\n"
 		returnstr += "AnnotationProperty: dc:creator\n\n"

@@ -96,7 +96,7 @@ class VisualNarrator:
 				Printer.print_us_data(us)
 
 		# Generate the outputs
-		output_ontology, output_prolog, output_ontobj, output_prologobj, onto_per_role = \
+		output_ontology, output_prolog, onto_per_role = \
 			self._get_gen(us_instances, m, systemname, print_ont, log_time=self.time)
 
 		# Gather statistics and print the results
@@ -105,7 +105,7 @@ class VisualNarrator:
 		# Write output files
 		w = Writer
 		output_json = "\n".join([str(us.toJSON()) for us in us_instances]).replace('\'', '\"')
-		files, reports_folder = self.write_files(w, systemname, output_ontology, output_prolog, output_json,
+		files, reports_folder = self.write_files(w, systemname, str(output_ontology), str(output_prolog), output_json,
 	                                             statsarr, m, onto_per_role)
 
 		# Print the used ontology generation settings
@@ -143,10 +143,10 @@ class VisualNarrator:
 			"matrix": self.matrix,
 			"weights": m['sum'].copy().reset_index().sort_values(['sum'], ascending=False).values.tolist(),
 			"counts": count_matrix.reset_index().values.tolist(),
-			"classes": output_ontobj.classes,
-			"relationships": output_prologobj.relationships,
+			"classes": output_ontology.classes,
+			"relationships": output_ontology.relationships,
 			"types": list(count_matrix.columns.values),
-			"ontology": multiline(output_ontology)
+			"ontology": multiline(str(output_ontology))
 		}
 
 		# Finally, generate a report
@@ -160,8 +160,8 @@ class VisualNarrator:
 		
 		# Return objects so that they can be used as input for other tools
 		return {'us_instances': us_instances,
-				'output_ontobj': output_ontobj,
-				'output_prologobj': output_prologobj,
+				'output_ontobj': str(output_ontology),
+				'output_prologobj': str(output_prolog),
 				'output_json': output_json,
 				'matrix': m}
 
