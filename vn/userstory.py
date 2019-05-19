@@ -1,7 +1,12 @@
+"""Describes user story object structure"""
+
 import json
 from vn.statistics import UserStoryStatistics
 
+
 class UserStory(object):
+	"""Each valid user story consists of a Role, Means and (optional) Ends. It is identified by a unique Number."""
+
 	def __init__(self, nr, text, no_punct):
 		self.number = nr
 		self.text = text

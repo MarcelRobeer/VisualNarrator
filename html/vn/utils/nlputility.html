@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.1" />
+<title>vn.utils.nlputility API documentation</title>
+<meta name="description" content="Utility module for `spacy` natural language processing (NLP)" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>vn.utils.nlputility</code></h1>
+</header>
+<section id="section-intro">
+<p>Utility module for <code>spacy</code> natural language processing (NLP)</p>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">&#34;&#34;&#34;Utility module for `spacy` natural language processing (NLP)&#34;&#34;&#34;
+
+import string
+from .utility import text
+from spacy.tokens.token import Token
+
+
+def is_us(cl):
+        if cl.name.startswith(&#34;US&#34;) or cl.name == &#39;UserStory&#39;:
+                return True
+        elif cl.parent.startswith(&#34;US&#34;):
+                return True
+        return False
+
+def t(li):
+        if type(li) is list:
+                return text(get_tokens(li))
+        return li.text
+
+def is_i(li):
+        if str.lower(t(li)) == &#39;i&#39;:
+                return True
+        return False
+
+def get_case(t):
+        if type(t) is Token:
+                if str.lower(t.text) == &#34;i&#34;:  # quickfix for https://github.com/explosion/spaCy/issues/962
+                        return &#34;I&#34;
+                if &#39;d&#39; in t.shape_ or &#39;x&#39; not in t.shape_ or t.shape_[:2] == &#39;xX&#39;:                      
+                        return t.text
+                elif t.text[-1] == &#39;s&#39; and &#39;x&#39; not in t.shape_[:-1]:
+                        return t.text[:-1]
+                return string.capwords(t.lemma_)
+        elif type(t) is WeightedToken:
+                return t.case
+        elif type(t) is list and len(t) &gt; 0 and type(t[0]) is WeightedToken:
+                return &#39; &#39;.join([get_case(cc) for cc in t])
+        return t
+
+def get_tokens(tree):
+        return [t.text for t in tree]
+
+def get_lower_tokens(tree):
+        return [str.lower(t.text) for t in tree]
+
+def get_idx(tree):
+        return [t.i for t in tree]
+
+def text_lower_tokens(a_list):
+        return text(get_lower_tokens(a_list))
+
+def get_head(tree):
+        for t in tree:
+                if t is t.head:
+                        return t
+
+def is_noun(token):
+        if token.pos_ == &#34;NOUN&#34; or token.pos_ == &#34;PROPN&#34;:
+                return True
+        return False
+
+def is_verb(token):
+        if token.pos_ == &#34;VERB&#34;:
+                return True
+        return False
+
+def is_compound(token):
+        if token.dep_ == &#34;compound&#34; or (token.dep_ == &#34;amod&#34; and is_noun(token)): 
+                return True
+        return False
+
+def is_subject(token):
+        if token.dep_[:5] == &#39;nsubj&#39;:
+                return True
+        return False
+
+def is_dobj(token):
+        if token.dep_ == &#39;dobj&#39;:
+                return True
+        return False
+
+
+class WeightedToken(object):
+        def __init__(self, token, weight):
+                self.token = token
+                self.case = get_case(token)
+                self.weight = weight</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="vn.utils.nlputility.get_case"><code class="name flex">
+<span>def <span class="ident">get_case</span></span>(<span>t)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_case(t):
+        if type(t) is Token:
+                if str.lower(t.text) == &#34;i&#34;:  # quickfix for https://github.com/explosion/spaCy/issues/962
+                        return &#34;I&#34;
+                if &#39;d&#39; in t.shape_ or &#39;x&#39; not in t.shape_ or t.shape_[:2] == &#39;xX&#39;:                      
+                        return t.text
+                elif t.text[-1] == &#39;s&#39; and &#39;x&#39; not in t.shape_[:-1]:
+                        return t.text[:-1]
+                return string.capwords(t.lemma_)
+        elif type(t) is WeightedToken:
+                return t.case
+        elif type(t) is list and len(t) &gt; 0 and type(t[0]) is WeightedToken:
+                return &#39; &#39;.join([get_case(cc) for cc in t])
+        return t</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.get_head"><code class="name flex">
+<span>def <span class="ident">get_head</span></span>(<span>tree)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_head(tree):
+        for t in tree:
+                if t is t.head:
+                        return t</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.get_idx"><code class="name flex">
+<span>def <span class="ident">get_idx</span></span>(<span>tree)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_idx(tree):
+        return [t.i for t in tree]</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.get_lower_tokens"><code class="name flex">
+<span>def <span class="ident">get_lower_tokens</span></span>(<span>tree)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_lower_tokens(tree):
+        return [str.lower(t.text) for t in tree]</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.get_tokens"><code class="name flex">
+<span>def <span class="ident">get_tokens</span></span>(<span>tree)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_tokens(tree):
+        return [t.text for t in tree]</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.is_compound"><code class="name flex">
+<span>def <span class="ident">is_compound</span></span>(<span>token)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_compound(token):
+        if token.dep_ == &#34;compound&#34; or (token.dep_ == &#34;amod&#34; and is_noun(token)): 
+                return True
+        return False</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.is_dobj"><code class="name flex">
+<span>def <span class="ident">is_dobj</span></span>(<span>token)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_dobj(token):
+        if token.dep_ == &#39;dobj&#39;:
+                return True
+        return False</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.is_i"><code class="name flex">
+<span>def <span class="ident">is_i</span></span>(<span>li)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_i(li):
+        if str.lower(t(li)) == &#39;i&#39;:
+                return True
+        return False</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.is_noun"><code class="name flex">
+<span>def <span class="ident">is_noun</span></span>(<span>token)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_noun(token):
+        if token.pos_ == &#34;NOUN&#34; or token.pos_ == &#34;PROPN&#34;:
+                return True
+        return False</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.is_subject"><code class="name flex">
+<span>def <span class="ident">is_subject</span></span>(<span>token)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_subject(token):
+        if token.dep_[:5] == &#39;nsubj&#39;:
+                return True
+        return False</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.is_us"><code class="name flex">
+<span>def <span class="ident">is_us</span></span>(<span>cl)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_us(cl):
+        if cl.name.startswith(&#34;US&#34;) or cl.name == &#39;UserStory&#39;:
+                return True
+        elif cl.parent.startswith(&#34;US&#34;):
+                return True
+        return False</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.is_verb"><code class="name flex">
+<span>def <span class="ident">is_verb</span></span>(<span>token)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_verb(token):
+        if token.pos_ == &#34;VERB&#34;:
+                return True
+        return False</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.t"><code class="name flex">
+<span>def <span class="ident">t</span></span>(<span>li)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def t(li):
+        if type(li) is list:
+                return text(get_tokens(li))
+        return li.text</code></pre>
+</details>
+</dd>
+<dt id="vn.utils.nlputility.text_lower_tokens"><code class="name flex">
+<span>def <span class="ident">text_lower_tokens</span></span>(<span>a_list)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def text_lower_tokens(a_list):
+        return text(get_lower_tokens(a_list))</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="vn.utils.nlputility.WeightedToken"><code class="flex name class">
+<span>class <span class="ident">WeightedToken</span></span>
+<span>(</span><span>token, weight)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class WeightedToken(object):
+        def __init__(self, token, weight):
+                self.token = token
+                self.case = get_case(token)
+                self.weight = weight</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="vn.utils" href="index.html">vn.utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="vn.utils.nlputility.get_case" href="#vn.utils.nlputility.get_case">get_case</a></code></li>
+<li><code><a title="vn.utils.nlputility.get_head" href="#vn.utils.nlputility.get_head">get_head</a></code></li>
+<li><code><a title="vn.utils.nlputility.get_idx" href="#vn.utils.nlputility.get_idx">get_idx</a></code></li>
+<li><code><a title="vn.utils.nlputility.get_lower_tokens" href="#vn.utils.nlputility.get_lower_tokens">get_lower_tokens</a></code></li>
+<li><code><a title="vn.utils.nlputility.get_tokens" href="#vn.utils.nlputility.get_tokens">get_tokens</a></code></li>
+<li><code><a title="vn.utils.nlputility.is_compound" href="#vn.utils.nlputility.is_compound">is_compound</a></code></li>
+<li><code><a title="vn.utils.nlputility.is_dobj" href="#vn.utils.nlputility.is_dobj">is_dobj</a></code></li>
+<li><code><a title="vn.utils.nlputility.is_i" href="#vn.utils.nlputility.is_i">is_i</a></code></li>
+<li><code><a title="vn.utils.nlputility.is_noun" href="#vn.utils.nlputility.is_noun">is_noun</a></code></li>
+<li><code><a title="vn.utils.nlputility.is_subject" href="#vn.utils.nlputility.is_subject">is_subject</a></code></li>
+<li><code><a title="vn.utils.nlputility.is_us" href="#vn.utils.nlputility.is_us">is_us</a></code></li>
+<li><code><a title="vn.utils.nlputility.is_verb" href="#vn.utils.nlputility.is_verb">is_verb</a></code></li>
+<li><code><a title="vn.utils.nlputility.t" href="#vn.utils.nlputility.t">t</a></code></li>
+<li><code><a title="vn.utils.nlputility.text_lower_tokens" href="#vn.utils.nlputility.text_lower_tokens">text_lower_tokens</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="vn.utils.nlputility.WeightedToken" href="#vn.utils.nlputility.WeightedToken">WeightedToken</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

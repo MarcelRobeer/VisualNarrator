@@ -1,3 +1,5 @@
+"""Calculate statistics for `vn.userstory.UserStory` objects"""
+
 class Statistics:
 	@staticmethod
 	def to_stats_array(stories):

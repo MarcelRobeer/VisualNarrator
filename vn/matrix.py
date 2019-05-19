@@ -1,10 +1,13 @@
 import numpy as np
 import pandas as pd
 from spacy import attrs
-from vn.utils.utility import flatten, get_case, is_verb
+from vn.utils.utility import flatten
+from vn.utils.nlputility import get_case, is_verb
 
 
 class Matrix:
+	"""Calculate weights for each term per user story and a matrix of count occurences"""
+
 	def __init__(self, base, weight):
 		self.VAL_FUNC_ROLE = base * weight['func_role']
 		self.VAL_MAIN_OBJ = base * weight['main_obj']
@@ -23,12 +26,12 @@ class Matrix:
 		w_us = self.get_factor(w_us, stories)
 		w_us['sum'] = w_us.sum(axis=1)
 
-		# w_us = self.remove_stop_words(w_us, doc_array)
-		w_us = self.remove_indicators(w_us, stories, nlp)
-		w_us = self.remove_verbs(w_us, stories)
+		# w_us = self._remove_stop_words(w_us, doc_array)
+		w_us = self._remove_indicators(w_us, stories, nlp)
+		w_us = self._remove_verbs(w_us, stories)
 
 		# Link to US part
-		us_ids, rme = self.get_rme(stories)
+		us_ids, rme = self._get_rme(stories)
 
 		rme_cols = pd.MultiIndex.from_arrays([us_ids, rme], names=['user_story', 'part'])
 		rme_us = pd.DataFrame(0, index=words, columns=rme_cols)
@@ -144,25 +147,6 @@ class Matrix:
 
 		return matrix
 
-	def unique(self, arr):
-		arr = np.ascontiguousarray(arr)
-		unique_arr = np.unique(arr.view([('', arr.dtype)] * arr.shape[1]))
-		return unique_arr.view(arr.dtype).reshape((unique_arr.shape[0], arr.shape[1]))
-
-	def remove_punct(self, doc_array):
-		doc_array = doc_array[ np.logical_not( np.logical_or(doc_array[:,2] == 1, doc_array[:,3] == 1 )) ]
-		return np.delete(doc_array, np.s_[2:4], 1)
-
-	def replace_ids(self, arr, words):
-		new_arr = []
-		[new_arr.append([row[1]]) for row in arr]
-		return pd.DataFrame(new_arr, index=words, columns=['IS_STOP'])
-
-	def is_synonym(self, token1, token2):
-		if token1.lemma == token2.lemma:
-			return True
-		return False
-
 	def is_phrasal(self, part, token, story):
 		"""Check in which part of a WithPhrase() the token occurs
 		
@@ -201,7 +185,7 @@ class Matrix:
 
 		return matrix[~matrix.index.isin(to_drop)]
 
-	def remove_indicators(self, matrix, stories, nlp):
+	def _remove_indicators(self, matrix, stories, nlp):
 		indicators = []
 
 		for story in stories:
@@ -215,7 +199,7 @@ class Matrix:
 
 		return self._remove_from(matrix, indicators)
 
-	def remove_verbs(self, matrix, stories):
+	def _remove_verbs(self, matrix, stories):
 		verbs = []
 		cases = matrix.index.values.tolist()		
 
@@ -232,7 +216,7 @@ class Matrix:
 
 		return self._remove_from(matrix, verbs)
 	
-	def get_rme(self, stories):
+	def _get_rme(self, stories):
 		us_ids = []
 		rme = []
 
@@ -249,7 +233,7 @@ class Matrix:
 	
 		return us_ids, rme
 
-	def remove_stop_words(self, matrix, stopwords):
+	def _remove_stop_words(self, matrix, stopwords):
 		result = pd.merge(matrix, stopwords, left_index=True, right_index=True, how='inner')
 		result = result[(result['IS_STOP'] == 0)]
 

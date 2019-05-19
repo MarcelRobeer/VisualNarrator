@@ -1,3 +1,5 @@
+"""Mine patterns in `vn.userstory.UserStory` and construct Ontology / Prolog file"""
+
 import string
 import numpy as np
 import pandas
@@ -5,7 +7,8 @@ from enum import Enum
 
 from vn.generator import Generator, Ontology
 from vn.io import Printer
-from vn.utils.utility import WeightedToken, get_case, is_sublist, flatten
+from vn.utils.utility import is_sublist, flatten
+from vn.utils.nlputility import WeightedToken, get_case
 
 class Constructor:
 	def __init__(self, nlp, user_stories, matrix):

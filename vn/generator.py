@@ -1,7 +1,16 @@
+"""Generate Ontology / Prolog from extracted classes and relationships in `vn.pattern`"""
+
 from lang.owlprefix import PREFIX_DICT
 
 class Generator:
+	"""Generate text conceptual models from a list of classes and a list of relationships"""
 	def __init__(self, classes, relationships, onto=True, is_long=None):
+		"""
+		Args:
+			classes (list): classes to construct
+			relationships (list): relationships between classes
+			onto (bool): whether to create an Ontology (True) or Prolog (False)
+		"""
 		self.classes = classes
 		self.relationships = relationships
 		self.long = is_long
@@ -16,13 +25,14 @@ class Generator:
 		return self.gen_ontology(onto)	
 		
 	def gen_ontology(self, onto):
+		"""Generate Ontology text from `Ontology` object"""
 		ontologytext = ''
 		ontologytext += onto.gen_head(onto.get_prefixes()).prt() + "\n"
 
 		if self.relationships:
 			ontologytext += onto.gh.comment("Relationships")
 
-		unique_rels = self.make_unique_relationships()
+		unique_rels = self._make_unique_relationships()
 
 		for r in unique_rels:	
 			ontologytext += r.prt() + "\n"
@@ -35,7 +45,7 @@ class Generator:
 
 		return ontologytext
 
-	def make_unique_relationships(self):
+	def _make_unique_relationships(self):
 		rel_names = set([r.name for r in self.relationships])
 		new_rels = []
 
@@ -62,19 +72,20 @@ class Generator:
 		return new_rels
 
 	def gen_prolog_from_onto(self):
+		"""Generate Prolog from `Ontology` object"""
 		prologtext = []
 		concept = ""
 
 		for c in self.classes:
-			concept = self.get_concept(c.name)
+			concept = self._get_concept(c.name)
 			prologtext.append(concept)
 			for s in c.stories:
-				if self.get_found(concept, s):
-					prologtext.append(self.get_found(concept, s))
+				if self._get_found(concept, s):
+					prologtext.append(self._get_found(concept, s))
 
 		for r in self.relationships:
-			d_concept = self.get_concept(r.domain)
-			r_concept = self.get_concept(r.range)
+			d_concept = self._get_concept(r.domain)
+			r_concept = self._get_concept(r.range)
 			rel = ""
 			linkrel = ['role', 'means', 'ends']
 			diffrel = linkrel + ['isa']
@@ -88,23 +99,25 @@ class Generator:
 				rel = f"rel({d_concept},'{r.name}',{r_concept})"
 				prologtext.append(rel)
 				for s in r.stories:
-					if self.get_found(rel, s):
-						prologtext.append(self.get_found(rel, s))
+					if self._get_found(rel, s):
+						prologtext.append(self._get_found(rel, s))
 
 		prologtext.sort()
 
 		return '.\n'.join(prologtext)
 
-	def get_concept(self, text):
+	def _get_concept(self, text):
 		return f"concept('{str(text)}')"
 
-	def get_found(self, text, story):
+	def _get_found(self, text, story):
 		if story >= 0:
 			return f"found({text},'US{str(story)}')"
 		return False
 
 
 class GenHelp:
+	"""Helper class for creating a text ontology from an `Ontology` object"""
+
 	def __init__(self, ontology, option=None):
 		self.ontology = ontology
 		self.option = option
@@ -132,6 +145,8 @@ class GenHelp:
 		return f"# {com}\n"
 
 class Ontology:
+	"""Holds information on the ontology to construct"""
+
 	def __init__(self, sysname, stories, option=None):
 		self.sys_name = sysname
 		self.ontology = "http://fakesite.org/{}.owl#".format("_".join(str(sysname).lower().split()))

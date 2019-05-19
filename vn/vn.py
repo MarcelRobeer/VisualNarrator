@@ -1,3 +1,5 @@
+"""General Visual Narrator Module"""
+
 import string
 import timeit
 import os.path
@@ -14,7 +16,8 @@ from vn.matrix import Matrix
 from vn.userstory import UserStory
 from vn.pattern import Constructor
 from vn.statistics import Statistics, Counter
-from vn.utils.utility import multiline, remove_punct, t, is_i, tab, is_comment, occurence_list, is_us
+from vn.utils.utility import multiline, remove_punct, tab, is_comment, occurence_list
+from vn.utils.nlputility import t, is_i, is_us
 
 # Check Python version
 if sys.version_info[0] < 3:
@@ -227,7 +230,7 @@ class VisualNarrator:
 			miner: instance of class Miner
 
 		Returns:
-			vn.userstory.UserStory: A new user story object
+			`vn.userstory.UserStory`: A new user story object
 		"""
 		no_punct = remove_punct(text)
 		no_double_space = ' '.join(no_punct.split())

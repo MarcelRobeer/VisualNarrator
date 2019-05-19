@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Command-line interface (CLI) access point to Visual Narrator"""
+
 import os.path
 import sys
 from argparse import ArgumentParser
@@ -9,6 +11,10 @@ from vn.io import Reader
 
 
 def main(*args):
+	"""Main CLI entry-point
+	
+	Args:
+		*args: Manually supplied arguments"""
 	p = ArgumentParser(
 			usage=f'''python -m vn.py <INPUT FILE> [<args>]
 
@@ -29,7 +35,7 @@ def main(*args):
 	if "--return-args" not in args:
 		p.add_argument("filename",
 						help="input file with user stories", metavar="INPUT FILE",
-						type=lambda x: is_valid_file(p, x))
+						type=lambda x: _is_valid_file(p, x))
 	p.add_argument('--version', action='version', version=f'%(prog) v{__version__} by {author}')
 
 	g_p = p.add_argument_group("general arguments (optional)")
@@ -99,7 +105,7 @@ def main(*args):
 	else:
 		return args
 
-def is_valid_file(parser, arg):
+def _is_valid_file(parser, arg):
 	if not os.path.exists(arg):
 		parser.error(f"Could not find file {arg}!")
 	else:

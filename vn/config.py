@@ -1,3 +1,5 @@
+"""Configuration file"""
+
 __version__ = '0.9.2'
 author = 'Marcel Robeer'
 description = 'Mine user story (US) information and turn it into a conceptual model'

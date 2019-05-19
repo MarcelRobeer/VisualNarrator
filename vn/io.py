@@ -1,9 +1,12 @@
+"""Read/write module for inputs and outputs (I/O)"""
+
 import os.path
 import csv
 import pandas
 import datetime as d
 
-from vn.utils.utility import get_tokens, get_case
+from vn.utils.nlputility import get_tokens, get_case
+
 
 class Reader:
 	"""Reading from files"""
