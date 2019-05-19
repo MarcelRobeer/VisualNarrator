@@ -86,7 +86,6 @@ class VisualNarrator:
 
 		# Keep track of all errors	
 		errors = ""
-		c = Counter()
 
 		# Keeps track of all succesfully created User Stories objects
 		us_instances = []  
@@ -97,7 +96,7 @@ class VisualNarrator:
 		for s in stories:
 			try:
 				user_story = self.parse(s, us_id, systemname, self.nlp, miner)
-				user_story = c.count(user_story)
+				user_story = Counter.count(user_story)
 				us_instances.append(user_story)
 				success_stories.append(s)
 			except ValueError as err:
@@ -151,7 +150,7 @@ class VisualNarrator:
 
 			Printer._print_head("USER STORY STATISTICS")
 			Printer.print_stats(statsarr[0], True)
-			Printer.print_stats(statsarr[1], True)
+			#Printer.print_stats(statsarr[1], True)
 			Printer._print_subhead("Term - by - User Story Matrix ( Terms w/ total weight 0 hidden )")
 			hide_zero = m[(m['sum'] > 0)]
 			print(hide_zero)
@@ -260,9 +259,9 @@ class VisualNarrator:
 		
 		Returns:
 			list: Files created
-			str: Folder the reports were created in"""
+			str: Folder the reports were created in
+		"""
 		s = str(systemname)
-		print(type(m))
 
 		folder = "output/" + s
 		reports_folder = folder + "/reports"

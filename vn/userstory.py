@@ -17,6 +17,7 @@ class UserStory(object):
 		self.stats = UserStoryStatistics()
 
 	def toJSON(self):
+		"""Convert a user story to JSON"""
 		if self.has_ends:
 			return {"number": self.number, "text": self.text, "iloc": self.iloc, "role": self.role.toJSON(), "means": self.means.toJSON(), "ends": self.ends.toJSON()}
 		return {"number": self.number, "text": self.text, "iloc": self.iloc, "role": self.role.toJSON(), "means": self.means.toJSON()}

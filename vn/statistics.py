@@ -1,12 +1,17 @@
 class Statistics:
+	@staticmethod
 	def to_stats_array(stories):
 		stats = []
 		sent_stats = []
 
 		if stories:
-			header = ['US_ID', 'User_Story', 'Words', 'Verbs', 'Nouns', 'NPs', 'Ind_R', 'Ind_M', 'Ind_E', 'FR_Type', 'MV_Type', 'DO_Type']
+			header = ['US_ID', 'User_Story', 'Words', 'Verbs', 'Nouns', 'NPs',
+			          'Ind_R', 'Ind_M', 'Ind_E', 'MV_Type']
 			stats.append(header)
-			sent_header = ['US_ID', 'Role_NP', 'Role_Struct', 'Role_Struct_Detail', 'Means_NP', 'Means_Struct', 'Means_Struct_Detail', 'Ends_NP', 'Ends_Struct', 'Ends_Struct_Detail']
+			sent_header = ['US_ID',
+			               'Role_NP', 'Role_Struct', 'Role_Struct_Detail',
+			               'Means_NP', 'Means_Struct', 'Means_Struct_Detail',
+						   'Ends_NP', 'Ends_Struct', 'Ends_Struct_Detail']
 			sent_stats.append(sent_header)
 
 		for us in stories:
@@ -15,36 +20,36 @@ class Statistics:
 						  us.stats.words, 
 						  us.stats.verbs, 
 						  us.stats.nouns,
-						   us.stats.noun_phrases, 
-						   us.stats.indicators.role, 
-						   us.stats.indicators.means, 
-						   us.stats.indicators.ends, 
-						   us.stats.fr_type, 
-						   us.stats.mv_type, 
-						   us.stats.do_type])
+						  us.stats.noun_phrases, 
+						  us.stats.indicators.role, 
+						  us.stats.indicators.means, 
+						  us.stats.indicators.ends,
+						  us.stats.mv_type])
 			sent_stats.append([us.number, 
-								text(us.stats.role.nps), 
-								text(us.stats.role.general), 
-								text(us.stats.role.detail), 
-								text(us.stats.means.nps), 
-								text(us.stats.means.general), 
-								text(us.stats.means.detail), 
-								text(us.stats.means.nps), 
-								text(us.stats.means.general), 
-								text(us.stats.means.detail)])
+							   us.stats.role.nps, 
+							   us.stats.role.general, 
+							   us.stats.role.detail, 
+							   us.stats.means.nps, 
+							   us.stats.means.general, 
+							   us.stats.means.detail, 
+							   us.stats.means.nps, 
+							   us.stats.means.general, 
+							   us.stats.means.detail])
 
 		return stats, sent_stats
 
 class Counter:
-	def count(self, story):
-		story = self.count_basic(story)
-		story = self.count_nps(story)
-		story = self.count_indicators(story)
-		story = self.get_types(story)
-		#story = self.get_structure(story)
+	@staticmethod
+	def count(story):
+		story = Counter.count_basic(story)
+		story = Counter.count_nps(story)
+		story = Counter.count_indicators(story)
+		story = Counter.get_types(story)
+		#story = Counter.get_structure(story)
 		return story
 
-	def count_basic(self, story):
+	@staticmethod
+	def count_basic(story):
 		for token in story.data:
 			story.stats.words += 1
 			if token.pos_ == "NOUN":
@@ -54,97 +59,27 @@ class Counter:
 
 		return story
 
-	def count_nps(self, story):
-		for chunk in story.data.noun_chunks:
-			story.stats.noun_phrases += 1		
-
+	@staticmethod
+	def count_nps(story):
+		story.stats.noun_phrases += len(list(story.data.noun_chunks))		
 		return story
 
-	def count_indicators(self, story):
+	@staticmethod
+	def count_indicators(story):
 		if story.role.indicator:
 			story.stats.indicators.role = str.lower(story.role.indicator)
 		if story.means.indicator:
-			story.stats.indicators.means = str.lower(story.role.indicator)
+			story.stats.indicators.means = str.lower(story.means.indicator)
 		if story.ends.indicator:
-			story.stats.indicators.ends = str.lower(story.role.indicator)
+			story.stats.indicators.ends = str.lower(story.ends.indicator)
 
 		return story
 
-	def get_types(self, story):
-		#if not story.role.functional_role.type == "":
-		#	story.stats.fr_type = story.role.functional_role.type
+	@staticmethod
+	def get_types(story):
 		if not story.means.main_verb.type == "":
 			story.stats.mv_type = story.means.main_verb.type
-		#if not story.means.main_object.type == "":
-		#	story.stats.do_type = story.means.main_object.type
 		return story
-
-	'''def get_structure(self, story):
-		role = story.role.text
-		means = story.means.text
-		if story.has_ends:
-			ends = story.ends.text
-		else:
-			ends = []
-
-		print(type(role))
-		print(type(means))
-		print(type(ends))
-
-		return self.replace_nounphrase(story, role, means, ends)
-
-	def replace_nounphrase(self, story, role, means, ends):
-		idx = []
-		c = 0
-
-		for chunk in story.data.noun_chunks:
-			if len(chunk) > 1:
-				c += 1
-				for token in chunk:
-					idx.append([token.i, c])
-		
-		story = self.fill('role', story, role, idx)
-		story = self.fill('means', story, means, idx)
-		story = self.fill('ends', story, ends, idx)
-
-		return self.replace(story, idx)
-
-	def fill(self, part, story, list, idx):
-		for t in list:
-			if t[2] not in [i[0] for i in idx]:
-				eval('story.stats.' + part + '.nps.append(t[0])')
-			else:
-				for i in idx:
-					if t[2] == i[0]:
-						eval('story.stats.' + part + '.nps.append(i[1])')
-			eval('story.stats.' + part + '.general.append(t[0])')
-			eval('story.stats.' + part + '.detail.append(t[1])')
-
-		return story
-
-	def replace(self, story, idx):
-		cnt = [i[1] for i in idx]
-		vals = list(set(cnt))
-		
-		for v in vals:
-			if v in story.stats.role.nps:
-				story = self.set_np('role', story, v, cnt)
-			elif v in story.stats.means.nps:
-				story = self.set_np('means', story, v, cnt)
-			elif v in story.stats.ends.nps:
-				story = self.set_np('ends', story, v, cnt)
-
-		story.stats.role.nps = [x for x in story.stats.role.nps if not isinstance(x, int)]
-		story.stats.means.nps = [x for x in story.stats.means.nps if not isinstance(x, int)]
-		story.stats.ends.nps = [x for x in story.stats.ends.nps if not isinstance(x, int)]
-
-		return story
-
-	def set_np(self, part, story, v, cnt):
-		index = eval('story.stats.' + part + '.nps').index(v)
-		eval('story.stats.' + part + '.nps')[index] = 'NOUNPHRASE(' + str(cnt.count(v)) + ')'
-		return story
-	'''
 
 
 class UserStoryStatistics:
@@ -154,8 +89,6 @@ class UserStoryStatistics:
 		self.nouns = 0
 		self.noun_phrases = 0
 		self.mv_type = "-"
-		self.fr_type = "-"
-		self.do_type = "-"
 		self.role = Structure()
 		self.means = Structure()
 		self.ends = Structure()

@@ -14,52 +14,28 @@ class Matrix:
 
 	def generate(self, stories, all_words, nlp):
 		all_words = ' '.join(all_words.split())
-		tokens = nlp(all_words)
-
-		attr_ids = [attrs.LEMMA, attrs.IS_STOP, attrs.IS_PUNCT, attrs.IS_SPACE]
-		#doc_array = tokens.to_array(attr_ids)
-
-		namedict = self.get_namedict(tokens)
-		#doc_array = self.unique(doc_array)
-		#doc_array = self.remove_punct(doc_array)
-
-		words = list(namedict.values())  #[namedict[row[0]] for row in doc_array]
+		words = [get_case(t) for t in nlp(all_words)]
 		ids = [us.txtnr() for us in stories]
 
-		#doc_array = self.replace_ids(doc_array, words)
-
+		# Add weighted scores to the words in the term-by-US matrix
 		w_us = pd.DataFrame(0.0, index=words, columns=ids)
 		w_us = w_us.iloc[np.unique(w_us.index, return_index=True)[1]]
-
 		w_us = self.get_factor(w_us, stories)
-
 		w_us['sum'] = w_us.sum(axis=1)
 
 		# w_us = self.remove_stop_words(w_us, doc_array)
 		w_us = self.remove_indicators(w_us, stories, nlp)
 		w_us = self.remove_verbs(w_us, stories)
 
-		###
-		us_ids = []
-		rme = []
-
-		for us in stories:
-			if us.role.indicator:
-				us_ids.append(us.txtnr())
-				rme.append('Role') 
-			if us.means.indicator:
-				us_ids.append(us.txtnr())
-				rme.append('Means')
-			if us.ends.indicator:
-				us_ids.append(us.txtnr())
-				rme.append('Ends')
+		# Link to US part
+		us_ids, rme = self.get_rme(stories)
 
 		rme_cols = pd.MultiIndex.from_arrays([us_ids, rme], names=['user_story', 'part'])
 		rme_us = pd.DataFrame(0, index=words, columns=rme_cols)
 		rme_us = rme_us.iloc[np.unique(rme_us.index, return_index=True)[1]]
 		rme_us = self.get_role_means_ends(rme_us, stories)	
-		###
 
+		# ...
 		colnames = ['Functional Role', 'Functional Role Compound',
 		            'Main Object', 'Main Object Compound',
 					'Means Free Form Noun', 'Ends Free Form Noun']
@@ -70,25 +46,24 @@ class Matrix:
 		return w_us, count_matrix, stories_list, rme_us
 		
 	def get_factor(self, matrix, stories):
+		"""Get factor score for all stories"""
 		for story in stories:
-			if story.has_ends:
-				parts = ['role', 'means', 'ends']
-			else:
-				parts = ['role', 'means']
+			parts = ['role', 'means', 'ends'] if story.has_ends else ['role', 'means']
 
 			for part in parts:
-				matrix = self.get_factor_part(matrix, story, part)		
+				matrix = self._get_factor_part(matrix, story, part)		
 
 		return matrix
 
-	def get_factor_part(self, matrix, story, part):
-		for token in eval('story.' + str(part) + '.text'):
+	def _get_factor_part(self, matrix, story, part):
+		for token in eval(f'story.{part}.text'):
 			if get_case(token) in matrix.index.values:
-				matrix.at[get_case(token), story.txtnr()] += eval('self.score_' + str(part) + '(token, story)')
+				matrix.at[get_case(token), story.txtnr()] += eval(f'self.score_{part}(token, story)')
 
 		return matrix
 
 	def score_role(self, token, story):
+		"""Add weights to tokens in the user story role"""
 		weight = 0
 
 		if self.is_phrasal('role.functional_role', token, story) == 1:
@@ -99,6 +74,7 @@ class Matrix:
 		return weight
 
 	def score_means(self, token, story):
+		"""Add weights to tokens in the user story means"""
 		weight = 0
 
 		if self.is_phrasal('means.main_object', token, story) == 1:
@@ -112,6 +88,7 @@ class Matrix:
 		return weight
 
 	def score_ends(self, token, story):
+		"""Add weights to tokens in the user story ends"""
 		weight = 0
 		
 		if story.ends.free_form:
@@ -123,48 +100,48 @@ class Matrix:
 		return weight
 
 	def count_occurence(self, cm, sl, stories):
-		for story in stories:
-			for token in story.data:
-				c = get_case(token)
+		"""Count how often a token (t) occurs in a story (s)"""
+		for s in stories:
+			for t in s.data:
+				c = get_case(t)
 				if c in cm.index.values:
-					for s in sl:
-						if s[0] == c:
-							s[1].append(story.number)					
+					for word, us in sl:
+						if word == c:
+							us.append(s.number)					
 
-					if self.is_phrasal('role.functional_role', token, story) == 1:
+					if self.is_phrasal('role.functional_role', t, s) == 1:
 						cm.at[c, 'Functional Role'] += 1
-					elif self.is_phrasal('role.functional_role', token, story) == 2:
+					elif self.is_phrasal('role.functional_role', t, s) == 2:
 						cm.at[c, 'Functional Role Compound'] += 1
 
-					if self.is_phrasal('means.main_object', token, story) == 1:
+					if self.is_phrasal('means.main_object', t, s) == 1:
 						cm.at[c, 'Main Object'] += 1
-					elif self.is_phrasal('means.main_object', token, story) == 2:
+					elif self.is_phrasal('means.main_object', t, s) == 2:
 						cm.at[c, 'Main Object Compound'] += 1
 
-					if self.is_freeform('means', token, story) == 1:
+					if self.is_freeform('means', t, s) == 1:
 						cm.at[c, 'Means Free Form Noun'] += 1
 					
-					if story.ends.free_form:
-						if self.is_phrasal('ends.main_object', token, story) > 0 or self.is_freeform('ends', token, story) == 1:
+					if s.ends.free_form:
+						if self.is_phrasal('ends.main_object', t, s) > 0 or self.is_freeform('ends', t, s) == 1:
 							cm.at[c, 'Ends Free Form Noun'] += 1
 					
 		return cm, sl
 
 	def get_role_means_ends(self, matrix, stories):
-		cases = matrix.index.values
+		"""Link cases (c) in matrix to their respective user stories (s)"""
+		for c in matrix.index.values:
+			for s in stories:
+				if s.role.indicator:
+					if c in [get_case(t) for t in s.role.text]:
+						matrix.at[c, (s.txtnr(), 'Role')] = 1
+				if s.means.indicator:
+					if c in [get_case(t) for t in s.means.text]:
+						matrix.at[s, (s.txtnr(), 'Means')] = 1
+				if s.ends.indicator:
+					if c in [get_case(t) for t in s.ends.text]:
+						matrix.at[c, (s.txtnr(), 'Ends')] = 1
 
-		for case in cases:
-			for story in stories:
-				if story.role.indicator:
-					if case in [get_case(token) for token in story.role.text]:
-						matrix.at[case, (story.txtnr(), 'Role')] = 1
-				if story.means.indicator:
-					if case in [get_case(token) for token in story.means.text]:
-						matrix.at[case, (story.txtnr(), 'Means')] = 1
-				if story.ends.indicator:
-					if case in [get_case(token) for token in story.ends.text]:
-						matrix.at[case, (story.txtnr(), 'Ends')] = 1
-								
 		return matrix
 
 	def unique(self, arr):
@@ -173,16 +150,8 @@ class Matrix:
 		return unique_arr.view(arr.dtype).reshape((unique_arr.shape[0], arr.shape[1]))
 
 	def remove_punct(self, doc_array):
-		doc_array = doc_array[ np.logical_not( np.logical_or( doc_array[:,2] == 1, doc_array[:,3] == 1 )) ]
+		doc_array = doc_array[ np.logical_not( np.logical_or(doc_array[:,2] == 1, doc_array[:,3] == 1 )) ]
 		return np.delete(doc_array, np.s_[2:4], 1)
-
-	def get_namedict(self, tokens):
-		namedict = {}
-
-		for token in tokens:
-			namedict[token.lemma] = get_case(token)
-
-		return namedict
 
 	def replace_ids(self, arr, words):
 		new_arr = []
@@ -195,6 +164,10 @@ class Matrix:
 		return False
 
 	def is_phrasal(self, part, token, story):
+		"""Check in which part of a WithPhrase() the token occurs
+		
+		Returns:
+			int: -1 if not phrasal, 1 if in .main, 2 if in .compound, 3 if in .phrase"""
 		spart = 'story.' + part
 		if type(eval(spart + '.main')) is list:
 			return -1
@@ -207,6 +180,11 @@ class Matrix:
 		return -1
 
 	def is_freeform(self, part, token, story):
+		"""Check whether a token is in the freeform part of a user story
+		
+		Returns:
+			int: 1 if in free form else -1
+		"""
 		spart = 'story.' + part
 		if eval(spart + '.free_form'):
 			if eval(spart + '.nouns'):
@@ -253,6 +231,23 @@ class Matrix:
 				verbs.append(case)
 
 		return self._remove_from(matrix, verbs)
+	
+	def get_rme(self, stories):
+		us_ids = []
+		rme = []
+
+		for us in stories:
+			if us.role.indicator:
+				us_ids.append(us.txtnr())
+				rme.append('Role') 
+			if us.means.indicator:
+				us_ids.append(us.txtnr())
+				rme.append('Means')
+			if us.ends.indicator:
+				us_ids.append(us.txtnr())
+				rme.append('Ends')
+	
+		return us_ids, rme
 
 	def remove_stop_words(self, matrix, stopwords):
 		result = pd.merge(matrix, stopwords, left_index=True, right_index=True, how='inner')
