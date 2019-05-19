@@ -27,7 +27,8 @@ if sys.version_info[0] < 3:
 class VisualNarrator:
 	"""General class to run Visual Narrator"""
 
-	def __init__(self, threshold = default_threshold, base = default_base, weights = default_weights,
+	def __init__(self,
+	             threshold = default_threshold, base = default_base, weights = default_weights,
 				 link = False, per_role = False,
 				 stats = False, prolog = False, json = False,
 				 spacy_nlp = None):

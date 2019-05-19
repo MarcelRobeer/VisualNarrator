@@ -49,7 +49,7 @@ visualnarrator = VisualNarrator(<ARGUMENTS>)
 visualnarrator.run(<INPUT FILE>, <SYSTEM_NAME>)
 ```
 
-Arguments may be supplied to `VisualNarrator(**args)` to re-use and for a single run to `run(*args, **kwargs)`. Execute `print(VisualNarrator.__doc__)` and `print(run.__doc__)` and to see all (optional) arguments.
+Arguments may be supplied to `VisualNarrator(**args)` to re-use and for a single run to `run(*args, **kwargs)`. Execute `help(visualnarrator)` to see all (optional) arguments.
 
 #### Arguments
 For details on arguments, see our [documentation here](vn/documentation.md).
