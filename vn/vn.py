@@ -1,7 +1,6 @@
 """General Visual Narrator Module"""
 
 import string
-import timeit
 import os.path
 import spacy
 import sys
@@ -9,14 +8,14 @@ import pkg_resources
 
 from jinja2 import FileSystemLoader, Environment, PackageLoader
 
-from vn.config import initialize_nlp, default_threshold, default_base, default_weights
+from vn.config import DEFAULT_THRESHOLD, DEFAULT_BASE, DEFAULT_WEIGHTS
 from vn.io import Reader, Writer, Printer
 from vn.miner import StoryMiner
 from vn.matrix import Matrix
 from vn.userstory import UserStory
 from vn.pattern import Constructor
 from vn.statistics import Statistics, Counter
-from vn.utils.utility import multiline, remove_punct, tab, is_comment, occurence_list
+from vn.utils.utility import multiline, remove_punct, tab, is_comment, occurence_list, timeit
 from vn.utils.nlputility import t, is_i, is_us
 
 # Check Python version
@@ -28,7 +27,7 @@ class VisualNarrator:
 	"""General class to run Visual Narrator"""
 
 	def __init__(self,
-	             threshold = default_threshold, base = default_base, weights = default_weights,
+	             threshold = DEFAULT_THRESHOLD, base = DEFAULT_BASE, weights = DEFAULT_WEIGHTS,
 				 link = False, per_role = False,
 				 stats = False, prolog = False, json = False,
 				 spacy_nlp = None):
@@ -48,6 +47,8 @@ class VisualNarrator:
 
 			spacy_nlp (spacy.load object): spacy NLP using spacy.load('en_core_web_md')
 		"""
+		self.time = {}
+
 		self.threshold = threshold
 		self.base = base
 		self.weights = weights
@@ -56,7 +57,7 @@ class VisualNarrator:
 		self.stats = stats
 		self.prolog = prolog
 		self.json = json
-		self.nlp = spacy_nlp if spacy_nlp is not None else initialize_nlp()
+		self.nlp = spacy_nlp if spacy_nlp is not None else self.initialize_nlp(log_time=self.time)
 
 		self.matrix = Matrix(self.base, self.weights)
 
@@ -82,46 +83,11 @@ class VisualNarrator:
 		if stories is None:
 			stories = Reader.parse(filename)
 
-		start_parse_time = timeit.default_timer()
-		miner = StoryMiner()
-
-		# Read the input file
-		us_id = 1
-
-		# Keep track of all errors	
-		errors = ""
-
-		# Keeps track of all succesfully created User Stories objects
-		us_instances = []  
-		failed_stories = []
-		success_stories = []
-
-		# Parse every user story (remove punctuation and mine)
-		for s in stories:
-			try:
-				user_story = self.parse(s, us_id, systemname, self.nlp, miner)
-				user_story = Counter.count(user_story)
-				us_instances.append(user_story)
-				success_stories.append(s)
-			except ValueError as err:
-				failed_stories.append([us_id, s, err.args])
-				errors += "\n[User Story {} ERROR] {}! (\"{}\")".format(us_id, err.args[0], " ".join(str.split(s)))
-			us_id += 1
-
-		# Print errors (if found)
-		if errors:
-			Printer._print_head("PARSING ERRORS")
-			print(errors)
-
-		parse_time = timeit.default_timer() - start_parse_time
+		# Mine stories
+		us_instances, failed_stories  = self._mine_stories(stories, systemname, log_time=self.time)
 
 		# Generate the term-by-user story matrix (m), and additional data in two other matrices
-		start_matr_time = timeit.default_timer()
-
-		matrices = self.matrix.generate(us_instances, ' '.join([u.sentence for u in us_instances]), self.nlp)
-		m, count_matrix, stories_list, rme = matrices
-
-		matr_time = timeit.default_timer() - start_matr_time
+		m, count_matrix = self._get_matrix(us_instances, log_time=self.time)
 
 		# Print details per user story, if argument '-u'/'--print_us' is chosen
 		if print_us:
@@ -130,36 +96,11 @@ class VisualNarrator:
 				Printer.print_us_data(us)
 
 		# Generate the outputs
-		start_gen_time = timeit.default_timer()
-		
-		patterns = Constructor(self.nlp, us_instances, m)
-		out = patterns.make(systemname, self.threshold, self.link)
-		output_ontology, output_prolog, output_ontobj, output_prologobj, onto_per_role = out
-
-		print(type(output_ontology))
-		# Print out the ontology in the terminal, if argument '-o'/'--print_ont' is chosen
-		if print_ont:
-			Printer._print_head("MANCHESTER OWL")
-			print(output_ontology)
-
-		gen_time = timeit.default_timer() - start_gen_time
+		output_ontology, output_prolog, output_ontobj, output_prologobj, onto_per_role = \
+			self._get_gen(us_instances, m, systemname, print_ont, log_time=self.time)
 
 		# Gather statistics and print the results
-		stats_time = 0
-		statsarr = None
-		if self.stats:
-			start_stats_time = timeit.default_timer()
-
-			statsarr = Statistics.to_stats_array(us_instances)
-
-			Printer._print_head("USER STORY STATISTICS")
-			Printer.print_stats(statsarr[0], True)
-			#Printer.print_stats(statsarr[1], True)
-			Printer._print_subhead("Term - by - User Story Matrix ( Terms w/ total weight 0 hidden )")
-			hide_zero = m[(m['sum'] > 0)]
-			print(hide_zero)
-
-			stats_time = timeit.default_timer() - start_stats_time	
+		statsarr = self._get_stats(us_instances, m, log_time=self.time)
 
 		# Write output files
 		w = Writer
@@ -171,11 +112,16 @@ class VisualNarrator:
 		Printer.print_gen_settings(self.matrix, self.base, self.threshold)
 
 		# Print details of the generation
-		fail = len(failed_stories)
-		success = len(success_stories)
+		fail       = len(failed_stories)
+		success    = len(us_instances)
+		time_nlp   = self.time['INITIALIZE_NLP']
+		time_mine  = self.time['_MINE_STORIES']
+		time_matr  = self.time['_GET_MATRIX']
+		time_gen   = self.time['_GET_GEN']
+		time_stats = self.time['_GET_STATS']
 
-		nlp_time = 0
-		Printer.print_details(fail, success, nlp_time, parse_time, matr_time, gen_time, stats_time)
+		Printer.print_details(fail, success, time_nlp, time_mine, time_matr, time_gen, time_stats)
+		self.time['INITIALIZE_NLP'] = 0
 
 		report_dict = {
 			"stories": us_instances,
@@ -183,11 +129,11 @@ class VisualNarrator:
 			"systemname": systemname,
 			"us_success": success,
 			"us_fail": fail,
-			"times": [["Initializing Natural Language Processor (<em>spaCy</em> v" + pkg_resources.get_distribution("spacy").version + ")" , nlp_time],
-			          ["Mining User Stories", parse_time],
-					  ["Creating Factor Matrix", matr_time],
-					  ["Generating Manchester Ontology", gen_time],
-					  ["Gathering statistics", stats_time]],
+			"times": [["Initializing Natural Language Processor (<em>spaCy</em> v" + pkg_resources.get_distribution("spacy").version + ")" , time_nlp],
+			          ["Mining User Stories", time_mine],
+					  ["Creating Factor Matrix", time_matr],
+					  ["Generating Manchester Ontology / Prolog", time_gen],
+					  ["Gathering statistics", time_stats]],
 			"dir": os.path.dirname(os.path.realpath(__file__)),
 			"inputfile": filename,
 			"inputfile_lines": len(stories),
@@ -216,18 +162,23 @@ class VisualNarrator:
 		return {'us_instances': us_instances,
 				'output_ontobj': output_ontobj,
 				'output_prologobj': output_prologobj,
-				'output_json': output_json if self.json else None,
+				'output_json': output_json,
 				'matrix': m}
 
+	@timeit
+	def initialize_nlp(self, **kw):
+		"""Initialize spaCy just once (this takes most of the time...)"""
+		print("Initializing Natural Language Processor. . .")
+		import spacy
+		return spacy.load('en_core_web_md')
 
-	def parse(self, text, id, systemname, nlp, miner):
+	def parse(self, text, id, systemname, miner):
 		"""Create a new user story object and mines it to map all data in the user story text to a predefined model
 		
 		Args:
 			text: The user story text
 			id: The user story ID, which can later be used to identify the user story
 			systemname: Name of the system this user story belongs to
-			nlp: Natural Language Processor (spaCy)
 			miner: instance of class Miner
 
 		Returns:
@@ -235,17 +186,76 @@ class VisualNarrator:
 		"""
 		no_punct = remove_punct(text)
 		no_double_space = ' '.join(no_punct.split())
-		doc = nlp(no_double_space)
+		doc = self.nlp(no_double_space)
 		user_story = UserStory(id, text, no_double_space)
-		user_story.system.main = nlp(systemname)[0]
+		user_story.system.main = self.nlp(systemname)[0]
 		user_story.data = doc
 		#Printer.print_dependencies(user_story)
 		#Printer.print_noun_phrases(user_story)
 		miner.structure(user_story)
 		user_story.old_data = user_story.data
-		user_story.data = nlp(user_story.sentence)
-		miner.mine(user_story, nlp)
+		user_story.data = self.nlp(user_story.sentence)
+		miner.mine(user_story, self.nlp)
 		return user_story
+	
+	@timeit
+	def _mine_stories(self, stories, systemname, **kw):
+		# Keep track of all errors	
+		errors = ""
+
+		# Keeps track of all succesfully created User Stories objects
+		us_instances = []  
+		failed_stories = []
+
+		# Parse every user story (remove punctuation and mine)
+		for us_id, s in enumerate(stories, start=1):
+			try:
+				user_story = self.parse(s, us_id, systemname, StoryMiner())
+				user_story = Counter.count(user_story)
+				us_instances.append(user_story)
+			except ValueError as err:
+				failed_stories.append([us_id, s, err.args])
+				errors += "\n[User Story {} ERROR] {}! (\"{}\")".format(us_id, err.args[0], " ".join(str.split(s)))
+
+		# Print errors (if found)
+		if errors:
+			Printer._print_head("PARSING ERRORS")
+			print(errors)
+
+		return us_instances, failed_stories
+	
+	@timeit
+	def _get_matrix(self, us_instances, **kw):
+		matrices = self.matrix.generate(us_instances, ' '.join([u.sentence for u in us_instances]), self.nlp)
+		m, count_matrix, _, _ = matrices
+		return m, count_matrix
+	
+	@timeit
+	def _get_gen(self, us_instances, m, systemname, print_ont, **kw):
+		patterns = Constructor(self.nlp, us_instances, m)
+		out = patterns.make(systemname, self.threshold, self.link)
+
+		# Print out the ontology in the terminal, if argument '-o'/'--print_ont' is chosen
+		if print_ont:
+			Printer._print_head("MANCHESTER OWL")
+			print(out[0])
+		
+		return out
+
+	@timeit
+	def _get_stats(self, us_instances, m, **kw):
+		statsarr = None
+		if self.stats:
+			statsarr = Statistics.to_stats_array(us_instances)
+
+			Printer._print_head("USER STORY STATISTICS")
+			Printer.print_stats(statsarr[0], True)
+			#Printer.print_stats(statsarr[1], True)
+			Printer._print_subhead("Term - by - User Story Matrix ( Terms w/ total weight 0 hidden )")
+			hide_zero = m[(m['sum'] > 0)]
+			print(hide_zero)
+
+		return statsarr
 	
 	def write_files(self, w, systemname, output_ontology, output_prolog, output_json,
 	                statsarr, m, onto_per_role):

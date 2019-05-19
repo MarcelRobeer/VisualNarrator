@@ -5,7 +5,7 @@
 import os.path
 import sys
 from argparse import ArgumentParser
-from vn.config import __version__, description, author, default_threshold, default_base, default_weights
+from vn.config import __version__, description, author, DEFAULT_THRESHOLD, DEFAULT_BASE, DEFAULT_WEIGHTS
 from vn.vn import VisualNarrator
 from vn.io import Reader
 
@@ -61,20 +61,20 @@ def main(*args):
 	w_p = p.add_argument_group("conceptual model generation tuning (optional)")
 	w_p.add_argument("-p", "--per_role", dest="per_role", help="create an additional conceptual model per role",
 					action="store_true", default=False)
-	w_p.add_argument("-t", dest="threshold", help=f"set threshold for conceptual model generation (INT, default = {default_threshold:.2f})",
-					type=float, default=default_threshold)
-	w_p.add_argument("-b", dest="base_weight", help=f"set the base weight (INT, default = {default_base})",
-					type=int, default=default_base)	
-	w_p.add_argument("-wfr", dest="weight_func_role", help=f"weight of functional role (FLOAT, default = {default_weights['func_role']:.2f})",
-					type=float, default=default_weights['func_role'])
-	w_p.add_argument("-wdo", dest="weight_main_obj", help=f"weight of main object (FLOAT, default = {default_weights['main_obj']:.2f})",
-					type=float, default=default_weights['main_obj'])
-	w_p.add_argument("-wffm", dest="weight_ff_means", help=f"weight of noun in free form means (FLOAT, default = {default_weights['ff_means']:.2f})",
-					type=float, default=default_weights['ff_means'])
-	w_p.add_argument("-wffe", dest="weight_ff_ends", help=f"weight of noun in free form ends (FLOAT, default = {default_weights['ff_ends']:.2f})",
-					type=float, default=default_weights['ff_ends'])		
-	w_p.add_argument("-wcompound", dest="weight_compound", help=f"weight of nouns in compound compared to head (FLOAT, default = {default_weights['compound']:.2f})",
-					type=float, default=default_weights['compound'])		
+	w_p.add_argument("-t", dest="threshold", help=f"set threshold for conceptual model generation (INT, default = {DEFAULT_THRESHOLD:.2f})",
+					type=float, default=DEFAULT_THRESHOLD)
+	w_p.add_argument("-b", dest="base_weight", help=f"set the base weight (INT, default = {DEFAULT_BASE})",
+					type=int, default=DEFAULT_BASE)	
+	w_p.add_argument("-wfr", dest="weight_func_role", help=f"weight of functional role (FLOAT, default = {DEFAULT_WEIGHTS['func_role']:.2f})",
+					type=float, default=DEFAULT_WEIGHTS['func_role'])
+	w_p.add_argument("-wdo", dest="weight_main_obj", help=f"weight of main object (FLOAT, default = {DEFAULT_WEIGHTS['main_obj']:.2f})",
+					type=float, default=DEFAULT_WEIGHTS['main_obj'])
+	w_p.add_argument("-wffm", dest="weight_ff_means", help=f"weight of noun in free form means (FLOAT, default = {DEFAULT_WEIGHTS['ff_means']:.2f})",
+					type=float, default=DEFAULT_WEIGHTS['ff_means'])
+	w_p.add_argument("-wffe", dest="weight_ff_ends", help=f"weight of noun in free form ends (FLOAT, default = {DEFAULT_WEIGHTS['ff_ends']:.2f})",
+					type=float, default=DEFAULT_WEIGHTS['ff_ends'])		
+	w_p.add_argument("-wcompound", dest="weight_compound", help=f"weight of nouns in compound compared to head (FLOAT, default = {DEFAULT_WEIGHTS['compound']:.2f})",
+					type=float, default=DEFAULT_WEIGHTS['compound'])		
 	
 	if len(args) < 1:
 		args = p.parse_args()

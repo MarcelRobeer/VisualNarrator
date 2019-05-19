@@ -158,7 +158,8 @@ class Printer:
 			parse_time (seconds): time to mine user stories
 			matr_time (seconds): time to create matrix
 			gen_time (seconds): time to generate ontology/prolog files
-			stats_time (seconds): time to generate statistics"""
+			stats_time (seconds): time to generate statistics
+		"""
 		total = success + fail
 		if success is not 0:
 			frate = fail/(success + fail)
@@ -166,14 +167,14 @@ class Printer:
 			frate = 1
 
 		Printer._print_head("RUN DETAILS")
-		print("User Stories:\n  # Total parsed:\t\t ", total,"\n    [+] Success:\t\t ", success, "\n    [-] Failed:\t\t\t ", fail, "\n  Failure rate:\t\t\t ", frate, "(", round(frate * 100, 2), "% )")
+		print("User Stories:\n  # Total parsed:\t\t", total,"\n    [+] Success:\t\t", success, "\n    [-] Failed:\t\t\t", fail, "\n  Failure rate:\t\t\t", frate, "(", round(frate * 100, 2), "% )")
 		print("Time elapsed:")
-		print("  NLP instantiate:\t\t ", round(nlp_time, 5), "s")
-		print("  Mining User Stories:\t\t ", round(parse_time, 5), "s")
-		print("  Creating factor matrix:\t ", round(matr_time, 5), "s")
-		print("  Generating Manchester Ontology / Prolog:", round(gen_time, 5), "s")
-		if stats_time > 0:
-			print("  Generating statistics:\t ", round(stats_time, 5), "s")
+		print(f"  NLP instantiate:\t\t {nlp_time:.5f}s")
+		print(f"  Mining User Stories:\t\t {parse_time:.5f}s")
+		print(f"  Creating factor matrix:\t {matr_time:.5f}s")
+		print(f"  Generating Ontology / Prolog:\t {gen_time:.5f}s")
+		if stats_time > 0.01:
+			print(f"  Generating statistics:\t {stats_time:.5f}s")
 		print("")
 
 	@staticmethod
@@ -225,7 +226,7 @@ class Printer:
 		print("Threshold:\t\t\t", threshold)
 		print("Absolute Weights ( base =", base ,"):")
 		print("  Functional role:\t\t", matrix.VAL_FUNC_ROLE)
-		print("  Main object:\t\t", matrix.VAL_MAIN_OBJ)
+		print("  Main object:\t\t\t", matrix.VAL_MAIN_OBJ)
 		print("  Noun in free form means:\t", matrix.VAL_MEANS_NOUN)
 		print("  Noun in free form ends:\t", matrix.VAL_ENDS_NOUN)
 		print("Relative Weights:")

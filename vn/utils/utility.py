@@ -1,8 +1,8 @@
+"""General utility module"""
+
 import re
 import string
-
-
-"""General utility module"""
+import time
 
 
 def flatten(l):
@@ -71,3 +71,14 @@ def occurence_list(li):
 		return ', '.join(res)
 	return "Does not occur, deducted"
 
+# Decorator to time a function
+def timeit(method):
+	def timed(*args, **kw):
+		ts = time.time()
+		result = method(*args, **kw)
+		te = time.time() - ts
+		if 'log_time' in kw:
+			t = kw.get('log_name', method.__name__.upper())
+			kw['log_time'][t] = te 
+		return result
+	return timed

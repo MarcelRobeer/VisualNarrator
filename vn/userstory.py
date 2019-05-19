@@ -35,6 +35,8 @@ class UserStory(object):
 			return True
 		return False
 
+	def __str__(self):
+		return self.text
 
 class UserStoryPart(object):
 	def __init__(self):
@@ -50,6 +52,9 @@ class UserStoryPart(object):
 			rem = 'I can '
 			txt = txt[txt.startswith(rem) and len(rem):]
 		return {"text": txt, "indicator": str(self.indicator)}
+	
+	def __str__(self):
+		return self.text
 
 class FreeFormUSPart(UserStoryPart):
 	def __init__(self):
