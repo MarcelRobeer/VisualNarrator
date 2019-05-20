@@ -5,6 +5,7 @@ import os.path
 import spacy
 import sys
 import pkg_resources
+import json
 
 from jinja2 import FileSystemLoader, Environment, PackageLoader
 
@@ -104,7 +105,7 @@ class VisualNarrator:
 
 		# Write output files
 		w = Writer
-		output_json = "\n".join([str(us.toJSON()) for us in us_instances]).replace('\'', '\"')
+		output_json = json.dumps([us.toJSON() for us in us_instances], indent=4)
 		files, reports_folder = self.write_files(w, systemname, str(output_ontology), str(output_prolog), output_json,
 	                                             statsarr, m, onto_per_role)
 
@@ -262,7 +263,7 @@ class VisualNarrator:
 		"""Writes Ontology / Prolog / JSON to files
 		
 		Args:
-			w (vn.io.Writer): Writer object for I/O
+			w (`vn.io.Writer`): Writer object for I/O
 			systemname (str): System name
 			output_ontology (str): Manchester Ontology text
 			output_prolog (str): Prolog text
