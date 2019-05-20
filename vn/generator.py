@@ -101,6 +101,7 @@ class PrologGenerator(Generator):
 					if self._get_found(rel, s):
 						prologtext.append(self._get_found(rel, s))
 
+		prologtext = list(set(prologtext))
 		prologtext.sort()
 
 		return '.\n'.join(prologtext) + '.'
