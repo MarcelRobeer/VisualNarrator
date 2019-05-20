@@ -1,2 +1,2 @@
-from .vn import main
-main()
+from .vn import visualnarrator
+visualnarrator()
