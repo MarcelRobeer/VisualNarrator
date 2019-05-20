@@ -135,7 +135,7 @@ class VisualNarrator:
 					  ["Creating Factor Matrix", time_matr],
 					  ["Generating Manchester Ontology / Prolog", time_gen],
 					  ["Gathering statistics", time_stats]],
-			"dir": os.path.dirname(os.path.realpath(__file__)),
+			"dir": sys.path[0],
 			"inputfile": filename,
 			"inputfile_lines": len(stories),
 			"outputfiles": files,
@@ -147,7 +147,9 @@ class VisualNarrator:
 			"classes": output_ontology.classes,
 			"relationships": output_ontology.relationships,
 			"types": list(count_matrix.columns.values),
-			"ontology": multiline(str(output_ontology))
+			"ontology": multiline(str(output_ontology)),
+			"print_prolog": self.prolog,
+			"prolog": multiline(str(output_prolog))
 		}
 
 		# Finally, generate a report

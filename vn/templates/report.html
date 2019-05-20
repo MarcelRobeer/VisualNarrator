@@ -6,6 +6,7 @@
 			<li><a href="#general">General</a></li>
 			<li><a href="#user-stories">User Stories</a></li>
 			<li><a href="#ontology">Ontology</a></li>
+			{% if print_prolog %}<li><a href="#prolog">Prolog</a></li>{% endif %}
 		</ul>
 	</div>
 	<nav class="navbar navbar-default navbar-fixed-top">
@@ -14,6 +15,7 @@
 				<li class="active"><a href="#general">General</a></li>
 				<li><a href="#user-stories">User Stories</a></li>
 				<li><a href="#ontology">Ontology</a></li>
+				{% if print_prolog %}<li><a href="#prolog">Prolog</a></li>{% endif %}
 			</ul>
 		</div>
 	</nav>
@@ -27,8 +29,7 @@
 		</div>
 		<div class="panel-body">
 			<dl class="dl-horizontal">
-				<dt>Name</dt><dd>{{ inputfile.name }}</dd>
-				<dt>Encoding</dt><dd>{{ inputfile.encoding }}</dd>
+				<dt>Name</dt><dd>{{ inputfile }}</dd>
 				<dt>Non-empty lines</dt><dd>{{ inputfile_lines }}</dd>
 			</dl>
 		</div>
@@ -83,7 +84,7 @@
 			</thead>
 			<tbody>
 			{% for file in outputfiles %}
-				<tr><td>{{ file[0] }}</td><td><a href="{{ dir }}{{ file[1] }}">{{ file[1] }}</a></td></tr>
+				<tr><td>{{ file[0] }}</td><td><a href="{{ dir }}/{{ file[1] }}">/{{ file[1] }}</a></td></tr>
 			{% endfor %}
 			</tbody>
 		</table>
@@ -336,10 +337,10 @@
 				</tbody>
 			</table>
 	</div>
-
+	
 	<div class="panel panel-default">
 		<div class="panel-body">
-			The output can be found at <a href="{{ dir }}{{ outputfiles[0][1] }}">{{ outputfiles[0][1] }}</a>, which can be used to analyze and visualize the ontology.
+			The output can be found at <a href="{{ dir }}/{{ outputfiles[0][1] }}">/{{ outputfiles[0][1] }}</a>, which can be used to analyze and visualize the ontology.
 		</div>
 		<div class="panel-footer">
 			{% for line in ontology %}
@@ -364,5 +365,19 @@
 				<br>
 			{% endfor %}
 		</div>
-	</div>		
+	</div>	
+
+	{% if print_prolog %}
+	<h2 id="prolog">Prolog</h2>
+	<div class="panel panel-default">
+		<div class="panel-body">
+			The output can be found at <a href="{{ dir }}/{{ outputfiles[1][1] }}">/{{ outputfiles[1][1] }}</a>, which can be used to analyze and visualize the ontology.
+		</div>
+		<div class="panel-footer">
+			{% for line in prolog %}
+				{% for word in line%}{{word}}{% endfor %}<br>
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
 {% endblock %}
