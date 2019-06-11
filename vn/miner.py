@@ -242,7 +242,7 @@ class StoryMiner:
 
 		assume = False if (type(main_object) is list or main_object == story.system.main) else True
 		story = eval(f'self.get_phrases(story, {mv_phrase is not None}, s, part, {assume})')
-	
+
 		return story
 
 	def get_phrases(self, story, found_mv_phrase, s, part='means', assume=True):

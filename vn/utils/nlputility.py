@@ -15,7 +15,7 @@ def is_us(cl):
 def t(li):
 	if type(li) is list:
 		return text(get_tokens(li))
-	return li.text
+	return li.text if li is not None else ''
 
 def is_i(li):
 	if str.lower(t(li)) == 'i':

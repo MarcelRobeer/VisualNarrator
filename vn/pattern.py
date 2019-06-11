@@ -415,7 +415,7 @@ class PatternIdentifier:
 		else:
 			do = [eval('story.' + str(part) + '.main_object.main')]
 		
-		if type(do[0]) is not list:
+		if do[0] is not None and type(do[0]) is not list:
 			w_fr = [self.getwt(x) for x in fr]
 			w_mv = [self.getwt(x) for x in mv]
 			w_do = [self.getwt(x) for x in do]
