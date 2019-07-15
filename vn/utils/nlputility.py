@@ -51,7 +51,7 @@ def text_lower_tokens(a_list):
 
 def get_head(tree):
 	for t in tree:
-		if t is t.head:
+		if t == t.head:
 			return t
 
 def is_noun(token):

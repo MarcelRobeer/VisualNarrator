@@ -21,7 +21,7 @@ class StoryMiner:
 		story = self.nlp_part(story, nlp)
 
 		story = self.get_functional_role(story)
-		if not story.role.functional_role:
+		if not story.role.functional_role.main:
 			raise ValueError('Could not find a functional role', 2)
 
 		story = self.get_mobj_and_mv(story)
