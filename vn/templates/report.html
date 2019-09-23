@@ -339,9 +339,11 @@
 	</div>
 	
 	<div class="panel panel-default">
+		{% if write_local %}
 		<div class="panel-body">
 			The output can be found at <a href="{{ dir }}/{{ outputfiles[0][1] }}">/{{ outputfiles[0][1] }}</a>, which can be used to analyze and visualize the ontology.
 		</div>
+		{% endif %}
 		<div class="panel-footer">
 			{% for line in ontology %}
 				{% if is_comment(line) %}
@@ -370,9 +372,11 @@
 	{% if print_prolog %}
 	<h2 id="prolog">Prolog</h2>
 	<div class="panel panel-default">
+		{% if write_local %}
 		<div class="panel-body">
 			The output can be found at <a href="{{ dir }}/{{ outputfiles[1][1] }}">/{{ outputfiles[1][1] }}</a>, which can be used to analyze and visualize the ontology.
 		</div>
+		{% endif %}
 		<div class="panel-footer">
 			{% for line in prolog %}
 				{% for word in line%}{{word}}{% endfor %}<br>
