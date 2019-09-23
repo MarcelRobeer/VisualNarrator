@@ -40,7 +40,9 @@ python run.py <INPUT FILE> [<arguments>]
 ```
 
 ### (2) Method VisualNarrator().run()
-Import the `VisualNarrator` class from `vn.vn` and run `VisualNarrator().run()`:
+First, install as a package `pip install git+https://github.com/MarcelRobeer/VisualNarrator` (or download and run `python setup.py install` in the VisualNarrator folder).
+
+Next, import the `VisualNarrator` class from `vn.vn` and run `VisualNarrator().run()`:
 
 ```python
 from vn.vn import VisualNarrator
