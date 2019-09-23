@@ -52,7 +52,7 @@ visualnarrator.run(<INPUT FILE>, <SYSTEM_NAME>)
 Arguments may be supplied to `VisualNarrator(**args)` to re-use and for a single run to `run(*args, **kwargs)`. Execute `help(visualnarrator)` to see all (optional) arguments.
 
 ### (3) REST API
-Allows a user to POST their user story file to `/mine/` and retrieve a JSON response. It requires three dependencies (`fastapi`, `uvicorn` and `python-multipart`), and can then be run using `uvicorn`.
+Allows a user to POST their user story file to `/mine/` and retrieve a JSON response. It requires three dependencies (`fastapi`, `uvicorn` and `python-multipart`), and can then be run using `uvicorn`. Execute the following in your terminal:
 ```bash
 pip install fastapi uvicorn python-multipart
 uvicorn vn.ui.api:vn_app --reload
