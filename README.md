@@ -30,7 +30,7 @@ The main dependency for the program is its Natural Language Processor (NLP) [spa
 * _Jinja2_ >= 2.10
 
 ## Running the Project
-Running the program can be done in two ways: (1) from the command line, (2) using method `VisualNarrator().run()`.
+Running the program can be done in three ways: (1) from the command line, (2) using method `VisualNarrator().run()`, (3) serving VisualNarrator as a REST API.
 
 ### (1) Command line
 With the program main directory as current directory, run the program by executing:
@@ -50,6 +50,14 @@ visualnarrator.run(<INPUT FILE>, <SYSTEM_NAME>)
 ```
 
 Arguments may be supplied to `VisualNarrator(**args)` to re-use and for a single run to `run(*args, **kwargs)`. Execute `help(visualnarrator)` to see all (optional) arguments.
+
+### (3) REST API
+Allows a user to POST their user story file to `/mine/` and retrieve a JSON response. It requires three dependencies (`fastapi`, `uvicorn` and `python-multipart`), and can then be run using `uvicorn`.
+```bash
+pip install fastapi uvicorn python-multipart
+uvicorn vn.ui.api:vn_app --reload
+```
+The REST API is then accessible at [http://127.0.0.1:8000/](http://127.0.0.1:8000/) where documentation on the API can be found at [http://127.0.0.1:8000/docs/](http://127.0.0.1:8000/docs/).
 
 #### Arguments
 For details on arguments, see our [documentation here](vn/documentation.md).
