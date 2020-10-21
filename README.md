@@ -86,6 +86,5 @@ The classes in the program are based on the following conceptual model:
 
 The `Reader` starts by reading the input file line by line and generates a list of sentences. These sentences are then enriched using Natural Language Processing, adding Part-of-Speech tags, dependencies, named entity recognition, etc. Subsequently, the `StoryMiner` uses these enriched sentences to create _UserStory_ objects. The User Story objects contain all the information that could be mined from the sentence. These are then used to attach weight to each term in the User Story, creating _Term-by-US Matrix_ in the `Matrix` class. The `Constructor` then constructs patterns out of each user story, using the _Term-by-US Matrix_ to attach a weight to each token. The Constructor forms a model for an ontology, which is then used by the `Generator` to generate a Manchester Ontology file (.omn) and optionally a Prolog file (.pl). Finally, these files are printed to an actual file by the `Writer` in the '/ontologies' and '/prolog' folders respectively. Optionally, the _UserStory_ objects can be output to a JSON file so they can be used in other applications.
 
-## Visual Narrator is part of the _GRIMM_ method, also see
-- AQUSA ([http://aqusa.nl/](http://aqusa.nl/))
-- Interactive Narrator ([https://interactivenarrator.science.uu.nl/](https://interactivenarrator.science.uu.nl/))
+## Visual Narrator was developed as part of the _Requirements Engineering Lab_ at _Utrecht University_
+[https://www.uu.nl/en/research/software-systems/organization-and-information/labs/requirements-engineering](https://www.uu.nl/en/research/software-systems/organization-and-information/labs/requirements-engineering)
