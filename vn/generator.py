@@ -288,7 +288,7 @@ class Header:
 				link = str(PREFIX_DICT[prefix])
 				returnstr += self.ontobj.gh.make_prefix(prefix, link)
 		returnstr += self.ontobj.gh.make_prefix(self.ontobj.ontology_name, self.ontobj.ontology)	
-		returnstr += "\nOntology: <:>\n\n"
+		returnstr += "\nOntology: <http://fakesite.org/>\n\n"
 		returnstr += "Annotations:\n\tdc:title \"" + str(self.ontobj.sys_name) + "\",\n\tdc:creator \"Visual Narrator\",\n\trdfs:comment \"Generated with Visual Narrator\"\n\n"
 		returnstr += "AnnotationProperty: dc:creator\n\n"
 		returnstr += "AnnotationProperty: dc:title\n\n"
